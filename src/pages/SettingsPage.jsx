@@ -254,200 +254,102 @@ export default function SettingsPage() {
           MODULE 01: Organization Identity & Corporate Profile
          ========================================================================= */}
       {activeTab === 'org' && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          {/* Card 1: Official Corporate Profile & Contact Info */}
-          <div className="settings-card" style={{ padding: '20px 22px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
-              <div>
-                <h3 style={{ margin: '0 0 4px', fontSize: '15px', color: '#0b4b8f', fontWeight: '800' }}>
-                  🏛️ Official Organization Identity &amp; Tax Profile
-                </h3>
-                <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
-                  This official business name, address, tax credentials and contact numbers represent your company across all system documents.
-                </p>
-              </div>
-              <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
-                💾 Save Identity
+        <div className="settings-card" style={{ padding: '20px 22px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+            <div>
+              <h3 style={{ margin: '0 0 4px', fontSize: '15px', color: '#0b4b8f', fontWeight: '800' }}>
+                🏛️ Official Organization Identity &amp; Tax Profile
+              </h3>
+              <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                This official business name, address, tax credentials and contact numbers represent your company across all system documents.
+              </p>
+            </div>
+            <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
+              💾 Save Identity
+            </Button>
+          </div>
+
+          <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+            <div>
+              <label>Company / Organization Name <span className="req">*</span></label>
+              <input
+                className="input"
+                placeholder="e.g. iSysware Software Solution"
+                value={companyName}
+                onChange={(e) => setCompanyName(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label>Tagline / Subtitle</label>
+              <input
+                className="input"
+                placeholder="e.g. software development"
+                value={tagline}
+                onChange={(e) => setTagline(e.target.value)}
+              />
+            </div>
+
+            <div className="full">
+              <label>Official Registered Office Address</label>
+              <input
+                className="input"
+                placeholder="e.g. Karachi"
+                value={officeAddress}
+                onChange={(e) => setOfficeAddress(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label>NTN / Tax Registration / STRN</label>
+              <input
+                className="input"
+                placeholder="e.g. NTN:646383"
+                value={ntnTax}
+                onChange={(e) => setNtnTax(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label>Official Support / Inquiry Phone</label>
+              <input
+                type="tel"
+                inputMode="numeric"
+                maxLength={11}
+                className="input phone11"
+                placeholder="03137784989"
+                value={supportPhone}
+                onChange={(e) => setSupportPhone(cleanPhoneInput(e.target.value))}
+              />
+            </div>
+
+            <div>
+              <label>Official Inquiries Email</label>
+              <input
+                className="input"
+                type="email"
+                placeholder="e.g. info@yourcompany.com"
+                value={inquiryEmail}
+                onChange={(e) => setInquiryEmail(e.target.value)}
+              />
+            </div>
+
+            <div>
+              <label>Official Website URL</label>
+              <input
+                className="input"
+                placeholder="e.g. https://software.com"
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+              />
+            </div>
+
+            <div className="full settings-save" style={{ marginTop: '8px' }}>
+              <Button variant="primary" type="submit">
+                💾 Save Organization Identity
               </Button>
             </div>
-
-            <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
-              <div>
-                <label>Company / Organization Name <span className="req">*</span></label>
-                <input
-                  className="input"
-                  placeholder="e.g. iSysware Software Solution"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label>Tagline / Subtitle</label>
-                <input
-                  className="input"
-                  placeholder="e.g. Software Development &amp; Cloud Systems"
-                  value={tagline}
-                  onChange={(e) => setTagline(e.target.value)}
-                />
-              </div>
-
-              <div className="full">
-                <label>Official Registered Office Address</label>
-                <input
-                  className="input"
-                  placeholder="e.g. Suite 402, Business Arcade, Main Shahrah-e-Faisal, Karachi"
-                  value={officeAddress}
-                  onChange={(e) => setOfficeAddress(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label>NTN / Tax Registration / STRN</label>
-                <input
-                  className="input"
-                  placeholder="e.g. NTN: 1234567-8 | STRN: 1234567890123"
-                  value={ntnTax}
-                  onChange={(e) => setNtnTax(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label>Official Support / Inquiry Phone</label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={11}
-                  className="input phone11"
-                  placeholder="03001234567"
-                  value={supportPhone}
-                  onChange={(e) => setSupportPhone(cleanPhoneInput(e.target.value))}
-                />
-              </div>
-
-              <div>
-                <label>Official Inquiries Email</label>
-                <input
-                  className="input"
-                  type="email"
-                  placeholder="e.g. info@isysware.com"
-                  value={inquiryEmail}
-                  onChange={(e) => setInquiryEmail(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label>Official Website URL</label>
-                <input
-                  className="input"
-                  placeholder="e.g. https://isysware.com"
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
-                />
-              </div>
-
-              <div className="full settings-save" style={{ marginTop: '8px' }}>
-                <Button variant="primary" type="submit">
-                  💾 Save Organization Identity
-                </Button>
-              </div>
-            </form>
-          </div>
-
-          {/* Grid for Admin Security & Cloud DB */}
-          <div className="settings-layout">
-            {/* Admin Security Card */}
-            <div className="settings-card">
-              <h4>🔐 Admin Security &amp; Portal Credentials</h4>
-
-              <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
-                <div>
-                  <label>
-                    Admin Username <span className="req">*</span>
-                  </label>
-                  <input
-                    id="sAdmin"
-                    className="input"
-                    placeholder="Administrator"
-                    value={adminUser}
-                    onChange={(e) => setAdminUser(e.target.value)}
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div>
-                  <label>
-                    Admin Password <span className="req">*</span>
-                  </label>
-                  <input
-                    id="sPass"
-                    className="input"
-                    type="text"
-                    placeholder="admin123"
-                    value={adminPass}
-                    onChange={(e) => setAdminPass(e.target.value)}
-                    autoComplete="off"
-                  />
-                </div>
-
-                <div className="full settings-save">
-                  <Button variant="primary" type="submit">
-                    💾 Save Credentials
-                  </Button>
-                </div>
-              </form>
-            </div>
-
-            {/* Neon Cloud Database & Backup Card */}
-            <div className="settings-card">
-              <h4>☁️ Neon PostgreSQL Database &amp; Backup</h4>
-
-              <div className="settings-data-note">
-                Live PostgreSQL database summary &amp; backup restoration.
-              </div>
-
-              <div className="data-summary">
-                <div className="data-stat">
-                  <span>Businesses</span>
-                  <strong>{businessCount}</strong>
-                </div>
-                <div className="data-stat">
-                  <span>Clients</span>
-                  <strong>{customerCount}</strong>
-                </div>
-                <div className="data-stat">
-                  <span>Invoices</span>
-                  <strong>{invoiceCount}</strong>
-                </div>
-                <div className="data-stat">
-                  <span>Payments</span>
-                  <strong>{paymentCount}</strong>
-                </div>
-              </div>
-
-              <div className="settings-data-actions" style={{ marginTop: '16px' }}>
-                <Button variant="light" onClick={backupData}>
-                  ⬇️ Backup JSON Data
-                </Button>
-                <Button variant="light" onClick={() => fileInputRef.current?.click()}>
-                  ⬆️ Restore JSON Data
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="application/json,.json"
-                  className="hidden-file"
-                  onChange={handleRestoreFileChange}
-                />
-              </div>
-
-              <div className="data-danger" style={{ marginTop: '18px' }}>
-                <Button variant="danger" onClick={clearAllData}>
-                  ⚠️ Clear All Data (Reset)
-                </Button>
-              </div>
-            </div>
-          </div>
+          </form>
         </div>
       )}
 
@@ -699,125 +601,227 @@ export default function SettingsPage() {
       )}
 
       {/* =========================================================================
-          MODULE 03: Invoice Settings & Global Defaults
+          MODULE 03: Invoice Settings & System Defaults
          ========================================================================= */}
       {activeTab === 'invoice' && (
         <div className="settings-layout">
-          {/* Left Column: General Invoice Defaults */}
-          <div className="settings-card">
-            <h4>🧾 Invoice &amp; Billing Defaults</h4>
+          {/* Left Column: System & Session Details + Bank Details */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            <div className="settings-card">
+              <h4>⚙️ System &amp; Session Details</h4>
 
-            <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
-              <div>
-                <label>Default Billing Currency</label>
-                <select
-                  id="sCur"
-                  className="select"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                >
-                  <option value="PKR">PKR (Pakistani Rupee)</option>
-                  <option value="USD">USD (US Dollar)</option>
-                  <option value="AED">AED (UAE Dirham)</option>
-                  <option value="SAR">SAR (Saudi Riyal)</option>
-                  <option value="GBP">GBP (British Pound)</option>
-                  <option value="EUR">EUR (Euro)</option>
-                </select>
+              <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+                <div className="full">
+                  <label>Application Name</label>
+                  <input
+                    className="input"
+                    value="Invoice Manager"
+                    readOnly
+                    disabled
+                    style={{ background: '#f8fafc', color: '#64748b' }}
+                  />
+                </div>
+
+                <div>
+                  <label>Default Currency</label>
+                  <select
+                    id="sCur"
+                    className="select"
+                    value={currency}
+                    onChange={(e) => setCurrency(e.target.value)}
+                  >
+                    <option value="PKR">PKR (Pakistani Rupee)</option>
+                    <option value="USD">USD (US Dollar)</option>
+                    <option value="AED">AED (UAE Dirham)</option>
+                    <option value="SAR">SAR (Saudi Riyal)</option>
+                    <option value="GBP">GBP (British Pound)</option>
+                    <option value="EUR">EUR (Euro)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label>Default Due Days</label>
+                  <input
+                    id="sDueDays"
+                    className="input"
+                    type="number"
+                    min="0"
+                    max="365"
+                    placeholder="0"
+                    value={dueDays}
+                    onChange={(e) => setDueDays(e.target.value)}
+                    autoComplete="off"
+                  />
+                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '3px' }}>
+                    0 = Due on receipt / same day.
+                  </div>
+                </div>
+
+                <div>
+                  <label>
+                    Admin Username <span className="req">*</span>
+                  </label>
+                  <input
+                    id="sAdmin"
+                    className="input"
+                    placeholder="Administrator"
+                    value={adminUser}
+                    onChange={(e) => setAdminUser(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div>
+                  <label>
+                    Admin Login Password <span className="req">*</span>
+                  </label>
+                  <input
+                    id="sPass"
+                    className="input"
+                    type="text"
+                    placeholder="admin123"
+                    value={adminPass}
+                    onChange={(e) => setAdminPass(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="full">
+                  <label>Invoice Numbering Prefix</label>
+                  <input
+                    className="input"
+                    placeholder="e.g. INV-"
+                    value={invoicePrefix}
+                    onChange={(e) => setInvoicePrefix(e.target.value)}
+                  />
+                </div>
+
+                <div className="full">
+                  <label>Invoice Footer Note</label>
+                  <textarea
+                    id="sFooterNote"
+                    className="textarea"
+                    rows={3}
+                    placeholder="Thank you for your business."
+                    value={footerNote}
+                    onChange={(e) => setFooterNote(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="full settings-save">
+                  <Button variant="primary" type="submit">
+                    💾 Save Settings
+                  </Button>
+                </div>
+              </form>
+            </div>
+
+            {/* Bank Details */}
+            <div className="settings-card">
+              <h4>🏦 Bank &amp; Payment Details (For Invoices)</h4>
+              <div className="settings-data-note">
+                These bank account credentials appear on customer invoice receipts &amp; payment reminders.
               </div>
 
-              <div>
-                <label>Default Payment Due Days</label>
-                <input
-                  id="sDueDays"
-                  className="input"
-                  type="number"
-                  min="0"
-                  max="365"
-                  placeholder="0"
-                  value={dueDays}
-                  onChange={(e) => setDueDays(e.target.value)}
-                  autoComplete="off"
-                />
-                <div style={{ fontSize: '10px', color: '#64748b', marginTop: '3px' }}>
-                  0 = Due on receipt / same day.
+              <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+                <div className="full">
+                  <label>Bank Name</label>
+                  <input
+                    className="input"
+                    placeholder="e.g. Meezan Bank / HBL / Bank Alfalah"
+                    value={bankName}
+                    onChange={(e) => setBankName(e.target.value)}
+                  />
+                </div>
+
+                <div className="full">
+                  <label>Account Title</label>
+                  <input
+                    className="input"
+                    placeholder="e.g. iSysware Software Solution"
+                    value={accountTitle}
+                    onChange={(e) => setAccountTitle(e.target.value)}
+                  />
+                </div>
+
+                <div className="full">
+                  <label>Account Number / IBAN</label>
+                  <input
+                    className="input"
+                    placeholder="e.g. PK36MEZN00012345678901"
+                    value={accountIban}
+                    onChange={(e) => setAccountIban(e.target.value)}
+                  />
+                </div>
+
+                <div className="full settings-save">
+                  <Button variant="primary" type="submit">
+                    💾 Save Bank Details
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Right Column: WhatsApp QR + Data & Backup */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+            {/* WhatsApp Automatic Delivery */}
+            <WhatsAppScannerCard isStandalone={false} />
+
+            {/* Neon PostgreSQL Cloud Database & Backup Card */}
+            <div className="settings-card">
+              <h4>☁️ Data &amp; Backup</h4>
+
+              <div className="settings-data-note">
+                PostgreSQL &amp; Neon DB database records summary.
+              </div>
+
+              <div className="data-summary">
+                <div className="data-stat">
+                  <span>Businesses</span>
+                  <strong>{businessCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Clients</span>
+                  <strong>{customerCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Invoices</span>
+                  <strong>{invoiceCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Payment Entries</span>
+                  <strong>{paymentCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Reversal Records</span>
+                  <strong>{reversalCount}</strong>
                 </div>
               </div>
 
-              <div className="full">
-                <label>Invoice Numbering Prefix</label>
+              <div className="settings-data-actions" style={{ marginTop: '16px' }}>
+                <Button variant="light" onClick={backupData}>
+                  ⬇️ Backup Data
+                </Button>
+                <Button variant="light" onClick={() => fileInputRef.current?.click()}>
+                  ⬆️ Restore Data
+                </Button>
                 <input
-                  className="input"
-                  placeholder="e.g. INV-"
-                  value={invoicePrefix}
-                  onChange={(e) => setInvoicePrefix(e.target.value)}
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden-file"
+                  onChange={handleRestoreFileChange}
                 />
               </div>
 
-              <div className="full">
-                <label>Standard Invoice Footer Notes &amp; Payment Terms</label>
-                <textarea
-                  id="sFooterNote"
-                  className="textarea"
-                  rows={4}
-                  placeholder="Thank you for your business. Please clear invoice within due date."
-                  value={footerNote}
-                  onChange={(e) => setFooterNote(e.target.value)}
-                  autoComplete="off"
-                />
-              </div>
-
-              <div className="full settings-save">
-                <Button variant="primary" type="submit">
-                  💾 Save Invoice Defaults
+              <div className="data-danger" style={{ marginTop: '18px' }}>
+                <Button variant="danger" onClick={clearAllData}>
+                  ⚠️ Clear All Data (Reset)
                 </Button>
               </div>
-            </form>
-          </div>
-
-          {/* Right Column: Bank Details & Payment Instructions */}
-          <div className="settings-card">
-            <h4>🏦 Bank &amp; Payment Details (For Invoices)</h4>
-            <div className="settings-data-note">
-              These bank account credentials appear on customer invoice receipts &amp; payment reminders.
             </div>
-
-            <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
-              <div className="full">
-                <label>Bank Name</label>
-                <input
-                  className="input"
-                  placeholder="e.g. Meezan Bank / HBL / Bank Alfalah"
-                  value={bankName}
-                  onChange={(e) => setBankName(e.target.value)}
-                />
-              </div>
-
-              <div className="full">
-                <label>Account Title</label>
-                <input
-                  className="input"
-                  placeholder="e.g. iSysware Software Solution"
-                  value={accountTitle}
-                  onChange={(e) => setAccountTitle(e.target.value)}
-                />
-              </div>
-
-              <div className="full">
-                <label>Account Number / IBAN</label>
-                <input
-                  className="input"
-                  placeholder="e.g. PK36MEZN00012345678901"
-                  value={accountIban}
-                  onChange={(e) => setAccountIban(e.target.value)}
-                />
-              </div>
-
-              <div className="full settings-save">
-                <Button variant="primary" type="submit">
-                  💾 Save Bank Details
-                </Button>
-              </div>
-            </form>
           </div>
         </div>
       )}
