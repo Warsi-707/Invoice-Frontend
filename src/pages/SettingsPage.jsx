@@ -432,23 +432,35 @@ export default function SettingsPage() {
          ========================================================================= */}
       {activeTab === 'proposal' && (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
-          {/* Card 1: Official Corporate Profile & Letterhead Identity */}
-          <div className="settings-card" style={{ padding: '20px 22px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+          {/* Single Unified Proposal & Letterhead Card */}
+          <div className="settings-card" style={{ padding: '22px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #e2e8f0', paddingBottom: '14px' }}>
               <div>
-                <h3 style={{ margin: '0 0 4px', fontSize: '15px', color: '#0b4b8f', fontWeight: '800' }}>
-                  🏛️ Official Organization Identity &amp; Letterhead Profile
+                <h3 style={{ margin: '0 0 4px', fontSize: '16px', color: '#0b4b8f', fontWeight: '800' }}>
+                  📜 Proposal &amp; Official Letterhead Profile
                 </h3>
                 <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
-                  This official business name, address, tax credentials and contact numbers represent your company across all proposals &amp; documents.
+                  Configure official letterhead details, authorized signatory credentials, and standard commercial terms in one unified form.
                 </p>
               </div>
-              <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
-                💾 Save Letterhead
-              </Button>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Button variant="light" size="xs" onClick={() => setShowA4Preview(!showA4Preview)}>
+                  👁️ {showA4Preview ? 'Hide A4 Preview' : 'Show A4 Preview'}
+                </Button>
+                <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
+                  💾 Save Proposal Settings
+                </Button>
+              </div>
             </div>
 
             <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+              {/* Section 1: Official Letterhead */}
+              <div className="full" style={{ borderBottom: '1px dashed #cbd5e1', paddingBottom: '6px', marginTop: '2px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: '750', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  🏢 1. Official Organization &amp; Letterhead Details
+                </span>
+              </div>
+
               <div>
                 <label>Company / Organization Name <span className="req">*</span></label>
                 <input
@@ -523,44 +535,13 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="full settings-save" style={{ marginTop: '8px' }}>
-                <Button variant="primary" type="submit">
-                  💾 Save Letterhead Details
-                </Button>
+              {/* Section 2: Authorized Signatory */}
+              <div className="full" style={{ borderBottom: '1px dashed #cbd5e1', paddingBottom: '6px', marginTop: '14px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: '750', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  ✍️ 2. Authorized Signatory &amp; Proposal Validity
+                </span>
               </div>
-            </form>
-          </div>
 
-          {/* Section 2: Signatory & Validity */}
-          <div className="proposal-builder-card">
-            <div className="prop-card-header">
-              <div>
-                <h3>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0b4b8f" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                    <polyline points="14 2 14 8 20 8"></polyline>
-                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                  </svg>
-                  <span>Authorized Signatory &amp; Proposal Validity</span>
-                </h3>
-                <p>Configure official signatory stamp and validity period for commercial proposals.</p>
-              </div>
-              <div className="prop-btn-group">
-                <Button variant="light" size="xs" onClick={() => setShowA4Preview(!showA4Preview)}>
-                  👁️ {showA4Preview ? 'Hide A4 Preview' : 'Show A4 Preview'}
-                </Button>
-                <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
-                  💾 Save Proposal Settings
-                </Button>
-              </div>
-            </div>
-
-            <div className="prop-sub-heading">
-              <span>✍️ AUTHORIZED SIGNATORY &amp; STAMP</span>
-            </div>
-
-            <div className="prop-form-grid">
               <div>
                 <label>Signatory Full Name</label>
                 <input
@@ -593,45 +574,45 @@ export default function SettingsPage() {
                   onChange={(e) => setValidityDays(Math.max(1, Number(e.target.value || 14)))}
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Section 3: Standard Proposal Terms & Conditions */}
-          <div className="proposal-builder-card">
-            <div className="prop-card-header">
-              <div>
-                <h3>
-                  <span>STANDARD PROPOSAL TERMS &amp; CONDITIONS</span>
-                </h3>
-                <p>Configure legal contract clauses and payment milestones presets for client proposals.</p>
+              {/* Section 3: Terms & Conditions */}
+              <div className="full" style={{ borderBottom: '1px dashed #cbd5e1', paddingBottom: '6px', marginTop: '14px', marginBottom: '4px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: '750', color: '#0284c7', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  📋 3. Standard Commercial Terms &amp; Conditions
+                </span>
+                <div className="preset-btn-group">
+                  <span style={{ fontSize: '11px', color: '#64748b', marginRight: '4px' }}>Quick Template:</span>
+                  <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset1)}>
+                    Preset 1 (Milestones)
+                  </button>
+                  <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset2)}>
+                    Preset 2 (Retainer)
+                  </button>
+                  <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset3)}>
+                    Preset 3 (Hardware)
+                  </button>
+                </div>
               </div>
-              <div className="preset-btn-group">
-                <span style={{ fontSize: '11px', color: '#64748b', marginRight: '4px' }}>Quick Template:</span>
-                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset1)}>
-                  Preset 1 (Milestones)
-                </button>
-                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset2)}>
-                  Preset 2 (Retainer)
-                </button>
-                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset3)}>
-                  Preset 3 (Hardware)
-                </button>
-              </div>
-            </div>
 
-            <div className="prop-form-grid">
-              <div className="span-2" style={{ gridColumn: 'span 3' }}>
-                <label>Standard Commercial Terms &amp; Conditions (Clauses)</label>
+              <div className="full">
+                <label>Commercial Clauses &amp; Terms</label>
                 <textarea
                   className="textarea"
-                  rows={5}
+                  rows={4}
                   value={propTerms}
                   onChange={(e) => setPropTerms(e.target.value)}
                   placeholder="Enter custom commercial terms & conditions..."
                   style={{ fontSize: '11.5px', lineHeight: '1.5' }}
                 />
               </div>
-            </div>
+
+              {/* Single Save Button at Bottom */}
+              <div className="full settings-save" style={{ marginTop: '14px' }}>
+                <Button variant="primary" type="submit">
+                  💾 Save Proposal Settings
+                </Button>
+              </div>
+            </form>
           </div>
 
           {/* Section 4: Interactive A4 Proposal Sheet Preview */}
