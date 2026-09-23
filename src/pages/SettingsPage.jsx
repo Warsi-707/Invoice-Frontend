@@ -43,11 +43,7 @@ export default function SettingsPage() {
   const fileInputRef = useRef(null);
   const activeTab = settingsTab || 'org'; // 'org' | 'proposal' | 'invoice'
 
-  // Tab 01: Organization Identity State
-  const [adminUser, setAdminUser] = useState(state.settings?.admin || 'Administrator');
-  const [adminPass, setAdminPass] = useState(state.settings?.password || 'admin123');
-
-  // Tab 02: Proposal & Letterhead State
+  // Organization Identity & Corporate Details
   const savedProp = state.settings?.proposalData || {};
   const [companyName, setCompanyName] = useState(savedProp.companyName || '');
   const [tagline, setTagline] = useState(savedProp.tagline || '');
@@ -56,13 +52,19 @@ export default function SettingsPage() {
   const [supportPhone, setSupportPhone] = useState(savedProp.supportPhone || '');
   const [inquiryEmail, setInquiryEmail] = useState(savedProp.inquiryEmail || '');
   const [websiteUrl, setWebsiteUrl] = useState(savedProp.websiteUrl || '');
+
+  // Admin & Security Credentials
+  const [adminUser, setAdminUser] = useState(state.settings?.admin || 'Administrator');
+  const [adminPass, setAdminPass] = useState(state.settings?.password || 'admin123');
+
+  // Proposal & Letterhead State
   const [signatoryName, setSignatoryName] = useState(savedProp.signatoryName || '');
   const [signatoryTitle, setSignatoryTitle] = useState(savedProp.signatoryTitle || '');
   const [validityDays, setValidityDays] = useState(savedProp.validityDays || 14);
   const [propTerms, setPropTerms] = useState(savedProp.terms || '');
   const [showA4Preview, setShowA4Preview] = useState(true);
 
-  // Tab 03: Invoice Settings State
+  // Invoice Settings State
   const [currency, setCurrency] = useState(state.settings?.currency || 'PKR');
   const [dueDays, setDueDays] = useState(state.settings?.dueDays ?? 0);
   const [footerNote, setFooterNote] = useState(state.settings?.footerNote || 'Thank you for your business.');
@@ -71,7 +73,7 @@ export default function SettingsPage() {
   const [accountIban, setAccountIban] = useState(savedProp.accountIban || '');
   const [invoicePrefix, setInvoicePrefix] = useState(savedProp.invoicePrefix || 'INV-');
 
-  // Proposal Dynamic Form Preview State
+  // Proposal Preview Dynamic Items State
   const [propTitle, setPropTitle] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [customClientName, setCustomClientName] = useState('');
@@ -80,7 +82,6 @@ export default function SettingsPage() {
   const [propDiscount, setPropDiscount] = useState(0);
   const [propTaxPct, setPropTaxPct] = useState(0);
 
-  // Proposal Line Items
   const [propItems, setPropItems] = useState([
     { id: 'item-1', name: '', desc: '', type: 'Service', qty: 1, price: '' }
   ]);
@@ -149,25 +150,7 @@ export default function SettingsPage() {
     showToast('✅ Settings saved successfully.');
   };
 
-  // Proposal Item Handlers
-  const handleAddItem = () => {
-    setPropItems([
-      ...propItems,
-      { id: `prop-item-${Date.now()}`, name: '', desc: '', type: 'Service', qty: 1, price: 0 }
-    ]);
-  };
-
-  const handleUpdateItem = (index, field, value) => {
-    const updated = [...propItems];
-    updated[index] = { ...updated[index], [field]: value };
-    setPropItems(updated);
-  };
-
-  const handleRemoveItem = (index) => {
-    setPropItems(propItems.filter((_, idx) => idx !== index));
-  };
-
-  // Calculate Proposal Totals
+  // Calculate Proposal Totals for Preview
   const propSubtotal = propItems.reduce((acc, it) => acc + (Number(it.qty || 1) * Number(it.price || 0)), 0);
   const propTaxAmount = ((propSubtotal - Number(propDiscount || 0)) * Number(propTaxPct || 0)) / 100;
   const propGrandTotal = Math.max(0, propSubtotal - Number(propDiscount || 0) + propTaxAmount);
@@ -179,7 +162,7 @@ export default function SettingsPage() {
 
   // Assembled Proposal Object
   const currentProposalObject = {
-    title: propTitle.trim() || 'Enterprise Software Solution Proposal',
+    title: propTitle.trim() || 'Enterprise Commercial Proposal',
     proposalNo: `PROP-${new Date().getFullYear()}-0042`,
     date: propDate,
     validity: `${validityDays} Days`,
@@ -251,10 +234,18 @@ export default function SettingsPage() {
       <div className="settings-header-top">
         <div className="settings-header-title">
           <h2>
-            <span>Settings & System Configuration</span>
-            <span className="modular-badge">3 Modules</span>
+            {activeTab === 'org' && <span>🏛️ Organization Identity &amp; Corporate Profile</span>}
+            {activeTab === 'proposal' && <span>📜 Proposal Letterhead &amp; Document Settings</span>}
+            {activeTab === 'invoice' && <span>🧾 Invoice Settings &amp; Billing Defaults</span>}
+            <span className="modular-badge">
+              {activeTab === 'org' ? 'Module 01' : activeTab === 'proposal' ? 'Module 02' : 'Module 03'}
+            </span>
           </h2>
-          <p>Configure organization identity, letterhead proposal branding, and global invoice defaults.</p>
+          <p>
+            {activeTab === 'org' && 'Configure company/agency official profile, contact credentials, admin access and cloud database.'}
+            {activeTab === 'proposal' && 'Configure proposal letterhead template, authorized signatory stamp, and contract clauses.'}
+            {activeTab === 'invoice' && 'Configure default invoice currency, payment due days, invoice footer notes and receiving bank details.'}
+          </p>
         </div>
       </div>
 
@@ -274,7 +265,7 @@ export default function SettingsPage() {
           </div>
           <div className="tab-btn-content">
             <div className="tab-btn-title">Organization Identity</div>
-            <div className="tab-btn-sub">Admin, Cloud DB & WhatsApp</div>
+            <div className="tab-btn-sub">Company Info, Admin &amp; Cloud DB</div>
           </div>
           <span className="tab-num-badge">Module 01</span>
         </button>
@@ -295,8 +286,8 @@ export default function SettingsPage() {
             </svg>
           </div>
           <div className="tab-btn-content">
-            <div className="tab-btn-title">Proposal & Letterhead</div>
-            <div className="tab-btn-sub">Corporate ID, A4 Sheet & Signature</div>
+            <div className="tab-btn-title">Proposal &amp; Letterhead</div>
+            <div className="tab-btn-sub">Signatory, Validity &amp; A4 Preview</div>
           </div>
           <span className="tab-num-badge">Module 02</span>
         </button>
@@ -317,80 +308,166 @@ export default function SettingsPage() {
           </div>
           <div className="tab-btn-content">
             <div className="tab-btn-title">Invoice Settings</div>
-            <div className="tab-btn-sub">Currency, Due Days & Footer Notes</div>
+            <div className="tab-btn-sub">Currency, Due Days &amp; Bank Details</div>
           </div>
           <span className="tab-num-badge">Module 03</span>
         </button>
       </div>
 
       {/* =========================================================================
-          MODULE 01: Organization Identity & System Details
+          MODULE 01: Organization Identity & Corporate Profile
          ========================================================================= */}
       {activeTab === 'org' && (
-        <div className="settings-layout">
-          {/* Left Column: Admin & System Details */}
-          <div className="settings-card">
-            <h4>🏛️ Organization & Admin Security</h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {/* Card 1: Official Corporate Profile & Contact Info */}
+          <div className="settings-card" style={{ padding: '20px 22px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', borderBottom: '1px solid #e2e8f0', paddingBottom: '12px' }}>
+              <div>
+                <h3 style={{ margin: '0 0 4px', fontSize: '15px', color: '#0b4b8f', fontWeight: '800' }}>
+                  🏛️ Official Organization Identity &amp; Tax Profile
+                </h3>
+                <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                  This official business name, address, tax credentials and contact numbers represent your company across all system documents.
+                </p>
+              </div>
+              <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
+                💾 Save Identity
+              </Button>
+            </div>
 
             <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+              <div>
+                <label>Company / Organization Name <span className="req">*</span></label>
+                <input
+                  className="input"
+                  placeholder="e.g. iSysware Software Solution"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Tagline / Subtitle</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Software Development &amp; Cloud Systems"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                />
+              </div>
+
               <div className="full">
-                <label>System Application Name</label>
+                <label>Official Registered Office Address</label>
                 <input
-                  id="sAppName"
                   className="input"
-                  value="Invoice Manager (Multi-Business Billing)"
-                  readOnly
+                  placeholder="e.g. Suite 402, Business Arcade, Main Shahrah-e-Faisal, Karachi"
+                  value={officeAddress}
+                  onChange={(e) => setOfficeAddress(e.target.value)}
                 />
               </div>
 
               <div>
-                <label>
-                  Admin Username <span className="req">*</span>
-                </label>
+                <label>NTN / Tax Registration / STRN</label>
                 <input
-                  id="sAdmin"
                   className="input"
-                  placeholder="Administrator"
-                  value={adminUser}
-                  onChange={(e) => setAdminUser(e.target.value)}
-                  autoComplete="off"
+                  placeholder="e.g. NTN: 1234567-8 | STRN: 1234567890123"
+                  value={ntnTax}
+                  onChange={(e) => setNtnTax(e.target.value)}
                 />
               </div>
 
               <div>
-                <label>
-                  Admin Login Password <span className="req">*</span>
-                </label>
+                <label>Official Support / Inquiry Phone</label>
                 <input
-                  id="sPass"
-                  className="input"
-                  type="text"
-                  placeholder="admin123"
-                  value={adminPass}
-                  onChange={(e) => setAdminPass(e.target.value)}
-                  autoComplete="off"
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={11}
+                  className="input phone11"
+                  placeholder="03001234567"
+                  value={supportPhone}
+                  onChange={(e) => setSupportPhone(cleanPhoneInput(e.target.value))}
                 />
               </div>
 
-              <div className="full settings-save">
+              <div>
+                <label>Official Inquiries Email</label>
+                <input
+                  className="input"
+                  type="email"
+                  placeholder="e.g. info@isysware.com"
+                  value={inquiryEmail}
+                  onChange={(e) => setInquiryEmail(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Official Website URL</label>
+                <input
+                  className="input"
+                  placeholder="e.g. https://isysware.com"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                />
+              </div>
+
+              <div className="full settings-save" style={{ marginTop: '8px' }}>
                 <Button variant="primary" type="submit">
-                  💾 Save Security Settings
+                  💾 Save Organization Identity
                 </Button>
               </div>
             </form>
           </div>
 
-          {/* Right Column: WhatsApp Delivery + Data & Backup */}
-          <div className="settings-right-stack">
-            {/* WhatsApp Scanner Card */}
-            <WhatsAppScannerCard compact={true} />
-
-            {/* Data & Backup Card */}
+          {/* Grid for Admin Security & Cloud DB */}
+          <div className="settings-layout">
+            {/* Admin Security Card */}
             <div className="settings-card">
-              <h4>Neon PostgreSQL Cloud Database</h4>
+              <h4>🔐 Admin Security &amp; Portal Credentials</h4>
+
+              <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+                <div>
+                  <label>
+                    Admin Username <span className="req">*</span>
+                  </label>
+                  <input
+                    id="sAdmin"
+                    className="input"
+                    placeholder="Administrator"
+                    value={adminUser}
+                    onChange={(e) => setAdminUser(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div>
+                  <label>
+                    Admin Password <span className="req">*</span>
+                  </label>
+                  <input
+                    id="sPass"
+                    className="input"
+                    type="text"
+                    placeholder="admin123"
+                    value={adminPass}
+                    onChange={(e) => setAdminPass(e.target.value)}
+                    autoComplete="off"
+                  />
+                </div>
+
+                <div className="full settings-save">
+                  <Button variant="primary" type="submit">
+                    💾 Save Credentials
+                  </Button>
+                </div>
+              </form>
+            </div>
+
+            {/* Neon Cloud Database & Backup Card */}
+            <div className="settings-card">
+              <h4>☁️ Neon PostgreSQL Database &amp; Backup</h4>
 
               <div className="settings-data-note">
-                Live cloud database records & synchronization.
+                Live PostgreSQL database summary &amp; backup restoration.
               </div>
 
               <div className="data-summary">
@@ -407,12 +484,8 @@ export default function SettingsPage() {
                   <strong>{invoiceCount}</strong>
                 </div>
                 <div className="data-stat">
-                  <span>Payment Entries</span>
+                  <span>Payments</span>
                   <strong>{paymentCount}</strong>
-                </div>
-                <div className="data-stat">
-                  <span>Reversal Records</span>
-                  <strong>{reversalCount}</strong>
                 </div>
               </div>
 
@@ -447,7 +520,7 @@ export default function SettingsPage() {
          ========================================================================= */}
       {activeTab === 'proposal' && (
         <div>
-          {/* Section 1: Corporate Identity & Tax Credentials */}
+          {/* Section 1: Signatory & Validity */}
           <div className="proposal-builder-card">
             <div className="prop-card-header">
               <div>
@@ -458,9 +531,9 @@ export default function SettingsPage() {
                     <line x1="16" y1="13" x2="8" y2="13"></line>
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                   </svg>
-                  <span>Official Corporate Identity &amp; Proposal Credentials</span>
+                  <span>Authorized Signatory &amp; Proposal Validity</span>
                 </h3>
-                <p>Manage company heading, registered address, NTN registration, and official signatory stamp for proposal documents.</p>
+                <p>Configure official signatory stamp and validity period for commercial proposals.</p>
               </div>
               <div className="prop-btn-group">
                 <Button variant="light" size="xs" onClick={() => setShowA4Preview(!showA4Preview)}>
@@ -473,87 +546,6 @@ export default function SettingsPage() {
             </div>
 
             <div className="prop-sub-heading">
-              <span>🏛️ OFFICIAL CORPORATE IDENTITY &amp; TAX CREDENTIALS</span>
-            </div>
-
-            <div className="prop-form-grid">
-              <div>
-                <label>Company / Agency Name</label>
-                <input
-                  className="input"
-                  placeholder="e.g. iSysware Software Solution"
-                  value={companyName}
-                  onChange={(e) => setCompanyName(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label>Tagline / Subtitle</label>
-                <input
-                  className="input"
-                  placeholder="e.g. Software Development & Billing Systems"
-                  value={tagline}
-                  onChange={(e) => setTagline(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label>Official Registered Office Address</label>
-                <input
-                  className="input"
-                  placeholder="e.g. Suite 402, Business Arcade, Main Shahrah-e-Faisal, Karachi"
-                  value={officeAddress}
-                  onChange={(e) => setOfficeAddress(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label>NTN / Tax Registration / STRN</label>
-                <input
-                  className="input"
-                  placeholder="e.g. NTN: 1234567-8 | STRN: 1234567890123"
-                  value={ntnTax}
-                  onChange={(e) => setNtnTax(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label>Official Support / Inquiry Phone</label>
-                <input
-                  type="tel"
-                  inputMode="numeric"
-                  maxLength={11}
-                  className="input phone11"
-                  placeholder="03001234567"
-                  value={supportPhone}
-                  onChange={(e) => setSupportPhone(cleanPhoneInput(e.target.value))}
-                />
-              </div>
-
-              <div>
-                <label>Proposals &amp; Inquiries Email</label>
-                <input
-                  className="input"
-                  type="email"
-                  placeholder="e.g. info@isysware.com"
-                  value={inquiryEmail}
-                  onChange={(e) => setInquiryEmail(e.target.value)}
-                />
-              </div>
-
-              <div>
-                <label>Official Website URL</label>
-                <input
-                  className="input"
-                  placeholder="e.g. https://isysware.com"
-                  value={websiteUrl}
-                  onChange={(e) => setWebsiteUrl(e.target.value)}
-                />
-              </div>
-            </div>
-
-            {/* Authorized Signatory & Stamp */}
-            <div className="prop-sub-heading" style={{ marginTop: '22px' }}>
               <span>✍️ AUTHORIZED SIGNATORY &amp; STAMP</span>
             </div>
 
@@ -577,35 +569,9 @@ export default function SettingsPage() {
                   onChange={(e) => setSignatoryTitle(e.target.value)}
                 />
               </div>
-            </div>
-          </div>
 
-          {/* Section 2: Standard Proposal Validity & Terms & Conditions */}
-          <div className="proposal-builder-card">
-            <div className="prop-card-header">
               <div>
-                <h3>
-                  <span>STANDARD PROPOSAL VALIDITY &amp; TERMS &amp; CONDITIONS</span>
-                </h3>
-                <p>Configure default quotation validity days and legal contract terms.</p>
-              </div>
-              <div className="preset-btn-group">
-                <span style={{ fontSize: '11px', color: '#64748b', marginRight: '4px' }}>Quick Template:</span>
-                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset1)}>
-                  Preset 1
-                </button>
-                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset2)}>
-                  Preset 2
-                </button>
-                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset3)}>
-                  Preset 3
-                </button>
-              </div>
-            </div>
-
-            <div className="prop-form-grid">
-              <div>
-                <label>Default Validity (Days)</label>
+                <label>Default Proposal Validity (Days)</label>
                 <input
                   type="number"
                   min="1"
@@ -616,7 +582,33 @@ export default function SettingsPage() {
                   onChange={(e) => setValidityDays(Math.max(1, Number(e.target.value || 14)))}
                 />
               </div>
+            </div>
+          </div>
 
+          {/* Section 2: Standard Proposal Terms & Conditions */}
+          <div className="proposal-builder-card">
+            <div className="prop-card-header">
+              <div>
+                <h3>
+                  <span>STANDARD PROPOSAL TERMS &amp; CONDITIONS</span>
+                </h3>
+                <p>Configure legal contract clauses and payment milestones presets for client proposals.</p>
+              </div>
+              <div className="preset-btn-group">
+                <span style={{ fontSize: '11px', color: '#64748b', marginRight: '4px' }}>Quick Template:</span>
+                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset1)}>
+                  Preset 1 (Milestones)
+                </button>
+                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset2)}>
+                  Preset 2 (Retainer)
+                </button>
+                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset3)}>
+                  Preset 3 (Hardware)
+                </button>
+              </div>
+            </div>
+
+            <div className="prop-form-grid">
               <div className="span-2" style={{ gridColumn: 'span 3' }}>
                 <label>Standard Commercial Terms &amp; Conditions (Clauses)</label>
                 <textarea
@@ -643,7 +635,7 @@ export default function SettingsPage() {
                     </svg>
                     <span>Interactive A4 Proposal Sheet Preview</span>
                   </h3>
-                  <p>Shows exact layout generated for clients.</p>
+                  <p>Shows exact layout generated for clients using Organization Identity branding.</p>
                 </div>
                 <div className="prop-btn-group">
                   <Button variant="light" size="xs" onClick={handleDownloadProposal}>
@@ -781,7 +773,7 @@ export default function SettingsPage() {
 
             <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
               <div>
-                <label>Default Currency</label>
+                <label>Default Billing Currency</label>
                 <select
                   id="sCur"
                   className="select"
@@ -816,7 +808,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="full">
-                <label>Invoice Number Prefix</label>
+                <label>Invoice Numbering Prefix</label>
                 <input
                   className="input"
                   placeholder="e.g. INV-"
@@ -826,7 +818,7 @@ export default function SettingsPage() {
               </div>
 
               <div className="full">
-                <label>Standard Invoice Footer Note &amp; Terms</label>
+                <label>Standard Invoice Footer Notes &amp; Payment Terms</label>
                 <textarea
                   id="sFooterNote"
                   className="textarea"
@@ -850,7 +842,7 @@ export default function SettingsPage() {
           <div className="settings-card">
             <h4>🏦 Bank &amp; Payment Details (For Invoices)</h4>
             <div className="settings-data-note">
-              These details appear on invoices and customer payment reminders.
+              These bank account credentials appear on customer invoice receipts &amp; payment reminders.
             </div>
 
             <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
