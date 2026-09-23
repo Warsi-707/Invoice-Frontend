@@ -598,11 +598,11 @@ export default function SettingsPage() {
                 <label>Commercial Clauses &amp; Terms</label>
                 <textarea
                   className="textarea"
-                  rows={4}
+                  rows={9}
                   value={propTerms}
                   onChange={(e) => setPropTerms(e.target.value)}
                   placeholder="Enter custom commercial terms & conditions..."
-                  style={{ fontSize: '11.5px', lineHeight: '1.5' }}
+                  style={{ fontSize: '12px', lineHeight: '1.6', minHeight: '190px' }}
                 />
               </div>
 
