@@ -16,6 +16,7 @@ const AppContext = createContext(null);
 export function AppProvider({ children }) {
   const [state, setState] = useState(() => loadStoredState());
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [settingsTab, setSettingsTab] = useState('org'); // 'org' | 'proposal' | 'invoice'
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [previewInvoice, setPreviewInvoice] = useState(null);
   const [toast, setToast] = useState({ show: false, message: '' });
@@ -669,6 +670,8 @@ export function AppProvider({ children }) {
     state,
     currentPage,
     setCurrentPage,
+    settingsTab,
+    setSettingsTab,
     isAdminModalOpen,
     setIsAdminModalOpen,
     previewInvoice,

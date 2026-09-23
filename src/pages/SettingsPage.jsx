@@ -27,20 +27,27 @@ const PRESET_TERMS = {
 };
 
 export default function SettingsPage() {
-  const { state, updateSettings, backupData, restoreData, clearAllData, showToast, getBusiness, getCustomer } = useApp();
+  const {
+    state,
+    updateSettings,
+    backupData,
+    restoreData,
+    clearAllData,
+    showToast,
+    getBusiness,
+    getCustomer,
+    settingsTab,
+    setSettingsTab
+  } = useApp();
+
   const fileInputRef = useRef(null);
+  const activeTab = settingsTab || 'org'; // 'org' | 'proposal' | 'invoice'
 
-  const [activeTab, setActiveTab] = useState('org'); // 'org' | 'proposal'
-  const [showA4Preview, setShowA4Preview] = useState(true);
-
-  // Tab 01: Organization Identity & System Details State
+  // Tab 01: Organization Identity State
   const [adminUser, setAdminUser] = useState(state.settings?.admin || 'Administrator');
   const [adminPass, setAdminPass] = useState(state.settings?.password || 'admin123');
-  const [currency, setCurrency] = useState(state.settings?.currency || 'PKR');
-  const [dueDays, setDueDays] = useState(state.settings?.dueDays ?? 0);
-  const [footerNote, setFooterNote] = useState(state.settings?.footerNote || 'Thank you for your business.');
 
-  // Tab 02: Letterhead & Proposal Builder State (Empty by default with helpful placeholders)
+  // Tab 02: Proposal & Letterhead State
   const savedProp = state.settings?.proposalData || {};
   const [companyName, setCompanyName] = useState(savedProp.companyName || '');
   const [tagline, setTagline] = useState(savedProp.tagline || '');
@@ -51,12 +58,20 @@ export default function SettingsPage() {
   const [websiteUrl, setWebsiteUrl] = useState(savedProp.websiteUrl || '');
   const [signatoryName, setSignatoryName] = useState(savedProp.signatoryName || '');
   const [signatoryTitle, setSignatoryTitle] = useState(savedProp.signatoryTitle || '');
-
-  // Proposal Validity & Terms State
   const [validityDays, setValidityDays] = useState(savedProp.validityDays || 14);
   const [propTerms, setPropTerms] = useState(savedProp.terms || '');
+  const [showA4Preview, setShowA4Preview] = useState(true);
 
-  // Proposal Generator Dynamic Form State
+  // Tab 03: Invoice Settings State
+  const [currency, setCurrency] = useState(state.settings?.currency || 'PKR');
+  const [dueDays, setDueDays] = useState(state.settings?.dueDays ?? 0);
+  const [footerNote, setFooterNote] = useState(state.settings?.footerNote || 'Thank you for your business.');
+  const [bankName, setBankName] = useState(savedProp.bankName || '');
+  const [accountTitle, setAccountTitle] = useState(savedProp.accountTitle || '');
+  const [accountIban, setAccountIban] = useState(savedProp.accountIban || '');
+  const [invoicePrefix, setInvoicePrefix] = useState(savedProp.invoicePrefix || 'INV-');
+
+  // Proposal Dynamic Form Preview State
   const [propTitle, setPropTitle] = useState('');
   const [selectedCustomerId, setSelectedCustomerId] = useState('');
   const [customClientName, setCustomClientName] = useState('');
@@ -93,10 +108,14 @@ export default function SettingsPage() {
       if (p.signatoryTitle !== undefined) setSignatoryTitle(p.signatoryTitle);
       if (p.validityDays !== undefined) setValidityDays(p.validityDays);
       if (p.terms !== undefined) setPropTerms(p.terms);
+      if (p.bankName !== undefined) setBankName(p.bankName);
+      if (p.accountTitle !== undefined) setAccountTitle(p.accountTitle);
+      if (p.accountIban !== undefined) setAccountIban(p.accountIban);
+      if (p.invoicePrefix !== undefined) setInvoicePrefix(p.invoicePrefix);
     }
   }, [state.settings]);
 
-  // Save Settings Function
+  // Master Save Function
   const handleSaveAllSettings = (e) => {
     e?.preventDefault();
 
@@ -111,7 +130,11 @@ export default function SettingsPage() {
       signatoryName: signatoryName.trim(),
       signatoryTitle: signatoryTitle.trim(),
       validityDays: Number(validityDays || 14),
-      terms: propTerms
+      terms: propTerms,
+      bankName: bankName.trim(),
+      accountTitle: accountTitle.trim(),
+      accountIban: accountIban.trim(),
+      invoicePrefix: invoicePrefix.trim() || 'INV-'
     };
 
     updateSettings({
@@ -122,6 +145,8 @@ export default function SettingsPage() {
       footerNote: footerNote.trim(),
       proposalData: proposalDataPayload
     });
+
+    showToast('✅ Settings saved successfully.');
   };
 
   // Proposal Item Handlers
@@ -154,7 +179,7 @@ export default function SettingsPage() {
 
   // Assembled Proposal Object
   const currentProposalObject = {
-    title: propTitle.trim() || 'Enterprise CRM Core Deployment',
+    title: propTitle.trim() || 'Enterprise Software Solution Proposal',
     proposalNo: `PROP-${new Date().getFullYear()}-0042`,
     date: propDate,
     validity: `${validityDays} Days`,
@@ -222,23 +247,24 @@ export default function SettingsPage() {
 
   return (
     <section id="settings" className="page active">
-      {/* Header matching user reference */}
+      {/* Header */}
       <div className="settings-header-top">
         <div className="settings-header-title">
           <h2>
-            <span>System Settings & Configuration</span>
-            <span className="modular-badge">Modular Control</span>
+            <span>Settings & System Configuration</span>
+            <span className="modular-badge">3 Modules</span>
           </h2>
-          <p>Configure application branding, corporate letterhead, custom dynamic pricing schemas, and automated communication alerts.</p>
+          <p>Configure organization identity, letterhead proposal branding, and global invoice defaults.</p>
         </div>
       </div>
 
-      {/* Top Nav Tabs Bar matching reference image */}
+      {/* 3 Modular Navigation Tabs */}
       <div className="settings-nav-tabs">
+        {/* Module 1 Tab */}
         <button
           type="button"
           className={`settings-tab-btn ${activeTab === 'org' ? 'active' : ''}`}
-          onClick={() => setActiveTab('org')}
+          onClick={() => setSettingsTab('org')}
         >
           <div className="tab-btn-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -248,15 +274,16 @@ export default function SettingsPage() {
           </div>
           <div className="tab-btn-content">
             <div className="tab-btn-title">Organization Identity</div>
-            <div className="tab-btn-sub">Branding, Logo & Currency</div>
+            <div className="tab-btn-sub">Admin, Cloud DB & WhatsApp</div>
           </div>
-          <span className="tab-num-badge">Tab 01</span>
+          <span className="tab-num-badge">Module 01</span>
         </button>
 
+        {/* Module 2 Tab */}
         <button
           type="button"
           className={`settings-tab-btn ${activeTab === 'proposal' ? 'active' : ''}`}
-          onClick={() => setActiveTab('proposal')}
+          onClick={() => setSettingsTab('proposal')}
         >
           <div className="tab-btn-icon">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -268,57 +295,51 @@ export default function SettingsPage() {
             </svg>
           </div>
           <div className="tab-btn-content">
-            <div className="tab-btn-title">Letterhead & PDF Builder</div>
-            <div className="tab-btn-sub">Corporate ID, A4 Template & Signature</div>
+            <div className="tab-btn-title">Proposal & Letterhead</div>
+            <div className="tab-btn-sub">Corporate ID, A4 Sheet & Signature</div>
           </div>
-          <span className="tab-num-badge">Tab 02</span>
+          <span className="tab-num-badge">Module 02</span>
+        </button>
+
+        {/* Module 3 Tab */}
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === 'invoice' ? 'active' : ''}`}
+          onClick={() => setSettingsTab('invoice')}
+        >
+          <div className="tab-btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z" />
+              <line x1="8" y1="7" x2="16" y2="7" />
+              <line x1="8" y1="11" x2="16" y2="11" />
+              <line x1="8" y1="15" x2="12" y2="15" />
+            </svg>
+          </div>
+          <div className="tab-btn-content">
+            <div className="tab-btn-title">Invoice Settings</div>
+            <div className="tab-btn-sub">Currency, Due Days & Footer Notes</div>
+          </div>
+          <span className="tab-num-badge">Module 03</span>
         </button>
       </div>
 
-      {/* TAB 01: Organization Identity & Session Details */}
+      {/* =========================================================================
+          MODULE 01: Organization Identity & System Details
+         ========================================================================= */}
       {activeTab === 'org' && (
         <div className="settings-layout">
-          {/* Left Column: System & Session Details */}
+          {/* Left Column: Admin & System Details */}
           <div className="settings-card">
-            <h4>System & Session Details</h4>
+            <h4>🏛️ Organization & Admin Security</h4>
 
             <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
               <div className="full">
-                <label>Application Name</label>
+                <label>System Application Name</label>
                 <input
                   id="sAppName"
                   className="input"
-                  value="Invoice Manager"
+                  value="Invoice Manager (Multi-Business Billing)"
                   readOnly
-                />
-              </div>
-
-              <div>
-                <label>Default Currency</label>
-                <select
-                  id="sCur"
-                  className="select"
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                >
-                  <option value="PKR">PKR (Pakistani Rupee)</option>
-                  <option value="USD">USD (US Dollar)</option>
-                  <option value="AED">AED (UAE Dirham)</option>
-                </select>
-              </div>
-
-              <div>
-                <label>Default Due Days</label>
-                <input
-                  id="sDueDays"
-                  className="input"
-                  type="number"
-                  min="0"
-                  max="365"
-                  placeholder="0"
-                  value={dueDays}
-                  onChange={(e) => setDueDays(e.target.value)}
-                  autoComplete="off"
                 />
               </div>
 
@@ -351,22 +372,9 @@ export default function SettingsPage() {
                 />
               </div>
 
-              <div className="full">
-                <label>Invoice Footer Note</label>
-                <textarea
-                  id="sFooterNote"
-                  className="textarea"
-                  rows={4}
-                  placeholder="Thank you for your business."
-                  value={footerNote}
-                  onChange={(e) => setFooterNote(e.target.value)}
-                  autoComplete="off"
-                />
-              </div>
-
               <div className="full settings-save">
                 <Button variant="primary" type="submit">
-                  Save Settings
+                  💾 Save Security Settings
                 </Button>
               </div>
             </form>
@@ -379,10 +387,10 @@ export default function SettingsPage() {
 
             {/* Data & Backup Card */}
             <div className="settings-card">
-              <h4>Data & Backup</h4>
+              <h4>Neon PostgreSQL Cloud Database</h4>
 
               <div className="settings-data-note">
-                PostgreSQL & Neon DB database records summary.
+                Live cloud database records & synchronization.
               </div>
 
               <div className="data-summary">
@@ -410,10 +418,10 @@ export default function SettingsPage() {
 
               <div className="settings-data-actions" style={{ marginTop: '16px' }}>
                 <Button variant="light" onClick={backupData}>
-                  Backup Data
+                  ⬇️ Backup JSON Data
                 </Button>
                 <Button variant="light" onClick={() => fileInputRef.current?.click()}>
-                  Restore Data
+                  ⬆️ Restore JSON Data
                 </Button>
                 <input
                   ref={fileInputRef}
@@ -426,7 +434,7 @@ export default function SettingsPage() {
 
               <div className="data-danger" style={{ marginTop: '18px' }}>
                 <Button variant="danger" onClick={clearAllData}>
-                  Clear All Data
+                  ⚠️ Clear All Data (Reset)
                 </Button>
               </div>
             </div>
@@ -434,7 +442,9 @@ export default function SettingsPage() {
         </div>
       )}
 
-      {/* TAB 02: Letterhead & Proposal Builder */}
+      {/* =========================================================================
+          MODULE 02: Proposal Letterhead & PDF Builder
+         ========================================================================= */}
       {activeTab === 'proposal' && (
         <div>
           {/* Section 1: Corporate Identity & Tax Credentials */}
@@ -448,22 +458,22 @@ export default function SettingsPage() {
                     <line x1="16" y1="13" x2="8" y2="13"></line>
                     <line x1="16" y1="17" x2="8" y2="17"></line>
                   </svg>
-                  <span>Proposal Letterhead, Corporate Identity & PDF Builder</span>
+                  <span>Official Corporate Identity &amp; Proposal Credentials</span>
                 </h3>
-                <p>Manage commercial quotation header data, NTN tax registrations, A4 background template, and authorized signature.</p>
+                <p>Manage company heading, registered address, NTN registration, and official signatory stamp for proposal documents.</p>
               </div>
               <div className="prop-btn-group">
                 <Button variant="light" size="xs" onClick={() => setShowA4Preview(!showA4Preview)}>
                   👁️ {showA4Preview ? 'Hide A4 Preview' : 'Show A4 Preview'}
                 </Button>
                 <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
-                  💾 Save Settings
+                  💾 Save Proposal Settings
                 </Button>
               </div>
             </div>
 
             <div className="prop-sub-heading">
-              <span>🏛️ OFFICIAL CORPORATE IDENTITY & TAX CREDENTIALS</span>
+              <span>🏛️ OFFICIAL CORPORATE IDENTITY &amp; TAX CREDENTIALS</span>
             </div>
 
             <div className="prop-form-grid">
@@ -471,7 +481,7 @@ export default function SettingsPage() {
                 <label>Company / Agency Name</label>
                 <input
                   className="input"
-                  placeholder="e.g. Acme Technologies / ABC Traders"
+                  placeholder="e.g. iSysware Software Solution"
                   value={companyName}
                   onChange={(e) => setCompanyName(e.target.value)}
                 />
@@ -481,17 +491,17 @@ export default function SettingsPage() {
                 <label>Tagline / Subtitle</label>
                 <input
                   className="input"
-                  placeholder="e.g. Software Development & Commercial Digital Solutions"
+                  placeholder="e.g. Software Development & Billing Systems"
                   value={tagline}
                   onChange={(e) => setTagline(e.target.value)}
                 />
               </div>
 
-              <div className="span-2">
+              <div>
                 <label>Official Registered Office Address</label>
                 <input
                   className="input"
-                  placeholder="e.g. Suite #101, Main Boulevard, Karachi, Pakistan"
+                  placeholder="e.g. Suite 402, Business Arcade, Main Shahrah-e-Faisal, Karachi"
                   value={officeAddress}
                   onChange={(e) => setOfficeAddress(e.target.value)}
                 />
@@ -521,11 +531,11 @@ export default function SettingsPage() {
               </div>
 
               <div>
-                <label>Proposals & Inquiries Email</label>
+                <label>Proposals &amp; Inquiries Email</label>
                 <input
                   className="input"
                   type="email"
-                  placeholder="e.g. info@yourcompany.com"
+                  placeholder="e.g. info@isysware.com"
                   value={inquiryEmail}
                   onChange={(e) => setInquiryEmail(e.target.value)}
                 />
@@ -535,7 +545,7 @@ export default function SettingsPage() {
                 <label>Official Website URL</label>
                 <input
                   className="input"
-                  placeholder="e.g. https://yourcompany.com"
+                  placeholder="e.g. https://isysware.com"
                   value={websiteUrl}
                   onChange={(e) => setWebsiteUrl(e.target.value)}
                 />
@@ -544,7 +554,7 @@ export default function SettingsPage() {
 
             {/* Authorized Signatory & Stamp */}
             <div className="prop-sub-heading" style={{ marginTop: '22px' }}>
-              <span>✍️ AUTHORIZED SIGNATORY & STAMP</span>
+              <span>✍️ AUTHORIZED SIGNATORY &amp; STAMP</span>
             </div>
 
             <div className="prop-form-grid">
@@ -570,12 +580,12 @@ export default function SettingsPage() {
             </div>
           </div>
 
-          {/* Section 2: Standard Proposal Validity & Terms & Conditions matching Image 1 */}
+          {/* Section 2: Standard Proposal Validity & Terms & Conditions */}
           <div className="proposal-builder-card">
             <div className="prop-card-header">
               <div>
                 <h3>
-                  <span>STANDARD PROPOSAL VALIDITY & TERMS & CONDITIONS</span>
+                  <span>STANDARD PROPOSAL VALIDITY &amp; TERMS &amp; CONDITIONS</span>
                 </h3>
                 <p>Configure default quotation validity days and legal contract terms.</p>
               </div>
@@ -605,26 +615,23 @@ export default function SettingsPage() {
                   value={validityDays}
                   onChange={(e) => setValidityDays(Math.max(1, Number(e.target.value || 14)))}
                 />
-                <div style={{ fontSize: '10px', color: '#64748b', marginTop: '4px' }}>
-                  Automatically calculates proposal expiry date on generation.
-                </div>
               </div>
 
               <div className="span-2" style={{ gridColumn: 'span 3' }}>
-                <label>Standard Commercial Terms & Conditions (Clauses)</label>
+                <label>Standard Commercial Terms &amp; Conditions (Clauses)</label>
                 <textarea
                   className="textarea"
                   rows={5}
                   value={propTerms}
                   onChange={(e) => setPropTerms(e.target.value)}
-                  placeholder="Enter custom commercial terms & conditions, or click Preset 1 / 2 / 3 above to load pre-written contract terms..."
+                  placeholder="Enter custom commercial terms & conditions..."
                   style={{ fontSize: '11.5px', lineHeight: '1.5' }}
                 />
               </div>
             </div>
           </div>
 
-          {/* Section 3: Interactive A4 Proposal Sheet Preview matching user Image 1 & 2 */}
+          {/* Section 3: Interactive A4 Proposal Sheet Preview */}
           {showA4Preview && (
             <div className="proposal-builder-card">
               <div className="prop-card-header">
@@ -656,6 +663,7 @@ export default function SettingsPage() {
                     <div className="a4-sheet-top">
                       <div className="a4-sheet-brand">
                         <h2>{companyName || 'Company / Agency Name'}</h2>
+                        {tagline && <div style={{ fontSize: '11px', color: '#0284c7', fontWeight: '600', marginBottom: '3px' }}>{tagline}</div>}
                         <p>{officeAddress || 'Registered Office Address'}</p>
                         {ntnTax ? <div className="tax-line">{ntnTax}</div> : <div className="tax-line" style={{ opacity: 0.6 }}>NTN: XXXXXXX-X | STRN: XXXXXXXXXXXXX</div>}
                       </div>
@@ -674,7 +682,7 @@ export default function SettingsPage() {
                         <p style={{ color: '#475569' }}>{currentClientCompany || 'Client Representative / Designation'}</p>
                       </div>
                       <div className="a4-info-col right">
-                        <h5>DATE & CURRENCY:</h5>
+                        <h5>DATE &amp; CURRENCY:</h5>
                         <p><strong>{propDate}</strong></p>
                         <p style={{ color: '#0369a1' }}>{currency} (Pakistani Rupee)</p>
                       </div>
@@ -753,12 +761,136 @@ export default function SettingsPage() {
                 </div>
                 <div>
                   <Button variant="primary" onClick={handleSaveAllSettings}>
-                    💾 Save Letterhead & Settings
+                    💾 Save Proposal Settings
                   </Button>
                 </div>
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODULE 03: Invoice Settings & Global Defaults
+         ========================================================================= */}
+      {activeTab === 'invoice' && (
+        <div className="settings-layout">
+          {/* Left Column: General Invoice Defaults */}
+          <div className="settings-card">
+            <h4>🧾 Invoice &amp; Billing Defaults</h4>
+
+            <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+              <div>
+                <label>Default Currency</label>
+                <select
+                  id="sCur"
+                  className="select"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                >
+                  <option value="PKR">PKR (Pakistani Rupee)</option>
+                  <option value="USD">USD (US Dollar)</option>
+                  <option value="AED">AED (UAE Dirham)</option>
+                  <option value="SAR">SAR (Saudi Riyal)</option>
+                  <option value="GBP">GBP (British Pound)</option>
+                  <option value="EUR">EUR (Euro)</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Default Payment Due Days</label>
+                <input
+                  id="sDueDays"
+                  className="input"
+                  type="number"
+                  min="0"
+                  max="365"
+                  placeholder="0"
+                  value={dueDays}
+                  onChange={(e) => setDueDays(e.target.value)}
+                  autoComplete="off"
+                />
+                <div style={{ fontSize: '10px', color: '#64748b', marginTop: '3px' }}>
+                  0 = Due on receipt / same day.
+                </div>
+              </div>
+
+              <div className="full">
+                <label>Invoice Number Prefix</label>
+                <input
+                  className="input"
+                  placeholder="e.g. INV-"
+                  value={invoicePrefix}
+                  onChange={(e) => setInvoicePrefix(e.target.value)}
+                />
+              </div>
+
+              <div className="full">
+                <label>Standard Invoice Footer Note &amp; Terms</label>
+                <textarea
+                  id="sFooterNote"
+                  className="textarea"
+                  rows={4}
+                  placeholder="Thank you for your business. Please clear invoice within due date."
+                  value={footerNote}
+                  onChange={(e) => setFooterNote(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="full settings-save">
+                <Button variant="primary" type="submit">
+                  💾 Save Invoice Defaults
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          {/* Right Column: Bank Details & Payment Instructions */}
+          <div className="settings-card">
+            <h4>🏦 Bank &amp; Payment Details (For Invoices)</h4>
+            <div className="settings-data-note">
+              These details appear on invoices and customer payment reminders.
+            </div>
+
+            <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+              <div className="full">
+                <label>Bank Name</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Meezan Bank / HBL / Bank Alfalah"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                />
+              </div>
+
+              <div className="full">
+                <label>Account Title</label>
+                <input
+                  className="input"
+                  placeholder="e.g. iSysware Software Solution"
+                  value={accountTitle}
+                  onChange={(e) => setAccountTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="full">
+                <label>Account Number / IBAN</label>
+                <input
+                  className="input"
+                  placeholder="e.g. PK36MEZN00012345678901"
+                  value={accountIban}
+                  onChange={(e) => setAccountIban(e.target.value)}
+                />
+              </div>
+
+              <div className="full settings-save">
+                <Button variant="primary" type="submit">
+                  💾 Save Bank Details
+                </Button>
+              </div>
+            </form>
+          </div>
         </div>
       )}
 
