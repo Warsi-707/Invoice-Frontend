@@ -3,8 +3,10 @@ import { useApp } from '../context/AppContext';
 import Button from '../components/common/Button';
 import WhatsAppScannerCard from '../components/whatsapp/WhatsAppScannerCard';
 import ProposalPreviewModal from '../components/proposal/ProposalPreviewModal';
+import InvoicePreview from '../components/invoice/InvoicePreview';
 import { downloadProposalFile } from '../utils/proposal';
-import { money, today, cleanPhoneInput } from '../utils/formatters';
+import { downloadInvoiceFile } from '../utils/invoice';
+import { MONTHS, money, today, cleanPhoneInput } from '../utils/formatters';
 
 const PRESET_TERMS = {
   preset1: `1. Validity: This commercial quotation is valid for 14 calendar days from the date of issuance.
@@ -45,13 +47,13 @@ export default function SettingsPage() {
 
   // Organization Identity & Corporate Details
   const savedProp = state.settings?.proposalData || {};
-  const [companyName, setCompanyName] = useState(savedProp.companyName || '');
-  const [tagline, setTagline] = useState(savedProp.tagline || '');
-  const [officeAddress, setOfficeAddress] = useState(savedProp.officeAddress || '');
+  const [companyName, setCompanyName] = useState(savedProp.companyName || 'iSysware');
+  const [tagline, setTagline] = useState(savedProp.tagline || 'ERP • Custom Software • Web • AI Solutions');
+  const [officeAddress, setOfficeAddress] = useState(savedProp.officeAddress || 'Karachi, Pakistan');
   const [ntnTax, setNtnTax] = useState(savedProp.ntnTax || '');
-  const [supportPhone, setSupportPhone] = useState(savedProp.supportPhone || '');
-  const [inquiryEmail, setInquiryEmail] = useState(savedProp.inquiryEmail || '');
-  const [websiteUrl, setWebsiteUrl] = useState(savedProp.websiteUrl || '');
+  const [supportPhone, setSupportPhone] = useState(savedProp.supportPhone || '+92 314 8843707');
+  const [inquiryEmail, setInquiryEmail] = useState(savedProp.inquiryEmail || 'info@isysware.com');
+  const [websiteUrl, setWebsiteUrl] = useState(savedProp.websiteUrl || 'isysware.com');
 
   // Admin & Security Credentials
   const [adminUser, setAdminUser] = useState(state.settings?.admin || 'Administrator');
@@ -61,17 +63,23 @@ export default function SettingsPage() {
   const [signatoryName, setSignatoryName] = useState(savedProp.signatoryName || '');
   const [signatoryTitle, setSignatoryTitle] = useState(savedProp.signatoryTitle || '');
   const [validityDays, setValidityDays] = useState(savedProp.validityDays || 14);
-  const [propTerms, setPropTerms] = useState(savedProp.terms || '');
+  const [propTerms, setPropTerms] = useState(savedProp.terms || PRESET_TERMS.preset2);
   const [showA4Preview, setShowA4Preview] = useState(true);
 
   // Invoice Settings State
   const [currency, setCurrency] = useState(state.settings?.currency || 'PKR');
   const [dueDays, setDueDays] = useState(state.settings?.dueDays ?? 0);
   const [footerNote, setFooterNote] = useState(state.settings?.footerNote || 'Thank you for your business.');
-  const [bankName, setBankName] = useState(savedProp.bankName || '');
-  const [accountTitle, setAccountTitle] = useState(savedProp.accountTitle || '');
-  const [accountIban, setAccountIban] = useState(savedProp.accountIban || '');
-  const [invoicePrefix, setInvoicePrefix] = useState(savedProp.invoicePrefix || 'INV-');
+  const [bankName, setBankName] = useState(savedProp.bankName || 'Meezan Bank');
+  const [accountTitle, setAccountTitle] = useState(savedProp.accountTitle || 'iSysware Software Solution');
+  const [accountIban, setAccountIban] = useState(savedProp.accountIban || 'PK36MEZN00012345678901');
+  const [invoicePrefix, setInvoicePrefix] = useState(savedProp.invoicePrefix || 'ISW-');
+  const [paymentMethod, setPaymentMethod] = useState(savedProp.paymentMethod || 'Bank Transfer / Online');
+  const [invoiceSubtitle, setInvoiceSubtitle] = useState(savedProp.invoiceSubtitle || 'Professional Services Invoice');
+  const [preparedBy, setPreparedBy] = useState(savedProp.preparedBy || savedProp.companyName || 'iSysware');
+  const [thankYouMsg, setThankYouMsg] = useState(savedProp.thankYouMsg || 'Thank you for choosing iSysware. • Please reference the invoice number when making payment.');
+  const [invoiceNotes, setInvoiceNotes] = useState(savedProp.invoiceNotes || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.');
+  const [showInvPreview, setShowInvPreview] = useState(true);
 
   // Proposal Preview Dynamic Items State
   const [propTitle, setPropTitle] = useState('');
@@ -86,8 +94,9 @@ export default function SettingsPage() {
     { id: 'item-1', name: '', desc: '', type: 'Service', qty: 1, price: '' }
   ]);
 
-  // Preview Modal State
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
+  // Preview Modal States
+  const [isPropPreviewOpen, setIsPropPreviewOpen] = useState(false);
+  const [isInvPreviewOpen, setIsInvPreviewOpen] = useState(false);
 
   useEffect(() => {
     setAdminUser(state.settings?.admin || 'Administrator');
@@ -113,6 +122,11 @@ export default function SettingsPage() {
       if (p.accountTitle !== undefined) setAccountTitle(p.accountTitle);
       if (p.accountIban !== undefined) setAccountIban(p.accountIban);
       if (p.invoicePrefix !== undefined) setInvoicePrefix(p.invoicePrefix);
+      if (p.paymentMethod !== undefined) setPaymentMethod(p.paymentMethod);
+      if (p.invoiceSubtitle !== undefined) setInvoiceSubtitle(p.invoiceSubtitle);
+      if (p.preparedBy !== undefined) setPreparedBy(p.preparedBy);
+      if (p.thankYouMsg !== undefined) setThankYouMsg(p.thankYouMsg);
+      if (p.invoiceNotes !== undefined) setInvoiceNotes(p.invoiceNotes);
     }
   }, [state.settings]);
 
@@ -135,7 +149,12 @@ export default function SettingsPage() {
       bankName: bankName.trim(),
       accountTitle: accountTitle.trim(),
       accountIban: accountIban.trim(),
-      invoicePrefix: invoicePrefix.trim() || 'INV-'
+      invoicePrefix: invoicePrefix.trim() || 'ISW-',
+      paymentMethod: paymentMethod.trim() || 'Bank Transfer / Online',
+      invoiceSubtitle: invoiceSubtitle.trim() || 'Professional Services Invoice',
+      preparedBy: preparedBy.trim() || companyName.trim() || 'iSysware',
+      thankYouMsg: thankYouMsg.trim() || `Thank you for choosing ${companyName.trim() || 'iSysware'}. • Please reference the invoice number when making payment.`,
+      invoiceNotes: invoiceNotes.trim()
     };
 
     updateSettings({
@@ -143,7 +162,7 @@ export default function SettingsPage() {
       password: adminPass.trim() || 'admin123',
       currency,
       dueDays: Math.max(0, Number(dueDays || 0)),
-      footerNote: footerNote.trim(),
+      footerNote: (invoiceNotes || footerNote).trim(),
       proposalData: proposalDataPayload
     });
 
@@ -188,8 +207,56 @@ export default function SettingsPage() {
     clientCompany: currentClientCompany
   };
 
-  const handlePreviewProposal = () => {
-    setIsPreviewOpen(true);
+  // Sample Invoice Object for Preview & Template Testing
+  const sampleInvoiceObject = {
+    id: 'sample-inv',
+    invoiceNo: `${invoicePrefix || 'ISW-'}0001`,
+    date: today(),
+    dueDate: today(),
+    currency: currency || 'PKR',
+    project: 'Enterprise Software & Cloud Billing',
+    serviceType: 'Software Development & Hosting',
+    billingCycle: 'Monthly Retainer Cycle',
+    servicePeriod: `${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}`,
+    items: [
+      { itemId: '1', name: 'Custom ERP Software Maintenance & Cloud Hosting', period: 'Current Month', qty: 1, price: 45000, amount: 45000 },
+      { itemId: '2', name: 'Dedicated Technical Support & Automated Daily Backups', period: 'Current Month', qty: 1, price: 15000, amount: 15000 }
+    ],
+    subtotal: 60000,
+    discount: 0,
+    taxPct: 0,
+    taxAmount: 0,
+    total: 60000,
+    paid: 0,
+    balance: 60000,
+    status: 'Unpaid',
+    notes: invoiceNotes || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.'
+  };
+
+  const sampleInvoiceBusiness = {
+    name: companyName || 'iSysware',
+    companyName: companyName || 'iSysware',
+    tagline: tagline || 'ERP • Custom Software • Web • AI Solutions',
+    email: inquiryEmail || 'info@isysware.com',
+    phone: supportPhone || '+92 314 8843707',
+    website: websiteUrl || 'isysware.com',
+    currency: currency || 'PKR',
+    paymentMethod: paymentMethod || 'Bank Transfer / Online',
+    bankName: bankName || 'Meezan Bank',
+    accountTitle: accountTitle || 'iSysware Software Solution',
+    accountIban: accountIban || 'PK36MEZN00012345678901',
+    invoiceSubtitle: invoiceSubtitle || 'Professional Services Invoice',
+    preparedBy: preparedBy || companyName || 'iSysware',
+    thankYouMsg: thankYouMsg || `Thank you for choosing ${companyName || 'iSysware'}. • Please reference the invoice number when making payment.`,
+    footerNote: invoiceNotes || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.'
+  };
+
+  const sampleCustomer = {
+    name: 'Al-Falah Textiles Ltd',
+    contactPerson: 'Director Operations',
+    email: 'finance@alfalah.com',
+    phone: '0300-1234567',
+    address: 'Plot 42, Industrial Area, Karachi, Pakistan'
   };
 
   const handleDownloadProposal = async () => {
@@ -197,6 +264,16 @@ export default function SettingsPage() {
       showToast('⏳ Generating PDF...');
       await downloadProposalFile(currentProposalObject, { currency }, selectedCust);
       showToast('✅ Proposal PDF downloaded.');
+    } catch (err) {
+      showToast('❌ Failed to download PDF: ' + err.message);
+    }
+  };
+
+  const handleDownloadSampleInvoice = async () => {
+    try {
+      showToast('⏳ Generating Invoice PDF...');
+      await downloadInvoiceFile(sampleInvoiceObject, sampleInvoiceBusiness, sampleCustomer, 'Sample_Corporate_Invoice.pdf');
+      showToast('✅ Invoice PDF downloaded.');
     } catch (err) {
       showToast('❌ Failed to download PDF: ' + err.message);
     }
@@ -236,7 +313,7 @@ export default function SettingsPage() {
           <h2>
             {activeTab === 'org' && <span>🏛️ Organization &amp; System Settings</span>}
             {activeTab === 'proposal' && <span>📜 Proposal &amp; Official Letterhead</span>}
-            {activeTab === 'invoice' && <span>🧾 Invoice &amp; Bank Settings</span>}
+            {activeTab === 'invoice' && <span>🧾 Invoice Template &amp; Bank Settings</span>}
             <span className="modular-badge">
               {activeTab === 'org' ? 'Module 01' : activeTab === 'proposal' ? 'Module 02' : 'Module 03'}
             </span>
@@ -244,7 +321,7 @@ export default function SettingsPage() {
           <p>
             {activeTab === 'org' && 'Configure system credentials, defaults, WhatsApp automatic delivery, and PostgreSQL cloud backup.'}
             {activeTab === 'proposal' && 'Configure official organization identity profile, letterhead template, signatory stamp, and contract clauses.'}
-            {activeTab === 'invoice' && 'Configure receiving bank account details and payment credentials for invoices.'}
+            {activeTab === 'invoice' && 'Configure invoice provider identity, numbering prefix, bank credentials, payment terms, and corporate layout across all software.'}
           </p>
         </div>
       </div>
@@ -338,7 +415,7 @@ export default function SettingsPage() {
                 <label>Invoice Numbering Prefix</label>
                 <input
                   className="input"
-                  placeholder="e.g. INV-"
+                  placeholder="e.g. ISW-"
                   value={invoicePrefix}
                   onChange={(e) => setInvoicePrefix(e.target.value)}
                 />
@@ -349,7 +426,7 @@ export default function SettingsPage() {
                 <textarea
                   id="sFooterNote"
                   className="textarea"
-                  rows={3}
+                  rows={2}
                   placeholder="Thank you for your business."
                   value={footerNote}
                   onChange={(e) => setFooterNote(e.target.value)}
@@ -598,11 +675,11 @@ export default function SettingsPage() {
                 <label>Commercial Clauses &amp; Terms</label>
                 <textarea
                   className="textarea"
-                  rows={9}
+                  rows={5}
                   value={propTerms}
                   onChange={(e) => setPropTerms(e.target.value)}
                   placeholder="Enter custom commercial terms & conditions..."
-                  style={{ fontSize: '12px', lineHeight: '1.6', minHeight: '190px' }}
+                  style={{ fontSize: '12px', lineHeight: '1.45', minHeight: '115px' }}
                 />
               </div>
 
@@ -633,7 +710,7 @@ export default function SettingsPage() {
                   <Button variant="light" size="xs" onClick={handleDownloadProposal}>
                     📄 Download HTML / PDF
                   </Button>
-                  <Button variant="primary" size="xs" onClick={handlePreviewProposal}>
+                  <Button variant="primary" size="xs" onClick={() => setIsPropPreviewOpen(true)}>
                     👁️ Fullscreen Preview
                   </Button>
                 </div>
@@ -728,19 +805,11 @@ export default function SettingsPage() {
               {/* Action Toolbar */}
               <div className="prop-actions-bar" style={{ marginTop: '16px' }}>
                 <div className="prop-btn-group">
-                  <Button variant="primary" onClick={handlePreviewProposal}>
+                  <Button variant="primary" onClick={() => setIsPropPreviewOpen(true)}>
                     👁️ Fullscreen A4 Preview
                   </Button>
                   <Button variant="light" onClick={handleDownloadProposal}>
                     📄 Download A4 Proposal
-                  </Button>
-                  <Button
-                    variant="green"
-                    onClick={handlePreviewProposal}
-                    style={{ background: '#10b981', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                  >
-                    <span>💬</span>
-                    <span>Send via WhatsApp</span>
                   </Button>
                 </div>
                 <div>
@@ -755,62 +824,517 @@ export default function SettingsPage() {
       )}
 
       {/* =========================================================================
-          MODULE 03: Invoice Settings (Banking & Payment Details)
+          MODULE 03: Invoice Template & Bank Settings
          ========================================================================= */}
       {activeTab === 'invoice' && (
-        <div className="settings-card" style={{ maxWidth: '680px' }}>
-          <h4>🏦 Bank &amp; Payment Details (For Invoices)</h4>
-          <div className="settings-data-note">
-            These bank account credentials appear on customer invoice receipts &amp; payment reminders.
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+          {/* Main Invoice Form Card */}
+          <div className="settings-card" style={{ padding: '22px 24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', borderBottom: '1px solid #e2e8f0', paddingBottom: '14px' }}>
+              <div>
+                <h3 style={{ margin: '0 0 4px', fontSize: '16px', color: '#0b4b8f', fontWeight: '800' }}>
+                  🧾 Invoice Layout, Branding &amp; Bank Settings
+                </h3>
+                <p style={{ margin: 0, fontSize: '12px', color: '#64748b' }}>
+                  Configure company header details, invoice numbering prefix, bank account credentials, notes, and layout across all generated invoices.
+                </p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Button variant="light" size="xs" onClick={() => setShowInvPreview(!showInvPreview)}>
+                  👁️ {showInvPreview ? 'Hide Invoice Preview' : 'Show Invoice Preview'}
+                </Button>
+                <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
+                  💾 Save Invoice Settings
+                </Button>
+              </div>
+            </div>
+
+            <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+              {/* Section 1: Provider Identity on Invoices */}
+              <div className="full" style={{ borderBottom: '1px dashed #cbd5e1', paddingBottom: '6px', marginTop: '2px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: '750', color: '#0b4b8f', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  🏢 1. Provider Identity on Invoices (Top Header)
+                </span>
+              </div>
+
+              <div>
+                <label>Company / Brand Name <span className="req">*</span></label>
+                <input
+                  className="input"
+                  placeholder="e.g. iSysware"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Tagline / Services Subtitle</label>
+                <input
+                  className="input"
+                  placeholder="e.g. ERP • Custom Software • Web • AI Solutions"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Inquiry Email</label>
+                <input
+                  className="input"
+                  type="email"
+                  placeholder="e.g. info@isysware.com"
+                  value={inquiryEmail}
+                  onChange={(e) => setInquiryEmail(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Support / Phone Number</label>
+                <input
+                  type="tel"
+                  className="input"
+                  placeholder="e.g. +92 314 8843707"
+                  value={supportPhone}
+                  onChange={(e) => setSupportPhone(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Official Website</label>
+                <input
+                  className="input"
+                  placeholder="e.g. isysware.com"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Invoice Subtitle (Right Top)</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Professional Services Invoice"
+                  value={invoiceSubtitle}
+                  onChange={(e) => setInvoiceSubtitle(e.target.value)}
+                />
+              </div>
+
+              {/* Section 2: Numbering & Defaults */}
+              <div className="full" style={{ borderBottom: '1px dashed #cbd5e1', paddingBottom: '6px', marginTop: '14px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: '750', color: '#0b4b8f', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  🔢 2. Numbering &amp; Billing Defaults
+                </span>
+              </div>
+
+              <div>
+                <label>Invoice Number Prefix</label>
+                <input
+                  className="input"
+                  placeholder="e.g. ISW- or INV-"
+                  value={invoicePrefix}
+                  onChange={(e) => setInvoicePrefix(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Default Currency</label>
+                <select
+                  className="select"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                >
+                  <option value="PKR">PKR (Pakistani Rupee)</option>
+                  <option value="USD">USD (US Dollar)</option>
+                  <option value="AED">AED (UAE Dirham)</option>
+                  <option value="SAR">SAR (Saudi Riyal)</option>
+                  <option value="GBP">GBP (British Pound)</option>
+                  <option value="EUR">EUR (Euro)</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Default Due Days</label>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  max="365"
+                  placeholder="0"
+                  value={dueDays}
+                  onChange={(e) => setDueDays(e.target.value)}
+                />
+                <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
+                  0 = Due on receipt
+                </div>
+              </div>
+
+              {/* Section 3: Bank & Payment Credentials */}
+              <div className="full" style={{ borderBottom: '1px dashed #cbd5e1', paddingBottom: '6px', marginTop: '14px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: '750', color: '#0b4b8f', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  🏦 3. Bank &amp; Payment Credentials (Bottom Left Box)
+                </span>
+              </div>
+
+              <div>
+                <label>Payment Method</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Bank Transfer / Online / Cash"
+                  value={paymentMethod}
+                  onChange={(e) => setPaymentMethod(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Bank / Wallet Name</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Meezan Bank / HBL / Bank Alfalah"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Account Title</label>
+                <input
+                  className="input"
+                  placeholder="e.g. iSysware Software Solution"
+                  value={accountTitle}
+                  onChange={(e) => setAccountTitle(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Account Number / IBAN</label>
+                <input
+                  className="input"
+                  placeholder="e.g. PK36MEZN00012345678901"
+                  value={accountIban}
+                  onChange={(e) => setAccountIban(e.target.value)}
+                />
+              </div>
+
+              {/* Section 4: Notes & Signatures */}
+              <div className="full" style={{ borderBottom: '1px dashed #cbd5e1', paddingBottom: '6px', marginTop: '14px', marginBottom: '4px' }}>
+                <span style={{ fontSize: '11.5px', fontWeight: '750', color: '#0b4b8f', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                  📝 4. Notes, Signature &amp; Footer Text
+                </span>
+              </div>
+
+              <div>
+                <label>Prepared By Name</label>
+                <input
+                  className="input"
+                  placeholder="e.g. iSysware"
+                  value={preparedBy}
+                  onChange={(e) => setPreparedBy(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Thank You Footer Text</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Thank you for choosing iSysware. • Please reference the invoice number when making payment."
+                  value={thankYouMsg}
+                  onChange={(e) => setThankYouMsg(e.target.value)}
+                />
+              </div>
+
+              <div className="full">
+                <label>Default Notes / Terms (Bottom Left Box)</label>
+                <textarea
+                  className="textarea"
+                  rows={3}
+                  placeholder="Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions."
+                  value={invoiceNotes}
+                  onChange={(e) => setInvoiceNotes(e.target.value)}
+                />
+              </div>
+
+              <div className="full settings-save" style={{ marginTop: '14px' }}>
+                <Button variant="primary" type="submit">
+                  💾 Save Invoice Settings
+                </Button>
+              </div>
+            </form>
           </div>
 
-          <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
-            <div className="full">
-              <label>Bank Name</label>
-              <input
-                className="input"
-                placeholder="e.g. Meezan Bank / HBL / Bank Alfalah"
-                value={bankName}
-                onChange={(e) => setBankName(e.target.value)}
-              />
-            </div>
+          {/* Live Corporate Invoice Preview Card */}
+          {showInvPreview && (
+            <div className="proposal-builder-card">
+              <div className="prop-card-header">
+                <div>
+                  <h3 style={{ color: '#0b4b8f' }}>
+                    <span>🧾 Live Corporate Invoice Layout Preview</span>
+                  </h3>
+                  <p>Shows the exact invoice format rendered across all modules, client downloads, and WhatsApp delivery.</p>
+                </div>
+                <div className="prop-btn-group">
+                  <Button variant="light" size="xs" onClick={handleDownloadSampleInvoice}>
+                    📄 Download Sample PDF
+                  </Button>
+                  <Button variant="primary" size="xs" onClick={() => setIsInvPreviewOpen(true)}>
+                    👁️ Fullscreen Preview
+                  </Button>
+                </div>
+              </div>
 
-            <div className="full">
-              <label>Account Title</label>
-              <input
-                className="input"
-                placeholder="e.g. iSysware Software Solution"
-                value={accountTitle}
-                onChange={(e) => setAccountTitle(e.target.value)}
-              />
-            </div>
+              {/* Embedded Exact Invoice Layout */}
+              <div className="embedded-a4-wrapper" style={{ background: '#e2e8f0', padding: '16px' }}>
+                <div style={{ background: '#ffffff', maxWidth: '800px', margin: '0 auto', padding: '24px 28px', borderRadius: '6px', boxShadow: '0 4px 14px rgba(0,0,0,0.08)' }}>
+                  {/* Top Header */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div>
+                      <h1 style={{ fontSize: '24px', fontWeight: '850', color: '#0b4b8f', margin: '0 0 2px', letterSpacing: '-0.5px' }}>
+                        {companyName || 'iSysware'}
+                      </h1>
+                      <div style={{ fontSize: '11px', color: '#64748b', margin: '0 0 2px' }}>
+                        {tagline || 'ERP • Custom Software • Web • AI Solutions'}
+                      </div>
+                      <div style={{ fontSize: '10.5px', color: '#0284c7' }}>
+                        {[inquiryEmail || 'info@isysware.com', supportPhone || '+92 314 8843707', websiteUrl || 'isysware.com'].filter(Boolean).join(' • ')}
+                      </div>
+                    </div>
+                    <div style={{ textAlign: 'right' }}>
+                      <div style={{ fontSize: '26px', fontWeight: '900', color: '#0f172a', letterSpacing: '1px', lineHeight: '1' }}>
+                        INVOICE
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#64748b', marginTop: '2px' }}>
+                        {invoiceSubtitle || 'Professional Services Invoice'}
+                      </div>
+                    </div>
+                  </div>
 
-            <div className="full">
-              <label>Account Number / IBAN</label>
-              <input
-                className="input"
-                placeholder="e.g. PK36MEZN00012345678901"
-                value={accountIban}
-                onChange={(e) => setAccountIban(e.target.value)}
-              />
-            </div>
+                  {/* Blue Top Divider */}
+                  <div style={{ height: '3px', background: '#0b4b8f', marginTop: '8px', marginBottom: '14px', borderRadius: '2px' }} />
 
-            <div className="full settings-save">
-              <Button variant="primary" type="submit">
-                💾 Save Bank Details
-              </Button>
+                  {/* 4-Column Meta Box */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', border: '1px solid #cbd5e1', borderRadius: '4px', overflow: 'hidden', marginBottom: '14px', background: '#ffffff' }}>
+                    <div style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1' }}>
+                      <div style={{ fontSize: '9px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                        INVOICE NO.
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: '750', color: '#0f172a' }}>
+                        {invoicePrefix || 'ISW-'}0001
+                      </div>
+                    </div>
+                    <div style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1' }}>
+                      <div style={{ fontSize: '9px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                        ISSUE DATE
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: '750', color: '#0f172a' }}>
+                        {today()}
+                      </div>
+                    </div>
+                    <div style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1' }}>
+                      <div style={{ fontSize: '9px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                        DUE DATE
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: '750', color: '#0f172a' }}>
+                        {today()}
+                      </div>
+                    </div>
+                    <div style={{ padding: '6px 10px' }}>
+                      <div style={{ fontSize: '9px', fontWeight: '800', color: '#64748b', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '2px' }}>
+                        CURRENCY
+                      </div>
+                      <div style={{ fontSize: '12px', fontWeight: '750', color: '#0f172a' }}>
+                        {currency}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* 2-Column Bill To & Service Details Box */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', border: '1px solid #cbd5e1', borderRadius: '4px', marginBottom: '16px', background: '#ffffff' }}>
+                    <div style={{ padding: '10px 14px', borderRight: '1px solid #cbd5e1' }}>
+                      <div style={{ fontSize: '10px', fontWeight: '800', color: '#0b4b8f', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                        BILL TO
+                      </div>
+                      <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', marginBottom: '2px' }}>
+                        {sampleCustomer.name}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.35' }}>
+                        Contact: {sampleCustomer.contactPerson}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.35' }}>
+                        Email / Phone: {sampleCustomer.email} / {sampleCustomer.phone}
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.35' }}>
+                        Billing Address: {sampleCustomer.address}
+                      </div>
+                    </div>
+                    <div style={{ padding: '10px 14px' }}>
+                      <div style={{ fontSize: '10px', fontWeight: '800', color: '#0b4b8f', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                        SERVICE DETAILS
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.35' }}>
+                        <strong>Project / Service:</strong> Enterprise Software &amp; Cloud Billing
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.35' }}>
+                        <strong>Service Type:</strong> Software Development &amp; Hosting
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.35' }}>
+                        <strong>Billing Cycle:</strong> Monthly Retainer Cycle
+                      </div>
+                      <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.35' }}>
+                        <strong>Service Period:</strong> {MONTHS[new Date().getMonth()]} {new Date().getFullYear()}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Table: INVOICE ITEMS */}
+                  <div style={{ marginBottom: '14px' }}>
+                    <div style={{ fontSize: '10.5px', fontWeight: '800', color: '#0b4b8f', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '4px' }}>
+                      INVOICE ITEMS
+                    </div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+                      <thead>
+                        <tr>
+                          <th style={{ background: '#0b4b8f', color: '#ffffff', fontSize: '10.5px', fontWeight: '750', padding: '6px 8px', textAlign: 'center', width: '5%', border: '1px solid #0b4b8f' }}>#</th>
+                          <th style={{ background: '#0b4b8f', color: '#ffffff', fontSize: '10.5px', fontWeight: '750', padding: '6px 8px', textAlign: 'left', width: '45%', border: '1px solid #0b4b8f' }}>Description</th>
+                          <th style={{ background: '#0b4b8f', color: '#ffffff', fontSize: '10.5px', fontWeight: '750', padding: '6px 8px', textAlign: 'left', width: '25%', border: '1px solid #0b4b8f' }}>Billing Period / Milestone</th>
+                          <th style={{ background: '#0b4b8f', color: '#ffffff', fontSize: '10.5px', fontWeight: '750', padding: '6px 8px', textAlign: 'center', width: '10%', border: '1px solid #0b4b8f' }}>Qty</th>
+                          <th style={{ background: '#0b4b8f', color: '#ffffff', fontSize: '10.5px', fontWeight: '750', padding: '6px 8px', textAlign: 'right', width: '15%', border: '1px solid #0b4b8f' }}>Amount</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {sampleInvoiceObject.items.map((x, idx) => (
+                          <tr key={x.itemId || idx} style={{ background: idx % 2 === 1 ? '#fafcff' : '#ffffff' }}>
+                            <td style={{ fontSize: '11px', padding: '6px 8px', border: '1px solid #e2e8f0', textAlign: 'center', color: '#64748b' }}>{idx + 1}</td>
+                            <td style={{ fontSize: '11px', padding: '6px 8px', border: '1px solid #e2e8f0' }}>
+                              <strong>{x.name}</strong>
+                            </td>
+                            <td style={{ fontSize: '11px', padding: '6px 8px', border: '1px solid #e2e8f0' }}>{x.period}</td>
+                            <td style={{ fontSize: '11px', padding: '6px 8px', border: '1px solid #e2e8f0', textAlign: 'center' }}>{x.qty}</td>
+                            <td style={{ fontSize: '11px', padding: '6px 8px', border: '1px solid #e2e8f0', textAlign: 'right', fontWeight: '700' }}>
+                              {money(x.amount, currency)}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Bottom 2-Column Section */}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1.15fr 0.85fr', gap: '14px', marginBottom: '16px' }}>
+                    {/* Left: Payment Details & Notes */}
+                    <div style={{ border: '1px solid #e2e8f0', borderRadius: '4px', padding: '10px 12px', background: '#ffffff' }}>
+                      <div style={{ fontSize: '10px', fontWeight: '800', color: '#0b4b8f', textTransform: 'uppercase', letterSpacing: '0.5px', marginBottom: '5px' }}>
+                        PAYMENT DETAILS
+                      </div>
+                      <div style={{ display: 'flex', fontSize: '10.5px', margin: '2px 0' }}>
+                        <span style={{ width: '85px', fontWeight: '700', color: '#475569' }}>Method:</span>
+                        <span style={{ flex: 1, fontWeight: '600', color: '#0f172a' }}>{paymentMethod || 'Bank Transfer / Online'}</span>
+                      </div>
+                      <div style={{ display: 'flex', fontSize: '10.5px', margin: '2px 0' }}>
+                        <span style={{ width: '85px', fontWeight: '700', color: '#475569' }}>Account Title:</span>
+                        <span style={{ flex: 1, fontWeight: '600', color: '#0f172a' }}>{accountTitle || 'iSysware Software Solution'}</span>
+                      </div>
+                      <div style={{ display: 'flex', fontSize: '10.5px', margin: '2px 0' }}>
+                        <span style={{ width: '85px', fontWeight: '700', color: '#475569' }}>Bank / Wallet:</span>
+                        <span style={{ flex: 1, fontWeight: '600', color: '#0f172a' }}>{bankName || 'Meezan Bank'}</span>
+                      </div>
+                      <div style={{ display: 'flex', fontSize: '10.5px', margin: '2px 0' }}>
+                        <span style={{ width: '85px', fontWeight: '700', color: '#475569' }}>Account / IBAN:</span>
+                        <span style={{ flex: 1, fontWeight: '600', color: '#0f172a', fontFamily: 'monospace' }}>{accountIban || 'PK36MEZN00012345678901'}</span>
+                      </div>
+
+                      <div style={{ fontSize: '10px', fontWeight: '800', color: '#0b4b8f', textTransform: 'uppercase', letterSpacing: '0.5px', marginTop: '8px', borderTop: '1px solid #f1f5f9', paddingTop: '4px', marginBottom: '3px' }}>
+                        NOTES / TERMS
+                      </div>
+                      <div style={{ fontSize: '10px', color: '#475569', lineHeight: '1.4' }}>
+                        {invoiceNotes || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.'}
+                      </div>
+                    </div>
+
+                    {/* Right: Summary */}
+                    <div style={{ background: '#edf4fe', border: '1px solid #c7dcfb', borderRadius: '4px', padding: '10px 14px' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: '11px', color: '#334155' }}>
+                        <span>Subtotal</span>
+                        <strong>{money(60000, currency)}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: '11px', color: '#64748b' }}>
+                        <span>Discount</span>
+                        <span>[0.00]</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: '11px', color: '#64748b' }}>
+                        <span>Tax / VAT</span>
+                        <span>[0.00]</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0 2px', fontSize: '11.5px', fontWeight: '800', color: '#0f172a', borderTop: '1px solid #cbd5e1', marginTop: '4px' }}>
+                        <span>TOTAL</span>
+                        <strong>{money(60000, currency)}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: '11px', color: '#334155' }}>
+                        <span>Paid</span>
+                        <span>{money(0, currency)}</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0 2px', fontSize: '13.5px', fontWeight: '900', color: '#0b4b8f', borderTop: '2px solid #0b4b8f', marginTop: '4px' }}>
+                        <span>BALANCE DUE</span>
+                        <span>{money(60000, currency)}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Signatures Row */}
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', paddingTop: '8px', marginBottom: '12px' }}>
+                    <div style={{ fontSize: '10.5px', color: '#475569' }}>
+                      <strong>Prepared By:</strong> {preparedBy || companyName || 'iSysware'}
+                    </div>
+                    <div style={{ fontSize: '10.5px', color: '#475569' }}>
+                      <strong>Authorized Signature:</strong> ______________________
+                    </div>
+                  </div>
+
+                  {/* Footer Message */}
+                  <div style={{ textAlign: 'center', fontSize: '10px', color: '#0b4b8f', fontWeight: '700', marginBottom: '6px' }}>
+                    {thankYouMsg || `Thank you for choosing ${companyName || 'iSysware'}. • Please reference the invoice number when making payment.`}
+                  </div>
+                  <div style={{ textAlign: 'center', fontSize: '9px', color: '#94a3b8', borderTop: '1px solid #f1f5f9', paddingTop: '4px' }}>
+                    {companyName || 'iSysware'} | {inquiryEmail || 'info@isysware.com'} | {supportPhone || '+92 314 8843707'} | {websiteUrl || 'isysware.com'}
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Toolbar */}
+              <div className="prop-actions-bar" style={{ marginTop: '16px' }}>
+                <div className="prop-btn-group">
+                  <Button variant="primary" onClick={() => setIsInvPreviewOpen(true)}>
+                    👁️ Fullscreen Invoice Preview
+                  </Button>
+                  <Button variant="light" onClick={handleDownloadSampleInvoice}>
+                    📄 Download Sample Invoice PDF
+                  </Button>
+                </div>
+                <div>
+                  <Button variant="primary" onClick={handleSaveAllSettings}>
+                    💾 Save Invoice Settings
+                  </Button>
+                </div>
+              </div>
             </div>
-          </form>
+          )}
         </div>
       )}
 
       {/* Live A4 Proposal Preview Modal */}
       <ProposalPreviewModal
-        isOpen={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
+        isOpen={isPropPreviewOpen}
+        onClose={() => setIsPropPreviewOpen(false)}
         proposal={currentProposalObject}
         business={{ currency }}
         customer={selectedCust}
+      />
+
+      {/* Live Invoice Preview Modal */}
+      <InvoicePreview
+        isOpen={isInvPreviewOpen}
+        onClose={() => setIsInvPreviewOpen(false)}
+        invoice={sampleInvoiceObject}
+        business={sampleInvoiceBusiness}
+        customer={sampleCustomer}
       />
     </section>
   );
