@@ -84,10 +84,11 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
   // Initial connect & auto-polling
   useEffect(() => {
     handleConnect(false);
+    fetchStatus();
 
     pollTimerRef.current = setInterval(() => {
       fetchStatus();
-    }, 1200);
+    }, 1000);
 
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);

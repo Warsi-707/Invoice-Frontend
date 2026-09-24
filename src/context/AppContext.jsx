@@ -120,7 +120,7 @@ export function AppProvider({ children }) {
             ...(res.settings || {})
           }
         }));
-        await refreshFromBackend();
+        refreshFromBackend().catch(() => {});
         showToast(`Welcome, ${username.trim()}`);
         return { success: true };
       }
