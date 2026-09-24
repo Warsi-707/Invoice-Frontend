@@ -166,20 +166,37 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
             <div className={`wa-qr-frame ${compact ? 'compact' : ''}`}>
               {qrCode ? (
                 <img src={qrCode} alt="WhatsApp QR Code" className="wa-qr-img" />
+              ) : status === 'DISCONNECTED' ? (
+                <div className="wa-qr-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '20px' }}>
+                  <button
+                    type="button"
+                    className="btn btn-primary"
+                    onClick={() => handleConnect(true)}
+                    disabled={loading}
+                    style={{ fontSize: '12.5px', padding: '8px 16px', background: '#10b981', borderColor: '#10b981', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontWeight: '700' }}
+                  >
+                    {loading ? 'Connecting...' : '⚡ Generate QR Code'}
+                  </button>
+                  <p style={{ fontSize: '11px', marginTop: '8px', color: '#64748b', textAlign: 'center' }}>
+                    Click button to start WhatsApp connection
+                  </p>
+                </div>
               ) : (
-                <div className="wa-qr-placeholder">
+                <div className="wa-qr-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
                   <div className="spinner"></div>
-                  <p style={{ fontSize: '12px' }}>Loading QR...</p>
+                  <p style={{ fontSize: '12px', marginTop: '8px', color: '#475569' }}>
+                    {status === 'CONNECTING' ? 'Generating QR Code...' : 'Loading QR...'}
+                  </p>
                 </div>
               )}
             </div>
 
             <div className="wa-instructions">
               <div className="wa-step-highlight" style={{ fontSize: compact ? '12.5px' : '14px' }}>
-                📱 <strong>WhatsApp</strong> → <strong>3 Dots</strong> → <strong>Linked Devices</strong> → <strong>Link a Device</strong>
+                📱 <strong>WhatsApp</strong> → <strong>3 Dots (⋮)</strong> → <strong>Linked Devices</strong> → <strong>Link a Device</strong>
               </div>
-              <div className="wa-step-sub" style={{ fontSize: '11px' }}>
-                QR scan karne ke baad automatic connect ho jayega
+              <div className="wa-step-sub" style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
+                Mobile phone se ye QR code scan karein, foran automatic link ho jayega.
               </div>
             </div>
           </div>
