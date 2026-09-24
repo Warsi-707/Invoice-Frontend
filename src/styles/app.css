@@ -1917,6 +1917,15 @@ tr:last-child td {
   font-size: 13px;
 }
 
+.spinner {
+  border-radius: 50%;
+  animation: waSpin 0.8s linear infinite;
+}
+@keyframes waSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
 .wa-instructions {
   text-align: center;
   max-width: 500px;

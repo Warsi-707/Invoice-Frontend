@@ -403,7 +403,7 @@ export default function SettingsPage() {
           {/* Right Column: WhatsApp Delivery + Data & Backup */}
           <div className="settings-right-stack">
             {/* WhatsApp Scanner Card */}
-            <WhatsAppScannerCard compact={true} />
+            <WhatsAppScannerCard />
 
             {/* Data & Backup Card */}
             <div className="settings-card">

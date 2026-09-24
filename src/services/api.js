@@ -33,10 +33,8 @@ async function request(endpoint, options = {}) {
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      ...(isNoCache ? { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' } : {}),
       ...options.headers
     },
-    ...(isNoCache ? { cache: 'no-store' } : {}),
     ...options
   };
 
@@ -44,7 +42,12 @@ async function request(endpoint, options = {}) {
     config.body = JSON.stringify(config.body);
   }
 
-  const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
+  const separator = endpoint.includes('?') ? '&' : '?';
+  const url = isNoCache
+    ? `${API_BASE_URL}${endpoint}${separator}_t=${Date.now()}`
+    : `${API_BASE_URL}${endpoint}`;
+
+  const response = await fetch(url, config);
   if (!response.ok) {
     const error = await response.json().catch(() => ({ message: 'API request failed' }));
     if (response.status === 401 && !endpoint.includes('/auth/login')) {
