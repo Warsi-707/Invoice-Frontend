@@ -292,80 +292,36 @@ export default function SettingsPage() {
 
   return (
     <section id="settings" className="page active">
-      {/* Header */}
-      <div className="settings-header-top">
+      {/* Dynamic Header for Selected Module */}
+      <div className="settings-header-top" style={{ marginBottom: '24px' }}>
         <div className="settings-header-title">
-          <h2>
-            <span>Settings & System Configuration</span>
-            <span className="modular-badge">3 Modules</span>
-          </h2>
-          <p>Configure organization identity, letterhead proposal branding, and global invoice defaults.</p>
+          {activeTab === 'org' && (
+            <>
+              <h2>
+                <span>Organization Identity & System Details</span>
+              </h2>
+              <p>Manage administrator security credentials, WhatsApp automatic delivery, and PostgreSQL cloud database.</p>
+            </>
+          )}
+
+          {activeTab === 'proposal' && (
+            <>
+              <h2>
+                <span>Proposal & Letterhead Configuration</span>
+              </h2>
+              <p>Configure corporate profile, A4 letterhead designer, preset commercial terms, and official signatures.</p>
+            </>
+          )}
+
+          {activeTab === 'invoice' && (
+            <>
+              <h2>
+                <span>Invoice Settings & Live Template Preview</span>
+              </h2>
+              <p>Configure default billing currency, payment due days, invoice prefix, footer terms, and banking credentials.</p>
+            </>
+          )}
         </div>
-      </div>
-
-      {/* 3 Modular Navigation Tabs */}
-      <div className="settings-nav-tabs">
-        {/* Module 1 Tab */}
-        <button
-          type="button"
-          className={`settings-tab-btn ${activeTab === 'org' ? 'active' : ''}`}
-          onClick={() => setSettingsTab('org')}
-        >
-          <div className="tab-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-            </svg>
-          </div>
-          <div className="tab-btn-content">
-            <div className="tab-btn-title">Organization Identity</div>
-            <div className="tab-btn-sub">Admin, WhatsApp & Cloud DB</div>
-          </div>
-          <span className="tab-num-badge">Module 01</span>
-        </button>
-
-        {/* Module 2 Tab */}
-        <button
-          type="button"
-          className={`settings-tab-btn ${activeTab === 'proposal' ? 'active' : ''}`}
-          onClick={() => setSettingsTab('proposal')}
-        >
-          <div className="tab-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-              <polyline points="14 2 14 8 20 8"></polyline>
-              <line x1="16" y1="13" x2="8" y2="13"></line>
-              <line x1="16" y1="17" x2="8" y2="17"></line>
-              <polyline points="10 9 9 9 8 9"></polyline>
-            </svg>
-          </div>
-          <div className="tab-btn-content">
-            <div className="tab-btn-title">Proposal & Letterhead</div>
-            <div className="tab-btn-sub">Corporate ID, A4 Sheet & Signature</div>
-          </div>
-          <span className="tab-num-badge">Module 02</span>
-        </button>
-
-        {/* Module 3 Tab */}
-        <button
-          type="button"
-          className={`settings-tab-btn ${activeTab === 'invoice' ? 'active' : ''}`}
-          onClick={() => setSettingsTab('invoice')}
-        >
-          <div className="tab-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z" />
-              <line x1="8" y1="7" x2="16" y2="7" />
-              <line x1="8" y1="11" x2="16" y2="11" />
-              <line x1="8" y1="15" x2="12" y2="15" />
-            </svg>
-          </div>
-          <div className="tab-btn-content">
-            <div className="tab-btn-title">Invoice Settings</div>
-            <div className="tab-btn-sub">Currency, Due Days & Live Preview</div>
-          </div>
-          <span className="tab-num-badge">Module 03</span>
-        </button>
       </div>
 
       {/* =========================================================================
