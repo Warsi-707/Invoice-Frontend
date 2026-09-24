@@ -313,23 +313,23 @@ export default function InvoicePreview({
                 <span>[0.00]</span>
               </div>
             )}
+            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0 2px', fontSize: '11.5px', fontWeight: '800', color: '#0f172a', borderTop: '1px solid #cbd5e1', marginTop: '4px' }}>
+              <span>{prevDuesVal > 0 ? 'CURRENT INVOICE TOTAL' : 'TOTAL'}</span>
+              <strong>{money(invoice.total, cur)}</strong>
+            </div>
             {prevDuesVal > 0 && (
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: '11px', color: '#d97706' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: '11px', color: '#d97706', fontWeight: '700' }}>
                 <span>Arrears / Prev Dues {prevMonthLabel ? `(${prevMonthLabel})` : ''}</span>
                 <strong>+ {money(prevDuesVal, cur)}</strong>
               </div>
             )}
-            <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0 2px', fontSize: '11.5px', fontWeight: '800', color: '#0f172a', borderTop: '1px solid #cbd5e1', marginTop: '4px' }}>
-              <span>TOTAL</span>
-              <strong>{money(invoice.total, cur)}</strong>
-            </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '2px 0', fontSize: '11px', color: '#334155' }}>
               <span>Paid</span>
               <span>{money(invoice.paid || 0, cur)}</span>
             </div>
             <div style={{ display: 'flex', justifyContent: 'space-between', padding: '5px 0 2px', fontSize: '13.5px', fontWeight: '900', color: '#0b4b8f', borderTop: '2px solid #0b4b8f', marginTop: '4px' }}>
-              <span>BALANCE DUE</span>
-              <span>{money(invoice.balance !== undefined ? invoice.balance : invoice.total, cur)}</span>
+              <span>{prevDuesVal > 0 ? 'NET AMOUNT PAYABLE' : 'BALANCE DUE'}</span>
+              <span>{money(Number(invoice.balance !== undefined ? invoice.balance : invoice.total) + (prevDuesVal > 0 ? prevDuesVal : 0), cur)}</span>
             </div>
           </div>
         </div>
