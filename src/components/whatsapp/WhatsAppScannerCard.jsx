@@ -29,6 +29,9 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
   const handleConnect = async (force = false) => {
     setLoading(true);
     setErrorMsg('');
+    if (force) {
+      setQrCode(null);
+    }
     try {
       const res = await whatsappApi.connect(force);
       if (res) {

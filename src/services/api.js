@@ -17,8 +17,11 @@ async function request(endpoint, options = {}) {
   const method = (options.method || 'GET').toUpperCase();
   const isGet = method === 'GET';
 
+  // NEVER cache WhatsApp endpoints (real-time QR code & connection polling must be instant live)
+  const isNoCache = endpoint.startsWith('/whatsapp');
+
   // Check client-side in-memory cache for instant 0ms responses
-  if (isGet) {
+  if (isGet && !isNoCache) {
     const cached = getRequestCache.get(endpoint);
     if (cached && (Date.now() - cached.timestamp < GET_CACHE_TTL_MS)) {
       return cached.data;
@@ -30,8 +33,10 @@ async function request(endpoint, options = {}) {
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(isNoCache ? { 'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache' } : {}),
       ...options.headers
     },
+    ...(isNoCache ? { cache: 'no-store' } : {}),
     ...options
   };
 
@@ -54,10 +59,10 @@ async function request(endpoint, options = {}) {
 
   const data = await response.json();
 
-  // If GET, cache result; if Mutation (POST/PUT/DELETE), invalidate cache
-  if (isGet) {
+  // If GET and not no-cache, cache result; if Mutation (POST/PUT/DELETE), invalidate cache
+  if (isGet && !isNoCache) {
     getRequestCache.set(endpoint, { data, timestamp: Date.now() });
-  } else {
+  } else if (!isGet) {
     clearClientApiCache();
   }
 
