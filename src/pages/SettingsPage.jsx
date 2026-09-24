@@ -857,12 +857,6 @@ export default function SettingsPage() {
                   autoComplete="off"
                 />
               </div>
-
-              <div className="full settings-save">
-                <Button variant="primary" type="submit">
-                  Save Invoice Settings
-                </Button>
-              </div>
             </form>
           </div>
 
@@ -903,12 +897,6 @@ export default function SettingsPage() {
                   onChange={(e) => setAccountIban(e.target.value)}
                 />
               </div>
-
-              <div className="full settings-save">
-                <Button variant="primary" type="submit">
-                  Save Invoice Settings
-                </Button>
-              </div>
             </form>
           </div>
         </div>
@@ -916,20 +904,10 @@ export default function SettingsPage() {
         {/* Live Invoice Preview Section right below the details */}
         {showInvoicePreview && (
           <div className="settings-card" style={{ marginTop: '24px' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
-              <div>
-                <h4 style={{ margin: 0 }}>Live Invoice Template Preview</h4>
-                <div className="settings-data-note" style={{ marginTop: '4px' }}>
-                  Real-time preview of how invoices look with current prefix, currency, footer notes, and bank credentials.
-                </div>
-              </div>
-              <div style={{ display: 'flex', gap: '8px' }}>
-                <Button variant="light" size="xs" onClick={() => setShowInvoicePreview(false)}>
-                  Hide Preview
-                </Button>
-                <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
-                  Save Invoice Settings
-                </Button>
+            <div style={{ marginBottom: '16px' }}>
+              <h4 style={{ margin: 0 }}>Live Invoice Template Preview</h4>
+              <div className="settings-data-note" style={{ marginTop: '4px' }}>
+                Real-time preview of how invoices look with current prefix, currency, footer notes, and bank credentials.
               </div>
             </div>
 
