@@ -103,23 +103,24 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
       text-align: right;
       font-size: 11px;
     }
-    .prop-badge {
-      background: #0b4b8f;
-      color: #fff;
-      font-size: 11px;
-      font-weight: 800;
-      padding: 4px 10px;
-      border-radius: 4px;
-      display: inline-block;
-      text-transform: uppercase;
-      margin-bottom: 8px;
-    }
     .prop-meta div {
       margin: 2px 0;
       color: #475569;
     }
     .prop-meta strong {
       color: #0f172a;
+    }
+    .prop-meta .prop-badge, .prop-badge {
+      background: #0b4b8f !important;
+      color: #ffffff !important;
+      font-size: 11px !important;
+      font-weight: 800 !important;
+      padding: 4px 10px !important;
+      border-radius: 4px !important;
+      display: inline-block !important;
+      text-transform: uppercase !important;
+      margin-bottom: 8px !important;
+      letter-spacing: 0.5px !important;
     }
     .prop-client-grid {
       display: grid;
@@ -246,7 +247,7 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
           ${proposal.ntnTax ? `<div class="prop-tax-badge">${esc(proposal.ntnTax)}</div>` : ''}
         </div>
         <div class="prop-meta">
-          <div class="prop-badge">Commercial Proposal</div>
+          <div class="prop-badge" style="background: #0b4b8f !important; color: #ffffff !important; font-weight: 800 !important;">Commercial Proposal</div>
           <div>Proposal #: <strong>${esc(proposalNo)}</strong></div>
           <div>Date: <strong>${esc(proposalDate)}</strong></div>
           <div>Validity: <strong>${esc(validity)}</strong></div>

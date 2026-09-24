@@ -118,7 +118,7 @@ export default function ProposalPreviewModal({
             {proposal.ntnTax && <div className="prop-tax-badge">{proposal.ntnTax}</div>}
           </div>
           <div className="prop-meta">
-            <div className="prop-badge">Commercial Proposal</div>
+            <div className="prop-badge" style={{ background: '#0b4b8f', color: '#ffffff', fontWeight: '800' }}>Commercial Proposal</div>
             <div>Proposal #: <strong>{proposalNo}</strong></div>
             <div>Date: <strong>{proposalDate}</strong></div>
             <div>Validity: <strong>{validity}</strong></div>
