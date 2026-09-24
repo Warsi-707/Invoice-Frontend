@@ -219,10 +219,11 @@ export default function InvoiceGeneratorPage() {
       setPreviewData(result.invoice);
       setIsPreviewOpen(true);
 
-      const htmlContent = generateInvoiceHtml(result.invoice, selectedBusiness, selectedCustomer);
+      const htmlContent = generateInvoiceHtml(result.invoice, { ...selectedBusiness, proposalData: state.settings?.proposalData || selectedBusiness?.proposalData }, selectedCustomer);
       const fileName = `${result.invoice.invoiceNo || 'invoice'}.pdf`;
       const phone = selectedCustomer?.whatsapp || selectedCustomer?.phone;
-      const caption = `📄 *Invoice ${result.invoice.invoiceNo}*\n🏢 ${selectedBusiness?.name || ''}\n👤 ${selectedCustomer?.name || 'Client'}\n💰 Total: ${money(result.invoice.total, selectedBusiness?.currency || 'PKR')}`;
+      const orgBrand = state.settings?.proposalData?.companyName || state.settings?.companyName || 'iSysware';
+      const caption = `📄 *Invoice ${result.invoice.invoiceNo}*\n🏢 ${orgBrand}\n👤 ${selectedCustomer?.name || 'Client'}\n💰 Total: ${money(result.invoice.total, selectedBusiness?.currency || 'PKR')}`;
 
       // Auto-download PDF & Auto-send WhatsApp simultaneously (ultra fast single-pass)
       downloadAndSendWhatsApp({

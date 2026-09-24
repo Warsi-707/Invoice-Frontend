@@ -60,29 +60,30 @@ export default function InvoicePreview({
     }
   };
 
-  const compName = business.name || business.companyName || p.companyName || 'iSysware';
-  const compTagline = business.tagline || business.subtitle || p.tagline || 'ERP • Custom Software • Web • AI Solutions';
-  const compEmail = business.email || business.inquiryEmail || p.inquiryEmail || 'info@isysware.com';
-  const compPhone = business.phone || business.supportPhone || p.supportPhone || '+92 314 8843707';
-  const compWebsite = business.website || business.websiteUrl || p.websiteUrl || 'isysware.com';
+  const compName = p.companyName || state?.settings?.companyName || 'iSysware Software Solution';
+  const compTagline = p.tagline || state?.settings?.tagline || 'ERP • Custom Software • Web • AI Solutions';
+  const compEmail = p.inquiryEmail || state?.settings?.email || 'info@isysware.com';
+  const compPhone = p.supportPhone || state?.settings?.phone || '+92 314 8843707';
+  const compWebsite = p.websiteUrl || state?.settings?.website || 'isysware.com';
   const compContact = [compEmail, compPhone, compWebsite].filter(Boolean).join(' • ');
 
-  const bankTitle = business.accountTitle || p.accountTitle || 'iSysware Software Solution';
-  const bankName = business.bankName || p.bankName || 'Meezan Bank';
-  const bankIban = business.accountIban || business.accountNo || p.accountIban || 'PK36MEZN00012345678901';
-  const payMethod = business.paymentMethod || p.paymentMethod || 'Bank Transfer / Online';
-  const invSubtitle = business.invoiceSubtitle || p.invoiceSubtitle || 'Professional Services Invoice';
-  const prepBy = business.preparedBy || p.preparedBy || compName;
-  const thankYouMsg = business.thankYouMsg || p.thankYouMsg || `Thank you for choosing ${compName}. • Please reference the invoice number when making payment.`;
-  const notesTerms = invoice.notes || business.footerNote || state?.settings?.footerNote || business.notes || p.invoiceNotes || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.';
+  const bankTitle = p.accountTitle || compName;
+  const bankName = p.bankName || 'Meezan Bank';
+  const bankIban = p.accountIban || 'PK36MEZN00012345678901';
+  const payMethod = p.paymentMethod || 'Bank Transfer / Online';
+  const invSubtitle = p.invoiceSubtitle || 'Professional Services Invoice';
+  const prepBy = p.preparedBy || compName;
+  const thankYouMsg = p.thankYouMsg || `Thank you for choosing ${compName}. • Please reference the invoice number when making payment.`;
+  const notesTerms = invoice.notes || p.invoiceNotes || business.footerNote || state?.settings?.footerNote || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.';
 
   const issueDate = invoice.date || '';
   const dueDate = invoice.dueDate || invoice.due || issueDate;
   const invNo = invoice.invoiceNo || 'ISW-0001';
 
-  const clientName = customer.name || 'Client / Company Name';
-  const clientPerson = customer.contactPerson || customer.name || 'Contact Person';
-  const clientContact = [customer.email, customer.phone || customer.whatsapp].filter(Boolean).join(' / ') || 'Email / Phone';
+  const clientName = customer.name || 'Client Name';
+  const clientBusinessName = business.name || customer.company || '';
+  const clientPerson = customer.contactPerson || customer.name || clientName;
+  const clientContact = [customer.email, customer.phone || customer.whatsapp].filter(Boolean).join(' / ') || '';
   const clientAddr = customer.address || business.address || 'Billing Address';
 
   const billingPeriod = invoice.billingCycle || (invoice.month && invoice.year ? `${invoice.month} ${invoice.year}` : 'Monthly Cycle');
@@ -187,6 +188,11 @@ export default function InvoicePreview({
             <div style={{ fontSize: '13px', fontWeight: '800', color: '#0f172a', marginBottom: '2px' }}>
               {clientName}
             </div>
+            {clientBusinessName && (
+              <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.35' }}>
+                <strong>Organization:</strong> {clientBusinessName}
+              </div>
+            )}
             <div style={{ fontSize: '11px', color: '#334155', lineHeight: '1.35' }}>
               Contact: {clientPerson}
             </div>

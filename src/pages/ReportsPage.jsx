@@ -36,7 +36,7 @@ export default function ReportsPage() {
 
   const unpaidCount = filteredInvoices.filter((i) => i.status !== 'Paid').length;
   const paidCount = filteredInvoices.filter((i) => i.status === 'Paid').length;
-  const totalOutstanding = filteredInvoices.reduce((sum, i) => sum + Number(i.balance || 0), 0);
+  const totalOutstanding = filteredInvoices.reduce((sum, i) => sum + Math.max(0, Number(i.subtotal || 0) - Number(i.paid || 0)), 0);
 
   const activeCurrency = businessFilter ? getCurrency(businessFilter) : state.settings?.currency || 'PKR';
 

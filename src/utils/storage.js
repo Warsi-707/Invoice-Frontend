@@ -35,7 +35,8 @@ export function loadStoredState() {
         admin: parsed.settings?.admin || 'Admin',
         currency: parsed.settings?.currency || 'PKR',
         dueDays: parsed.settings?.dueDays ?? 0,
-        footerNote: parsed.settings?.footerNote ?? 'Thank you for your business.'
+        footerNote: parsed.settings?.footerNote ?? 'Thank you for your business.',
+        proposalData: parsed.settings?.proposalData || {}
       },
       businesses: Array.isArray(parsed.businesses) ? parsed.businesses : [],
       customers: Array.isArray(parsed.customers) ? parsed.customers : [],

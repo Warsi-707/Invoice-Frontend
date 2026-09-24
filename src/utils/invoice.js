@@ -59,7 +59,7 @@ export function getPreviousInvoiceMonth(currentMonth, currentYear) {
 }
 
 export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) {
-  const p = business.proposalData || {};
+  const p = business.proposalData || business.settings?.proposalData || {};
   const cur = invoice.currency || business.currency || 'PKR';
   const items = Array.isArray(invoice.items) && invoice.items.length > 0 ? invoice.items : [
     { name: invoice.notes || 'Professional Software Services', qty: 1, price: invoice.subtotal || invoice.total || 0, amount: invoice.subtotal || invoice.total || 0 }
@@ -68,33 +68,34 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
   const prevDuesVal = Number(invoice.previousDues || (Number(invoice.total || 0) > Number(invoice.subtotal || 0) ? Number(invoice.total) - Number(invoice.subtotal) : 0));
   const prevMonthLabel = invoice.previousDuesMonths || getPreviousInvoiceMonth(invoice.month, invoice.year);
 
-  const compName = business.name || business.companyName || p.companyName || 'iSysware';
-  const compTagline = business.tagline || business.subtitle || p.tagline || 'ERP • Custom Software • Web • AI Solutions';
-  const compEmail = business.email || business.inquiryEmail || p.inquiryEmail || 'info@isysware.com';
-  const compPhone = business.phone || business.supportPhone || p.supportPhone || '+92 314 8843707';
-  const compWebsite = business.website || business.websiteUrl || p.websiteUrl || 'isysware.com';
+  const compName = p.companyName || 'iSysware Software Solution';
+  const compTagline = p.tagline || 'ERP • Custom Software • Web • AI Solutions';
+  const compEmail = p.inquiryEmail || 'info@isysware.com';
+  const compPhone = p.supportPhone || '+92 314 8843707';
+  const compWebsite = p.websiteUrl || 'isysware.com';
   const compContact = [compEmail, compPhone, compWebsite].filter(Boolean).join(' • ');
   
-  const bankTitle = business.accountTitle || p.accountTitle || 'iSysware Software Solution';
-  const bankName = business.bankName || p.bankName || 'Meezan Bank';
-  const bankIban = business.accountIban || business.accountNo || p.accountIban || 'PK36MEZN00012345678901';
-  const payMethod = business.paymentMethod || p.paymentMethod || 'Bank Transfer / Online';
-  const invSubtitle = business.invoiceSubtitle || p.invoiceSubtitle || 'Professional Services Invoice';
-  const prepBy = business.preparedBy || p.preparedBy || compName;
+  const bankTitle = p.accountTitle || compName;
+  const bankName = p.bankName || 'Meezan Bank';
+  const bankIban = p.accountIban || 'PK36MEZN00012345678901';
+  const payMethod = p.paymentMethod || 'Bank Transfer / Online';
+  const invSubtitle = p.invoiceSubtitle || 'Professional Services Invoice';
+  const prepBy = p.preparedBy || compName;
   
   const issueDate = invoice.date || today();
   const dueDate = invoice.dueDate || invoice.due || issueDate;
   const invNo = invoice.invoiceNo || 'ISW-0001';
 
-  const clientName = customer.name || 'Client / Company Name';
-  const clientPerson = customer.contactPerson || customer.name || 'Contact Person';
-  const clientContact = [customer.email, customer.phone || customer.whatsapp].filter(Boolean).join(' / ') || 'Email / Phone';
+  const clientName = customer.name || 'Client Name';
+  const clientBusinessName = business.name || customer.company || '';
+  const clientPerson = customer.contactPerson || customer.name || clientName;
+  const clientContact = [customer.email, customer.phone || customer.whatsapp].filter(Boolean).join(' / ') || '';
   const clientAddr = customer.address || business.address || 'Billing Address';
 
   const billingPeriod = invoice.billingCycle || (invoice.month && invoice.year ? `${invoice.month} ${invoice.year}` : 'Monthly Cycle');
   const servicePeriod = invoice.servicePeriod || (invoice.month && invoice.year ? `${invoice.month} ${invoice.year}` : issueDate);
-  const notesTerms = invoice.notes || business.footerNote || business.notes || p.invoiceNotes || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.';
-  const thankYouMsg = business.thankYouMsg || p.thankYouMsg || `Thank you for choosing ${compName}. • Please reference the invoice number when making payment.`;
+  const notesTerms = invoice.notes || p.invoiceNotes || business.footerNote || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.';
+  const thankYouMsg = p.thankYouMsg || `Thank you for choosing ${compName}. • Please reference the invoice number when making payment.`;
 
   return `<!doctype html>
 <html>
@@ -103,28 +104,39 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
   <title>${esc(invNo)}</title>
   <style>
     @page {
-      margin: 10mm;
-      size: A4;
+      margin: 8mm;
+      size: A4 portrait;
     }
     * { box-sizing: border-box; }
     html, body {
       font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
-      background: #ffffff;
-      padding: 0;
-      margin: 0;
+      background: #ffffff !important;
+      padding: 0 !important;
+      margin: 0 !important;
       color: #1e293b;
       -webkit-print-color-adjust: exact;
       print-color-adjust: exact;
     }
     .inv-container {
-      max-width: 820px;
+      width: 750px !important;
+      min-height: 1060px !important;
+      max-width: 750px !important;
+      margin: 0 auto !important;
+      padding: 24px 28px !important;
+      background: #ffffff !important;
+      box-sizing: border-box !important;
+      border: 1.5px solid #cbd5e1 !important;
+      border-radius: 10px !important;
+      color: #1e293b;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+    }
+    .inv-top-content {
       width: 100%;
-      margin: 0 auto;
-      padding: 24px 28px 16px 28px;
-      background: #ffffff;
-      box-sizing: border-box;
-      page-break-inside: avoid;
-      break-inside: avoid;
+    }
+    .inv-bottom-content {
+      width: 100%;
     }
     
     /* Top Header */
@@ -134,7 +146,7 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       align-items: flex-start;
     }
     .inv-brand-name {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 850;
       color: #0b4b8f;
       letter-spacing: -0.5px;
@@ -156,7 +168,7 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       text-align: right;
     }
     .inv-main-title {
-      font-size: 30px;
+      font-size: 28px;
       font-weight: 900;
       color: #0f172a;
       letter-spacing: 1px;
@@ -214,7 +226,7 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       grid-template-columns: 1fr 1fr;
       border: 1px solid #cbd5e1;
       border-radius: 4px;
-      margin-bottom: 16px;
+      margin-bottom: 14px;
       background: #ffffff;
     }
     .inv-party-col {
@@ -229,7 +241,7 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       color: #0b4b8f;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin-bottom: 6px;
+      margin-bottom: 5px;
     }
     .inv-party-client-name {
       font-size: 13px;
@@ -266,13 +278,13 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       color: #ffffff;
       font-size: 10.5px;
       font-weight: 750;
-      padding: 7px 10px;
+      padding: 6px 8px;
       text-align: left;
       border: 1px solid #0b4b8f;
     }
     table.inv-table td {
       font-size: 11px;
-      padding: 7px 10px;
+      padding: 6px 8px;
       border: 1px solid #e2e8f0;
       color: #1e293b;
     }
@@ -285,13 +297,13 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       display: grid;
       grid-template-columns: 1.15fr 0.85fr;
       gap: 14px;
-      margin-bottom: 18px;
+      margin-bottom: 14px;
       page-break-inside: avoid;
     }
     .inv-payment-box {
       border: 1px solid #e2e8f0;
       border-radius: 4px;
-      padding: 10px 12px;
+      padding: 9px 12px;
       background: #ffffff;
     }
     .inv-section-title {
@@ -300,12 +312,12 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       color: #0b4b8f;
       text-transform: uppercase;
       letter-spacing: 0.5px;
-      margin: 0 0 6px;
+      margin: 0 0 5px;
     }
     .inv-pay-row {
       display: flex;
       font-size: 10.5px;
-      margin: 2.5px 0;
+      margin: 2px 0;
       line-height: 1.35;
     }
     .inv-pay-label {
@@ -330,13 +342,13 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       background: #edf4fe;
       border: 1px solid #c7dcfb;
       border-radius: 4px;
-      padding: 10px 14px;
+      padding: 9px 12px;
     }
     .inv-sum-row {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 3px 0;
+      padding: 2.5px 0;
       font-size: 11px;
       color: #334155;
     }
@@ -353,7 +365,7 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       color: #0b4b8f;
       border-top: 2px solid #0b4b8f;
       margin-top: 5px;
-      padding-top: 6px;
+      padding-top: 5px;
     }
 
     /* Signature row */
@@ -361,8 +373,8 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       display: flex;
       justify-content: space-between;
       align-items: flex-end;
-      padding-top: 10px;
-      margin-bottom: 16px;
+      padding-top: 8px;
+      margin-bottom: 10px;
       page-break-inside: avoid;
     }
     .inv-prep-by {
@@ -379,198 +391,212 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       text-align: center;
       font-size: 10px;
       color: #0b4b8f;
-      font-weight: 700;
-      margin-bottom: 8px;
+      font-weight: 750;
+      margin-bottom: 6px;
     }
     .inv-footer-bottom {
       text-align: center;
       font-size: 9px;
       color: #94a3b8;
       border-top: 1px solid #f1f5f9;
-      padding-top: 6px;
+      padding-top: 5px;
     }
 
     @media print {
       html, body { background: #fff !important; margin: 0 !important; }
-      .inv-container { max-width: 100% !important; padding: 0 !important; }
+      .inv-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 98vh !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+      }
       @page { margin: 8mm; }
     }
   </style>
 </head>
 <body>
   <div class="inv-container">
-    <!-- Top Header -->
-    <div class="inv-top">
-      <div>
-        <h1 class="inv-brand-name">${esc(compName)}</h1>
-        <div class="inv-brand-sub">${esc(compTagline)}</div>
-        <div class="inv-brand-contact">${esc(compContact)}</div>
+    <div class="inv-top-content">
+      <!-- Top Header -->
+      <div class="inv-top">
+        <div>
+          <h1 class="inv-brand-name">${esc(compName)}</h1>
+          <div class="inv-brand-sub">${esc(compTagline)}</div>
+          <div class="inv-brand-contact">${esc(compContact)}</div>
+        </div>
+        <div class="inv-title-col">
+          <div class="inv-main-title">INVOICE</div>
+          <div class="inv-main-sub">${esc(invSubtitle)}</div>
+        </div>
       </div>
-      <div class="inv-title-col">
-        <div class="inv-main-title">INVOICE</div>
-        <div class="inv-main-sub">${esc(invSubtitle)}</div>
-      </div>
-    </div>
 
-    <!-- Blue Top Divider -->
-    <div class="inv-top-divider"></div>
+      <!-- Blue Top Divider -->
+      <div class="inv-top-divider"></div>
 
-    <!-- 4-Column Meta Box -->
-    <div class="inv-meta-bar">
-      <div class="inv-meta-item">
-        <div class="inv-meta-label">INVOICE NO.</div>
-        <div class="inv-meta-val">${esc(invNo)}</div>
+      <!-- 4-Column Meta Box -->
+      <div class="inv-meta-bar">
+        <div class="inv-meta-item">
+          <div class="inv-meta-label">INVOICE NO.</div>
+          <div class="inv-meta-val">${esc(invNo)}</div>
+        </div>
+        <div class="inv-meta-item">
+          <div class="inv-meta-label">ISSUE DATE</div>
+          <div class="inv-meta-val">${esc(issueDate)}</div>
+        </div>
+        <div class="inv-meta-item">
+          <div class="inv-meta-label">DUE DATE</div>
+          <div class="inv-meta-val">${esc(dueDate)}</div>
+        </div>
+        <div class="inv-meta-item">
+          <div class="inv-meta-label">CURRENCY</div>
+          <div class="inv-meta-val">${esc(cur)}</div>
+        </div>
       </div>
-      <div class="inv-meta-item">
-        <div class="inv-meta-label">ISSUE DATE</div>
-        <div class="inv-meta-val">${esc(issueDate)}</div>
-      </div>
-      <div class="inv-meta-item">
-        <div class="inv-meta-label">DUE DATE</div>
-        <div class="inv-meta-val">${esc(dueDate)}</div>
-      </div>
-      <div class="inv-meta-item">
-        <div class="inv-meta-label">CURRENCY</div>
-        <div class="inv-meta-val">${esc(cur)}</div>
-      </div>
-    </div>
 
-    <!-- Bill To & Service Details 2-Column Box -->
-    <div class="inv-party-grid">
-      <div class="inv-party-col">
-        <div class="inv-party-head">BILL TO</div>
-        <div class="inv-party-client-name">${esc(clientName)}</div>
-        <div class="inv-party-text">Contact: ${esc(clientPerson)}</div>
-        <div class="inv-party-text">Email / Phone: ${esc(clientContact)}</div>
-        <div class="inv-party-text">Billing Address: ${esc(clientAddr)}</div>
+      <!-- Bill To & Service Details 2-Column Box -->
+      <div class="inv-party-grid">
+        <div class="inv-party-col">
+          <div class="inv-party-head">BILL TO</div>
+          <div class="inv-party-client-name">${esc(clientName)}</div>
+          ${clientBusinessName ? `<div class="inv-party-text"><strong>Organization:</strong> ${esc(clientBusinessName)}</div>` : ''}
+          <div class="inv-party-text">Contact: ${esc(clientPerson)}</div>
+          <div class="inv-party-text">Email / Phone: ${esc(clientContact)}</div>
+          <div class="inv-party-text">Billing Address: ${esc(clientAddr)}</div>
+        </div>
+        <div class="inv-party-col">
+          <div class="inv-party-head">SERVICE DETAILS</div>
+          <div class="inv-party-text"><strong>Project / Service:</strong> ${esc(invoice.project || invoice.projectName || customer.projectName || 'Enterprise Software & Cloud Billing')}</div>
+          <div class="inv-party-text"><strong>Service Type:</strong> ${esc(invoice.serviceType || 'Software Development & Hosting')}</div>
+          <div class="inv-party-text"><strong>Billing Cycle:</strong> ${esc(billingPeriod)}</div>
+          <div class="inv-party-text"><strong>Service Period:</strong> ${esc(servicePeriod)}</div>
+        </div>
       </div>
-      <div class="inv-party-col">
-        <div class="inv-party-head">SERVICE DETAILS</div>
-        <div class="inv-party-text"><strong>Project / Service:</strong> ${esc(invoice.project || invoice.projectName || customer.projectName || 'Enterprise Software & Cloud Billing')}</div>
-        <div class="inv-party-text"><strong>Service Type:</strong> ${esc(invoice.serviceType || 'Software Development & Hosting')}</div>
-        <div class="inv-party-text"><strong>Billing Cycle:</strong> ${esc(billingPeriod)}</div>
-        <div class="inv-party-text"><strong>Service Period:</strong> ${esc(servicePeriod)}</div>
-      </div>
-    </div>
 
-    <!-- Table: INVOICE ITEMS -->
-    <div class="inv-table-wrap">
-      <div class="inv-table-title">INVOICE ITEMS</div>
-      <table class="inv-table">
-        <thead>
-          <tr>
-            <th style="width: 5%; text-align: center;">#</th>
-            <th style="width: 45%;">Description</th>
-            <th style="width: 25%;">Billing Period / Milestone</th>
-            <th style="width: 10%; text-align: center;">Qty</th>
-            <th style="width: 15%; text-align: right;">Amount</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items.map((x, idx) => `
+      <!-- Table: INVOICE ITEMS -->
+      <div class="inv-table-wrap">
+        <div class="inv-table-title">INVOICE ITEMS</div>
+        <table class="inv-table">
+          <thead>
             <tr>
-              <td style="text-align: center; color: #64748b; font-weight: 600;">${idx + 1}</td>
-              <td>
-                <strong>${esc(x.name || x.description || 'Service Deliverable')}</strong>
-                ${x.desc ? `<div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">${esc(x.desc)}</div>` : ''}
-              </td>
-              <td>${esc(x.period || billingPeriod)}</td>
-              <td style="text-align: center;">${x.qty || 1}</td>
-              <td style="text-align: right; font-weight: 700;">${money(x.amount || (Number(x.qty || 1) * Number(x.price || 0)), cur)}</td>
+              <th style="width: 5%; text-align: center;">#</th>
+              <th style="width: 45%;">Description</th>
+              <th style="width: 25%;">Billing Period / Milestone</th>
+              <th style="width: 10%; text-align: center;">Qty</th>
+              <th style="width: 15%; text-align: right;">Amount</th>
             </tr>
-          `).join('')}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            ${items.map((x, idx) => `
+              <tr>
+                <td style="text-align: center; color: #64748b; font-weight: 600;">${idx + 1}</td>
+                <td>
+                  <strong>${esc(x.name || x.description || 'Service Deliverable')}</strong>
+                  ${x.desc ? `<div style="font-size: 9.5px; color: #64748b; margin-top: 1px;">${esc(x.desc)}</div>` : ''}
+                </td>
+                <td>${esc(x.period || billingPeriod)}</td>
+                <td style="text-align: center;">${x.qty || 1}</td>
+                <td style="text-align: right; font-weight: 700;">${money(x.amount || (Number(x.qty || 1) * Number(x.price || 0)), cur)}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Bottom 2-Column Section -->
+      <div class="inv-bottom-grid">
+        <!-- Left: Payment Details & Notes -->
+        <div class="inv-payment-box">
+          <div class="inv-section-title">PAYMENT DETAILS</div>
+          <div class="inv-pay-row">
+            <span class="inv-pay-label">Method:</span>
+            <span class="inv-pay-val">${esc(payMethod)}</span>
+          </div>
+          <div class="inv-pay-row">
+            <span class="inv-pay-label">Account Title:</span>
+            <span class="inv-pay-val">${esc(bankTitle)}</span>
+          </div>
+          <div class="inv-pay-row">
+            <span class="inv-pay-label">Bank / Wallet:</span>
+            <span class="inv-pay-val">${esc(bankName)}</span>
+          </div>
+          <div class="inv-pay-row">
+            <span class="inv-pay-label">Account / IBAN:</span>
+            <span class="inv-pay-val" style="font-family: monospace; font-size: 11px;">${esc(bankIban)}</span>
+          </div>
+
+          <div class="inv-section-title" style="margin-top: 8px; border-top: 1px solid #f1f5f9; padding-top: 5px;">NOTES / TERMS</div>
+          <div class="inv-notes-content">${esc(notesTerms)}</div>
+        </div>
+
+        <!-- Right: Financial Summary -->
+        <div class="inv-summary-box">
+          <div class="inv-sum-row">
+            <span>Subtotal</span>
+            <strong>${money(invoice.subtotal || invoice.total, cur)}</strong>
+          </div>
+          ${Boolean(invoice.discount) ? `
+            <div class="inv-sum-row">
+              <span>Discount</span>
+              <strong style="color: #16a34a;">- ${money(invoice.discount, cur)}</strong>
+            </div>
+          ` : `
+            <div class="inv-sum-row">
+              <span>Discount</span>
+              <span>[0.00]</span>
+            </div>
+          `}
+          ${Boolean(invoice.taxAmount || invoice.taxPct) ? `
+            <div class="inv-sum-row">
+              <span>Tax / VAT ${invoice.taxPct ? `(${invoice.taxPct}%)` : ''}</span>
+              <strong>${money(invoice.taxAmount, cur)}</strong>
+            </div>
+          ` : `
+            <div class="inv-sum-row">
+              <span>Tax / VAT</span>
+              <span>[0.00]</span>
+            </div>
+          `}
+          ${prevDuesVal > 0 ? `
+            <div class="inv-sum-row" style="color: #d97706;">
+              <span>Arrears / Prev Dues ${prevMonthLabel ? `(${esc(prevMonthLabel)})` : ''}</span>
+              <strong>+ ${money(prevDuesVal, cur)}</strong>
+            </div>
+          ` : ''}
+          <div class="inv-sum-row total-row">
+            <span>TOTAL</span>
+            <strong>${money(invoice.total, cur)}</strong>
+          </div>
+          <div class="inv-sum-row">
+            <span>Paid</span>
+            <span>${money(invoice.paid || 0, cur)}</span>
+          </div>
+          <div class="inv-sum-row due-row">
+            <span>BALANCE DUE</span>
+            <span>${money(invoice.balance !== undefined ? invoice.balance : invoice.total, cur)}</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Bottom 2-Column Section -->
-    <div class="inv-bottom-grid">
-      <!-- Left: Payment Details & Notes -->
-      <div class="inv-payment-box">
-        <div class="inv-section-title">PAYMENT DETAILS</div>
-        <div class="inv-pay-row">
-          <span class="inv-pay-label">Method:</span>
-          <span class="inv-pay-val">${esc(payMethod)}</span>
+    <!-- Bottom Section Pinned to Bottom -->
+    <div class="inv-bottom-content">
+      <!-- Signatures Row -->
+      <div class="inv-sig-row">
+        <div class="inv-prep-by">
+          <strong>Prepared By:</strong> ${esc(prepBy)}
         </div>
-        <div class="inv-pay-row">
-          <span class="inv-pay-label">Account Title:</span>
-          <span class="inv-pay-val">${esc(bankTitle)}</span>
-        </div>
-        <div class="inv-pay-row">
-          <span class="inv-pay-label">Bank / Wallet:</span>
-          <span class="inv-pay-val">${esc(bankName)}</span>
-        </div>
-        <div class="inv-pay-row">
-          <span class="inv-pay-label">Account / IBAN:</span>
-          <span class="inv-pay-val" style="font-family: monospace; font-size: 11px;">${esc(bankIban)}</span>
-        </div>
-
-        <div class="inv-section-title" style="margin-top: 10px; border-top: 1px solid #f1f5f9; padding-top: 6px;">NOTES / TERMS</div>
-        <div class="inv-notes-content">${esc(notesTerms)}</div>
-      </div>
-
-      <!-- Right: Financial Summary -->
-      <div class="inv-summary-box">
-        <div class="inv-sum-row">
-          <span>Subtotal</span>
-          <strong>${money(invoice.subtotal || invoice.total, cur)}</strong>
-        </div>
-        ${Boolean(invoice.discount) ? `
-          <div class="inv-sum-row">
-            <span>Discount</span>
-            <strong style="color: #16a34a;">- ${money(invoice.discount, cur)}</strong>
-          </div>
-        ` : `
-          <div class="inv-sum-row">
-            <span>Discount</span>
-            <span>[0.00]</span>
-          </div>
-        `}
-        ${Boolean(invoice.taxAmount || invoice.taxPct) ? `
-          <div class="inv-sum-row">
-            <span>Tax / VAT ${invoice.taxPct ? `(${invoice.taxPct}%)` : ''}</span>
-            <strong>${money(invoice.taxAmount, cur)}</strong>
-          </div>
-        ` : `
-          <div class="inv-sum-row">
-            <span>Tax / VAT</span>
-            <span>[0.00]</span>
-          </div>
-        `}
-        ${prevDuesVal > 0 ? `
-          <div class="inv-sum-row" style="color: #d97706;">
-            <span>Arrears / Prev Dues ${prevMonthLabel ? `(${esc(prevMonthLabel)})` : ''}</span>
-            <strong>+ ${money(prevDuesVal, cur)}</strong>
-          </div>
-        ` : ''}
-        <div class="inv-sum-row total-row">
-          <span>TOTAL</span>
-          <strong>${money(invoice.total, cur)}</strong>
-        </div>
-        <div class="inv-sum-row">
-          <span>Paid</span>
-          <span>${money(invoice.paid || 0, cur)}</span>
-        </div>
-        <div class="inv-sum-row due-row">
-          <span>BALANCE DUE</span>
-          <span>${money(invoice.balance !== undefined ? invoice.balance : invoice.total, cur)}</span>
+        <div class="inv-auth-sig">
+          <strong>Authorized Signature:</strong> ______________________
         </div>
       </div>
+
+      <!-- Footer Message & Contact -->
+      <div class="inv-footer-msg">${esc(thankYouMsg)}</div>
+      <div class="inv-footer-bottom">${esc(compName)} | ${esc(compEmail)} | ${esc(compPhone)} | ${esc(compWebsite)}</div>
     </div>
-
-    <!-- Signatures Row -->
-    <div class="inv-sig-row">
-      <div class="inv-prep-by">
-        <strong>Prepared By:</strong> ${esc(prepBy)}
-      </div>
-      <div class="inv-auth-sig">
-        <strong>Authorized Signature:</strong> ______________________
-      </div>
-    </div>
-
-    <!-- Footer Message & Contact -->
-    <div class="inv-footer-msg">${esc(thankYouMsg)}</div>
-    <div class="inv-footer-bottom">${esc(compName)} | ${esc(compEmail)} | ${esc(compPhone)} | ${esc(compWebsite)}</div>
   </div>
 </body>
 </html>`;

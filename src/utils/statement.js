@@ -5,14 +5,19 @@ import { downloadAsPdf, sendPdfToWhatsApp, downloadAndSendWhatsApp } from './wha
  * Generate a complete, elegant Client Account Statement HTML document.
  */
 export function generateStatementHtml(customer = {}, business = {}, invoices = []) {
+  const p = business.proposalData || {};
   const cur = business.currency || 'PKR';
   const custInvoices = invoices
     .filter((i) => String(i.customerId) === String(customer.id))
     .sort((a, b) => new Date(a.date || a.createdAt || 0) - new Date(b.date || b.createdAt || 0));
 
-  const totalInvoiced = custInvoices.reduce((sum, i) => sum + Number(i.total || 0), 0);
+  const totalInvoiced = custInvoices.reduce((sum, i) => sum + Number(i.subtotal || i.total || 0), 0);
   const totalPaid = custInvoices.reduce((sum, i) => sum + Number(i.paid || 0), 0);
-  const totalOutstanding = custInvoices.reduce((sum, i) => sum + Number(i.balance !== undefined ? i.balance : Math.max(0, (i.total || 0) - (i.paid || 0))), 0);
+  const totalOutstanding = custInvoices.reduce((sum, i) => sum + Math.max(0, Number(i.subtotal || 0) - Number(i.paid || 0)), 0);
+
+  const orgName = p.companyName || 'iSysware Software Solution';
+  const orgAddress = p.officeAddress || business.address || '';
+  const orgContact = [p.supportPhone || business.phone, p.inquiryEmail || business.email, p.websiteUrl].filter(Boolean).join(' • ');
 
   // Build sequential ledger transactions
   let runningBalance = 0;
@@ -20,13 +25,14 @@ export function generateStatementHtml(customer = {}, business = {}, invoices = [
 
   custInvoices.forEach((inv) => {
     // 1. Invoice Debit
-    runningBalance += Number(inv.total || 0);
+    const invDebit = Number(inv.subtotal || inv.total || 0);
+    runningBalance += invDebit;
     ledgerRows.push({
       date: inv.date || '-',
       type: 'Invoice Generated',
       ref: inv.invoiceNo,
       description: `Monthly Fee (${inv.month} ${inv.year})`,
-      debit: Number(inv.total || 0),
+      debit: invDebit,
       credit: 0,
       balance: runningBalance,
       status: inv.status
@@ -106,10 +112,10 @@ export function generateStatementHtml(customer = {}, business = {}, invoices = [
       <div class="st-brand">
         <div class="st-logo">${business.logo ? `<img src="${business.logo}" alt="Logo">` : 'LOGO'}</div>
         <div>
-          <h2>${esc(business.name || 'Your Business')}</h2>
-          <p>${esc(business.address || '')}</p>
-          <p>${esc([business.phone, business.email].filter(Boolean).join(' • '))}</p>
-          ${business.tax ? `<p>NTN/Tax: ${esc(business.tax)}</p>` : ''}
+          <h2>${esc(orgName)}</h2>
+          ${orgAddress ? `<p>${esc(orgAddress)}</p>` : ''}
+          ${orgContact ? `<p>${esc(orgContact)}</p>` : ''}
+          ${p.ntnTax ? `<p>NTN/Tax: ${esc(p.ntnTax)}</p>` : ''}
         </div>
       </div>
       <div class="st-meta">
@@ -123,7 +129,7 @@ export function generateStatementHtml(customer = {}, business = {}, invoices = [
       <div>
         <h4>Statement For:</h4>
         <p><strong>${esc(customer.name || 'Client')}</strong></p>
-        ${customer.company ? `<p>${esc(customer.company)}</p>` : ''}
+        ${(customer.company || business.name) ? `<p>Organization: ${esc(customer.company || business.name)}</p>` : ''}
         ${customer.phone ? `<p>Phone: ${esc(customer.phone)}</p>` : ''}
         ${customer.whatsapp && customer.whatsapp !== customer.phone ? `<p>WhatsApp: ${esc(customer.whatsapp)}</p>` : ''}
       </div>

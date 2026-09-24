@@ -11,7 +11,7 @@ export default function DashboardPage() {
   const invoiceCount = state.invoices.length;
 
   const totalCollected = state.invoices.reduce((acc, i) => acc + Number(i.paid || 0), 0);
-  const totalOutstanding = state.invoices.reduce((acc, i) => acc + Number(i.balance || 0), 0);
+  const totalOutstanding = state.invoices.reduce((acc, i) => acc + Math.max(0, Number(i.subtotal || 0) - Number(i.paid || 0)), 0);
   const defaultCurrency = state.settings?.currency || 'PKR';
 
   const recentInvoices = state.invoices.slice(0, 8);

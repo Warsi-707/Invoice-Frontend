@@ -52,11 +52,12 @@ export default function InvoiceCollectionPage() {
   };
 
   const autoDownloadAndWhatsApp = async (inv, b, c) => {
-    const htmlContent = generateInvoiceHtml(inv, b, c);
+    const htmlContent = generateInvoiceHtml(inv, { ...b, proposalData: state.settings?.proposalData || b?.proposalData }, c);
     const fileName = `${inv.invoiceNo || 'invoice'}.pdf`;
     const phone = c?.whatsapp || c?.phone;
+    const orgBrand = state.settings?.proposalData?.companyName || state.settings?.companyName || 'iSysware';
     const statusNote = inv.status === 'Paid' ? '✅ Full Payment Received' : `💵 Partial Payment Received`;
-    const caption = `📄 *Invoice ${inv.invoiceNo}*\n🏢 ${b?.name || ''}\n👤 ${c?.name || 'Client'}\n📌 ${statusNote}\n💰 Balance: ${formatMoney(inv.balance, inv.businessId)}`;
+    const caption = `📄 *Invoice ${inv.invoiceNo}*\n🏢 ${orgBrand}\n👤 ${c?.name || 'Client'}\n📌 ${statusNote}\n💰 Balance: ${formatMoney(inv.balance, inv.businessId)}`;
 
     await downloadAndSendWhatsApp({
       htmlContent,
@@ -109,9 +110,10 @@ export default function InvoiceCollectionPage() {
         return;
       }
       showToast('⚡ Sending invoice PDF to WhatsApp...');
-      const htmlContent = generateInvoiceHtml(invoice, b, c);
+      const htmlContent = generateInvoiceHtml(invoice, { ...b, proposalData: state.settings?.proposalData || b?.proposalData }, c);
       const fileName = `${invoice.invoiceNo || 'invoice'}.pdf`;
-      const caption = `📄 *Invoice ${invoice.invoiceNo}*\n🏢 ${b?.name || ''}\n👤 ${c?.name || 'Client'}\n💰 Total: ${formatMoney(invoice.total, invoice.businessId)}`;
+      const orgBrand = state.settings?.proposalData?.companyName || state.settings?.companyName || 'iSysware';
+      const caption = `📄 *Invoice ${invoice.invoiceNo}*\n🏢 ${orgBrand}\n👤 ${c?.name || 'Client'}\n💰 Total: ${formatMoney(invoice.total, invoice.businessId)}`;
       await sendPdfToWhatsApp({ phone, htmlContent, fileName, caption });
       showToast(`✅ WhatsApp PDF sent to ${c?.name || 'Client'}!`);
     } catch (err) {
@@ -129,8 +131,9 @@ export default function InvoiceCollectionPage() {
       const fileName = `Statement_${cleanName}_${today()}.pdf`;
       const phone = c.whatsapp || c.phone;
       const custInvoices = state.invoices.filter((i) => String(i.customerId) === String(c.id));
-      const totalOutstanding = custInvoices.reduce((sum, i) => sum + Number(i.balance !== undefined ? i.balance : Math.max(0, (i.total || 0) - (i.paid || 0))), 0);
-      const caption = `📊 *Account Statement: ${c.name || 'Client'}*\n🏢 ${b?.name || ''}\n💰 Current Outstanding: ${formatMoney(totalOutstanding, b?.id)}\n📅 Date: ${today()}`;
+      const totalOutstanding = custInvoices.reduce((sum, i) => sum + Math.max(0, Number(i.subtotal || 0) - Number(i.paid || 0)), 0);
+      const orgBrand = state.settings?.proposalData?.companyName || state.settings?.companyName || 'iSysware';
+      const caption = `📊 *Account Statement: ${c.name || 'Client'}*\n🏢 ${orgBrand}\n💰 Current Outstanding: ${formatMoney(totalOutstanding, b?.id)}\n📅 Date: ${today()}`;
 
       await downloadAndSendWhatsApp({
         htmlContent: html,

@@ -226,9 +226,10 @@ export default function BusinessCustomerPage() {
       const fileName = `Statement_${cleanName}_${today()}.pdf`;
       const phone = customer.whatsapp || customer.phone;
       const custInvoices = state.invoices.filter((i) => String(i.customerId) === String(customer.id));
-      const totalOutstanding = custInvoices.reduce((sum, i) => sum + Number(i.balance !== undefined ? i.balance : Math.max(0, (i.total || 0) - (i.paid || 0))), 0);
+      const totalOutstanding = custInvoices.reduce((sum, i) => sum + Math.max(0, Number(i.subtotal || 0) - Number(i.paid || 0)), 0);
       const cur = business.currency || state.settings?.currency || 'PKR';
-      const caption = `📊 *Account Statement: ${customer.name || 'Client'}*\n🏢 ${business.name || ''}\n💰 Current Outstanding: ${money(totalOutstanding, cur)}\n📅 Date: ${today()}`;
+      const orgBrand = state.settings?.proposalData?.companyName || state.settings?.companyName || 'iSysware';
+      const caption = `📊 *Account Statement: ${customer.name || 'Client'}*\n🏢 ${orgBrand}\n💰 Current Outstanding: ${money(totalOutstanding, cur)}\n📅 Date: ${today()}`;
 
       await downloadAndSendWhatsApp({
         htmlContent: html,
@@ -278,9 +279,9 @@ export default function BusinessCustomerPage() {
     .map((c) => {
       const b = getBusiness(c.businessId) || {};
       const custInvoices = state.invoices.filter((i) => i.customerId === c.id);
-      const totalBilled = custInvoices.reduce((acc, i) => acc + Number(i.total || 0), 0);
+      const totalBilled = custInvoices.reduce((acc, i) => acc + Number(i.subtotal || i.total || 0), 0);
       const totalPaid = custInvoices.reduce((acc, i) => acc + Number(i.paid || 0), 0);
-      const outstanding = custInvoices.reduce((acc, i) => acc + Number(i.balance || 0), 0);
+      const outstanding = custInvoices.reduce((acc, i) => acc + Math.max(0, Number(i.subtotal || 0) - Number(i.paid || 0)), 0);
       return {
         customer: c,
         business: b,
@@ -615,9 +616,9 @@ export default function BusinessCustomerPage() {
           {(() => {
             const { customer, business } = viewingTarget;
             const custInvoices = state.invoices.filter((i) => i.customerId === customer.id);
-            const totalBilled = custInvoices.reduce((acc, i) => acc + Number(i.total || 0), 0);
+            const totalBilled = custInvoices.reduce((acc, i) => acc + Number(i.subtotal || i.total || 0), 0);
             const totalPaid = custInvoices.reduce((acc, i) => acc + Number(i.paid || 0), 0);
-            const outstanding = custInvoices.reduce((acc, i) => acc + Number(i.balance || 0), 0);
+            const outstanding = custInvoices.reduce((acc, i) => acc + Math.max(0, Number(i.subtotal || 0) - Number(i.paid || 0)), 0);
             const cur = business.currency || state.settings?.currency || 'PKR';
 
             return (
