@@ -45,7 +45,7 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
     iframe.style.left = '-9999px';
     iframe.style.top = '0';
     iframe.style.width = '794px';
-    iframe.style.height = '1000px';
+    iframe.style.height = '1200px';
     iframe.style.border = '0';
     iframe.style.zIndex = '-99999';
     iframe.style.backgroundColor = '#ffffff';
@@ -57,10 +57,14 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
       iframeDoc.write(htmlContent);
       iframeDoc.close();
 
-      // Allow 150ms for DOM layout and style computation
+      // Allow DOM layout and style computation
       setTimeout(async () => {
         try {
           const targetElement = iframeDoc.querySelector('.a4-page') || iframeDoc.querySelector('.invoice') || iframeDoc.body;
+          if (targetElement && targetElement.scrollHeight) {
+            iframe.style.height = `${Math.max(1123, targetElement.scrollHeight + 40)}px`;
+          }
+
           const opt = {
             margin: 0,
             filename: fileName,
@@ -71,7 +75,8 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
               letterRendering: true,
               logging: false,
               backgroundColor: '#ffffff',
-              windowWidth: 794
+              windowWidth: 794,
+              width: 794
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
@@ -86,7 +91,7 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
             iframe.remove();
           }, 500);
         }
-      }, 120);
+      }, 150);
     } catch (e) {
       iframe.remove();
       reject(e);
