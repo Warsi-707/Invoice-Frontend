@@ -63,46 +63,48 @@ export function generateStatementHtml(customer = {}, business = {}, invoices = [
   <meta charset="utf-8">
   <title>Account Statement - ${esc(customer.name || 'Client')}</title>
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f7fb; padding: 24px; color: #172033; margin: 0; }
-    .statement { max-width: 780px; margin: 0 auto; padding: 32px 36px; background: #fff; border: 1px solid #dfe6ef; border-radius: 12px; position: relative; }
-    .st-head { display: flex; justify-content: space-between; gap: 24px; padding-bottom: 20px; border-bottom: 2px solid #0f2744; }
+    @page { margin: 8mm; size: A4 portrait; }
+    * { box-sizing: border-box; }
+    html, body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background: #ffffff !important; padding: 0 !important; margin: 0 !important; color: #172033; }
+    .statement { width: 750px !important; max-width: 750px !important; margin: 0 auto !important; padding: 24px 28px !important; background: #ffffff !important; border: 1.5px solid #cbd5e1 !important; border-radius: 10px !important; box-sizing: border-box !important; position: relative; }
+    .st-head { display: flex; justify-content: space-between; gap: 24px; padding-bottom: 16px; border-bottom: 2px solid #0b4b8f; }
     .st-brand { display: flex; gap: 14px; }
-    .st-logo { width: 62px; height: 62px; border: 1px solid #d6deea; border-radius: 8px; display: grid; place-items: center; overflow: hidden; font-weight: 800; color: #64748b; background: #fafbfd; }
+    .st-logo { width: 56px; height: 56px; border: 1px solid #d6deea; border-radius: 8px; display: grid; place-items: center; overflow: hidden; font-weight: 800; color: #64748b; background: #fafbfd; }
     .st-logo img { width: 100%; height: 100%; object-fit: contain; }
-    .st-brand h2 { margin: 0 0 4px; font-size: 22px; color: #0f2744; }
-    .st-brand p { margin: 2px 0; color: #64748b; font-size: 11.5px; }
+    .st-brand h2 { margin: 0 0 3px; font-size: 20px; font-weight: 850; color: #0b4b8f; }
+    .st-brand p { margin: 2px 0; color: #64748b; font-size: 11px; }
     .st-meta { text-align: right; }
-    .st-meta h1 { margin: 0 0 6px; font-size: 24px; color: #0b4b8f; letter-spacing: 0.5px; }
-    .st-meta div { font-size: 11.5px; margin: 3px 0; color: #475569; }
+    .st-meta h1 { margin: 0 0 4px; font-size: 22px; font-weight: 900; color: #0b4b8f; letter-spacing: 0.5px; }
+    .st-meta div { font-size: 11px; margin: 2px 0; color: #475569; }
     
-    .st-client-box { display: grid; grid-template-columns: 1.2fr 1fr; gap: 20px; margin: 22px 0; padding: 14px 18px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; }
-    .st-client-box h4 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
-    .st-client-box p { margin: 3px 0; font-size: 12.5px; color: #1e293b; }
+    .st-client-box { display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; margin: 16px 0; padding: 12px 14px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 6px; }
+    .st-client-box h4 { margin: 0 0 4px; font-size: 10px; font-weight: 800; text-transform: uppercase; color: #64748b; letter-spacing: 0.5px; }
+    .st-client-box p { margin: 2px 0; font-size: 11.5px; color: #1e293b; }
 
-    .st-summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 20px 0; }
-    .st-card { padding: 12px 14px; border-radius: 8px; border: 1px solid #e2e8f0; text-align: center; }
+    .st-summary-cards { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 16px 0; }
+    .st-card { padding: 10px 12px; border-radius: 6px; border: 1px solid #e2e8f0; text-align: center; }
     .st-card.billed { background: #eff6ff; border-color: #bfdbfe; }
     .st-card.paid { background: #f0fdf4; border-color: #bbf7d0; }
     .st-card.due { background: #fef2f2; border-color: #fecaca; }
-    .st-card-label { font-size: 10.5px; text-transform: uppercase; font-weight: 700; color: #64748b; margin-bottom: 4px; }
-    .st-card-val { font-size: 16px; font-weight: 800; }
+    .st-card-label { font-size: 9.5px; text-transform: uppercase; font-weight: 750; color: #64748b; margin-bottom: 2px; }
+    .st-card-val { font-size: 15px; font-weight: 850; }
     .st-card.billed .st-card-val { color: #1d4ed8; }
     .st-card.paid .st-card-val { color: #15803d; }
     .st-card.due .st-card-val { color: #b91c1c; }
 
-    table { width: 100%; border-collapse: collapse; margin-top: 18px; }
-    .st-table th, .st-table td { font-size: 11px; padding: 9px 10px; border: 1px solid #e2e8f0; text-align: left; }
-    .st-table th { background: #0f2744; color: #fff; font-weight: 700; font-size: 11px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 14px; }
+    .st-table th, .st-table td { font-size: 10.5px; padding: 7px 8px; border: 1px solid #e2e8f0; text-align: left; }
+    .st-table th { background: #0b4b8f; color: #fff; font-weight: 750; font-size: 10.5px; }
     .st-table tr:nth-child(even) td { background: #f8fafc; }
     .st-table tr.pay td { background: #f0fdf4; }
 
-    .sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 80px; margin-top: 50px; }
-    .sig { text-align: center; border-top: 1px solid #94a3b8; padding-top: 6px; font-size: 10.5px; color: #64748b; }
+    .sigs { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; margin-top: 36px; }
+    .sig { text-align: center; border-top: 1px solid #94a3b8; padding-top: 5px; font-size: 10px; color: #64748b; }
 
     @media print {
       body { background: #fff; padding: 0; }
-      .statement { border: none; border-radius: 0; max-width: 100%; box-shadow: none; padding: 10px; }
-      @page { size: A4; margin: 10mm 12mm; }
+      .statement { border: 1.5px solid #cbd5e1 !important; border-radius: 10px !important; width: 100% !important; max-width: 100% !important; box-shadow: none; }
+      @page { size: A4; margin: 8mm; }
     }
   </style>
 </head>

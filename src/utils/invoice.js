@@ -119,27 +119,20 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
     }
     .inv-container {
       width: 750px !important;
-      min-height: 1060px !important;
-      height: 1060px !important;
       max-width: 750px !important;
       margin: 0 auto !important;
-      padding: 24px 28px 85px 28px !important;
+      padding: 24px 28px !important;
       background: #ffffff !important;
       box-sizing: border-box !important;
-      border: 1.5px solid #94a3b8 !important;
+      border: 1.5px solid #cbd5e1 !important;
       border-radius: 10px !important;
       color: #1e293b;
-      position: relative !important;
     }
     .inv-top-content {
       width: 100%;
     }
     .inv-bottom-content {
-      position: absolute !important;
-      bottom: 18px !important;
-      left: 28px !important;
-      right: 28px !important;
-      width: calc(100% - 56px) !important;
+      width: 100%;
     }
     
     /* Top Header */
@@ -411,7 +404,7 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
         width: 100% !important;
         max-width: 100% !important;
         min-height: 98vh !important;
-        border: 1.5px solid #94a3b8 !important;
+        border: 1.5px solid #cbd5e1 !important;
         border-radius: 10px !important;
         box-shadow: none !important;
         page-break-inside: avoid !important;

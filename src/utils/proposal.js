@@ -51,17 +51,14 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
     }
     .a4-page {
       width: 750px !important;
-      min-height: 1060px !important;
-      height: 1060px !important;
       max-width: 750px !important;
       margin: 0 auto !important;
       background: #ffffff !important;
-      border: 1.5px solid #94a3b8 !important;
+      border: 1.5px solid #cbd5e1 !important;
       border-radius: 10px !important;
-      padding: 24px 28px 90px 28px !important;
+      padding: 26px 30px !important;
       box-sizing: border-box !important;
       color: #0f172a;
-      position: relative !important;
     }
     .prop-top-content {
       width: 100%;
@@ -206,13 +203,11 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
       white-space: pre-line !important;
     }
     .prop-sigs {
-      position: absolute !important;
-      bottom: 24px !important;
-      left: 28px !important;
-      right: 28px !important;
       display: grid !important;
       grid-template-columns: 1fr 1fr !important;
       gap: 80px !important;
+      margin-top: 32px !important;
+      padding-top: 4px !important;
     }
     .prop-sig-line {
       text-align: center;
@@ -230,8 +225,7 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
       .a4-page {
         width: 100% !important;
         max-width: 100% !important;
-        min-height: 98vh !important;
-        border: 1.5px solid #94a3b8 !important;
+        border: 1.5px solid #cbd5e1 !important;
         border-radius: 10px !important;
         box-shadow: none !important;
         page-break-inside: avoid !important;
