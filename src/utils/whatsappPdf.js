@@ -100,7 +100,7 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
         const pdfWidthMm = 210;
         const printableWidthMm = pdfWidthMm - (marginMm * 2); // 194mm (centered: 8mm left, 8mm right)
         const contentHeightMm = (elementHeightPx / elementWidthPx) * printableWidthMm;
-        const pdfHeightMm = Math.max(130, Math.ceil(contentHeightMm + (marginMm * 2) + 2));
+        const pdfHeightMm = Math.max(130, Math.ceil(contentHeightMm + (marginMm * 2) + 6));
 
         const opt = {
           margin: [marginMm, marginMm, marginMm, marginMm],
@@ -120,7 +120,7 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
             scrollY: 0
           },
           jsPDF: { unit: 'mm', format: [pdfWidthMm, pdfHeightMm], orientation: 'portrait' },
-          pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+          pagebreak: { mode: 'avoid-all' }
         };
 
         const pdfBlob = await html2pdf().set(opt).from(targetElement).output('blob');

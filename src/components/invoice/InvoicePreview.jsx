@@ -140,9 +140,6 @@ export default function InvoicePreview({
           </div>
         </div>
 
-        {/* Blue Top Divider */}
-        <div style={{ height: '3px', background: '#0b4b8f', marginTop: '8px', marginBottom: '14px', borderRadius: '2px' }} />
-
         {/* 4-Column Meta Box */}
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', border: '1px solid #cbd5e1', borderRadius: '4px', overflow: 'hidden', marginBottom: '14px', background: '#ffffff' }}>
           <div style={{ padding: '6px 10px', borderRight: '1px solid #cbd5e1' }}>

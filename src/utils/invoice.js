@@ -140,6 +140,7 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
+      margin-bottom: 14px;
     }
     .inv-brand-name {
       font-size: 24px;
@@ -176,13 +177,6 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       color: #64748b;
       margin: 0;
       font-weight: 500;
-    }
-    .inv-top-divider {
-      height: 3px;
-      background: #0b4b8f;
-      margin-top: 10px;
-      margin-bottom: 14px;
-      border-radius: 2px;
     }
 
     /* 4-Column Meta Box */
@@ -408,11 +402,9 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       .inv-container {
         width: 100% !important;
         max-width: 100% !important;
-        min-height: 98vh !important;
         border: 1.5px solid #cbd5e1 !important;
         border-radius: 10px !important;
         box-shadow: none !important;
-        page-break-inside: avoid !important;
       }
       @page { margin: 8mm; }
     }
@@ -433,9 +425,6 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
           <div class="inv-main-sub">${esc(invSubtitle)}</div>
         </div>
       </div>
-
-      <!-- Blue Top Divider -->
-      <div class="inv-top-divider"></div>
 
       <!-- 4-Column Meta Box -->
       <div class="inv-meta-bar">
