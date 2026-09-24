@@ -172,9 +172,9 @@ export default function InvoiceGeneratorPage() {
       discount: 0,
       taxPct: 0,
       taxAmount: 0,
-      total: finalGrandTotal,
+      total: totals.total || totals.subtotal,
       paid: 0,
-      balance: finalGrandTotal,
+      balance: totals.total || totals.subtotal,
       status: 'Unpaid',
       notes: state.settings?.footerNote || ''
     };
@@ -201,7 +201,7 @@ export default function InvoiceGeneratorPage() {
       discount: 0,
       taxPct: 0,
       taxAmount: 0,
-      total: finalGrandTotal,
+      total: totals.total || totals.subtotal,
       notes: state.settings?.footerNote || ''
     };
 
@@ -451,7 +451,7 @@ export default function InvoiceGeneratorPage() {
                     )}
 
                     <div className="tline grand">
-                      <span>Grand Total</span>
+                      <span>{effectivePreviousDues > 0 ? 'Total Payable (With Previous)' : 'Grand Total'}</span>
                       <span>{money(finalGrandTotal, currency)}</span>
                     </div>
                   </div>
