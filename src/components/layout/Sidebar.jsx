@@ -145,25 +145,16 @@ export default function Sidebar() {
             </span>
           </button>
 
-          {/* 5 Modular Settings Sub-Items */}
+          {/* 3 Sub-Modules Dropdown Menu */}
           {isSettingsOpen && (
             <div className="nav-submenu">
               <button
                 type="button"
-                className={`nav-sub-item ${currentPage === 'settings' && settingsTab === 'org' ? 'active' : ''}`}
+                className={`nav-sub-item ${currentPage === 'settings' && (settingsTab === 'org' || !settingsTab) ? 'active' : ''}`}
                 onClick={() => handleSubTabClick('org')}
               >
                 <span className="nav-sub-bullet">🏛️</span>
                 <span>Organization Identity</span>
-              </button>
-
-              <button
-                type="button"
-                className={`nav-sub-item ${currentPage === 'settings' && settingsTab === 'whatsapp' ? 'active' : ''}`}
-                onClick={() => handleSubTabClick('whatsapp')}
-              >
-                <span className="nav-sub-bullet">💬</span>
-                <span>WhatsApp Service</span>
               </button>
 
               <button
@@ -181,16 +172,7 @@ export default function Sidebar() {
                 onClick={() => handleSubTabClick('invoice')}
               >
                 <span className="nav-sub-bullet">🧾</span>
-                <span>Invoice & Banking</span>
-              </button>
-
-              <button
-                type="button"
-                className={`nav-sub-item ${currentPage === 'settings' && settingsTab === 'system' ? 'active' : ''}`}
-                onClick={() => handleSubTabClick('system')}
-              >
-                <span className="nav-sub-bullet">🗄️</span>
-                <span>System & Database</span>
+                <span>Invoice Settings</span>
               </button>
             </div>
           )}

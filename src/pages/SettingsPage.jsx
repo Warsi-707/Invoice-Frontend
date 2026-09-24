@@ -1,9 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import Button from '../components/common/Button';
 import WhatsAppScannerCard from '../components/whatsapp/WhatsAppScannerCard';
 import ProposalPreviewModal from '../components/proposal/ProposalPreviewModal';
 import { downloadProposalFile } from '../utils/proposal';
+import { generateInvoiceHtml } from '../utils/invoice';
 import { money, today, cleanPhoneInput } from '../utils/formatters';
 
 const PRESET_TERMS = {
@@ -41,7 +42,7 @@ export default function SettingsPage() {
   } = useApp();
 
   const fileInputRef = useRef(null);
-  const activeTab = settingsTab || 'org'; // 'org' | 'proposal' | 'invoice'
+  const activeTab = settingsTab === 'proposal' ? 'proposal' : settingsTab === 'invoice' ? 'invoice' : 'org';
 
   // Tab 01: Organization Identity State
   const [adminUser, setAdminUser] = useState(state.settings?.admin || 'Administrator');
@@ -84,6 +85,50 @@ export default function SettingsPage() {
   const [propItems, setPropItems] = useState([
     { id: 'item-1', name: '', desc: '', type: 'Service', qty: 1, price: '' }
   ]);
+
+  // Sample live invoice preview for Module 03
+  const sampleInvoiceHtml = useMemo(() => {
+    return generateInvoiceHtml(
+      {
+        invoiceNo: `${invoicePrefix || 'INV-'}2026-0001`,
+        date: today(),
+        dueDate: today(),
+        month: 'September',
+        year: 2026,
+        subtotal: 50000,
+        total: 50000,
+        paid: 0,
+        balance: 50000,
+        status: 'Unpaid',
+        currency: currency,
+        notes: footerNote,
+        items: [
+          { name: 'Monthly Software & Cloud Infrastructure Maintenance', qty: 1, price: 50000, amount: 50000 }
+        ]
+      },
+      {
+        name: companyName || 'iSysware Software Solution',
+        currency: currency,
+        proposalData: {
+          companyName: companyName || 'iSysware Software Solution',
+          tagline: tagline || 'ERP • Custom Software • Web • AI Solutions',
+          supportPhone: supportPhone || '+92 314 8843707',
+          inquiryEmail: inquiryEmail || 'info@isysware.com',
+          websiteUrl: websiteUrl || 'isysware.com',
+          bankName: bankName || 'Meezan Bank',
+          accountTitle: accountTitle || 'iSysware Software Solution',
+          accountIban: accountIban || 'PK36MEZN00012345678901',
+          invoicePrefix: invoicePrefix || 'INV-'
+        }
+      },
+      {
+        name: 'Prime Horizon Ltd',
+        company: 'Prime Horizon Ltd',
+        phone: '+92 300 1234567',
+        address: 'Suite 402, Business Avenue, Karachi'
+      }
+    );
+  }, [invoicePrefix, currency, footerNote, companyName, tagline, supportPhone, inquiryEmail, websiteUrl, bankName, accountTitle, accountIban]);
 
   // Preview Modal State
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
@@ -252,13 +297,13 @@ export default function SettingsPage() {
         <div className="settings-header-title">
           <h2>
             <span>Settings & System Configuration</span>
-            <span className="modular-badge">5 Modules</span>
+            <span className="modular-badge">3 Modules</span>
           </h2>
-          <p>Configure organization identity, WhatsApp automation, letterhead proposal branding, invoice defaults, and cloud database.</p>
+          <p>Configure organization identity, letterhead proposal branding, and global invoice defaults.</p>
         </div>
       </div>
 
-      {/* 5 Modular Navigation Tabs */}
+      {/* 3 Modular Navigation Tabs */}
       <div className="settings-nav-tabs">
         {/* Module 1 Tab */}
         <button
@@ -274,30 +319,12 @@ export default function SettingsPage() {
           </div>
           <div className="tab-btn-content">
             <div className="tab-btn-title">Organization Identity</div>
-            <div className="tab-btn-sub">Admin Profile & Access Credentials</div>
+            <div className="tab-btn-sub">Admin, WhatsApp & Cloud DB</div>
           </div>
           <span className="tab-num-badge">Module 01</span>
         </button>
 
         {/* Module 2 Tab */}
-        <button
-          type="button"
-          className={`settings-tab-btn ${activeTab === 'whatsapp' ? 'active' : ''}`}
-          onClick={() => setSettingsTab('whatsapp')}
-        >
-          <div className="tab-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-            </svg>
-          </div>
-          <div className="tab-btn-content">
-            <div className="tab-btn-title">WhatsApp Service</div>
-            <div className="tab-btn-sub">Auto Delivery & QR Code Scanner</div>
-          </div>
-          <span className="tab-num-badge">Module 02</span>
-        </button>
-
-        {/* Module 3 Tab */}
         <button
           type="button"
           className={`settings-tab-btn ${activeTab === 'proposal' ? 'active' : ''}`}
@@ -316,10 +343,10 @@ export default function SettingsPage() {
             <div className="tab-btn-title">Proposal & Letterhead</div>
             <div className="tab-btn-sub">Corporate ID, A4 Sheet & Signature</div>
           </div>
-          <span className="tab-num-badge">Module 03</span>
+          <span className="tab-num-badge">Module 02</span>
         </button>
 
-        {/* Module 4 Tab */}
+        {/* Module 3 Tab */}
         <button
           type="button"
           className={`settings-tab-btn ${activeTab === 'invoice' ? 'active' : ''}`}
@@ -334,43 +361,21 @@ export default function SettingsPage() {
             </svg>
           </div>
           <div className="tab-btn-content">
-            <div className="tab-btn-title">Invoice & Banking</div>
-            <div className="tab-btn-sub">Currency, Due Days & Bank Accounts</div>
+            <div className="tab-btn-title">Invoice Settings</div>
+            <div className="tab-btn-sub">Currency, Due Days & Live Preview</div>
           </div>
-          <span className="tab-num-badge">Module 04</span>
-        </button>
-
-        {/* Module 5 Tab */}
-        <button
-          type="button"
-          className={`settings-tab-btn ${activeTab === 'system' ? 'active' : ''}`}
-          onClick={() => setSettingsTab('system')}
-        >
-          <div className="tab-btn-icon">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
-              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
-              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
-            </svg>
-          </div>
-          <div className="tab-btn-content">
-            <div className="tab-btn-title">System & Database</div>
-            <div className="tab-btn-sub">Neon Cloud DB, Backup & Recovery</div>
-          </div>
-          <span className="tab-num-badge">Module 05</span>
+          <span className="tab-num-badge">Module 03</span>
         </button>
       </div>
 
       {/* =========================================================================
-          MODULE 01: Organization Identity & Security (SINGLE CARD - NO MIXED CONTENT)
+          MODULE 01: Organization Identity & System Details (Admin, WhatsApp & DB)
          ========================================================================= */}
       {activeTab === 'org' && (
-        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+        <div className="settings-layout">
+          {/* Left Column: Admin & System Details */}
           <div className="settings-card">
-            <h4>🏛️ Organization Profile & Admin Security</h4>
-            <div className="settings-data-note">
-              Manage system administrator credentials and application security.
-            </div>
+            <h4>🏛️ Organization & Admin Security</h4>
 
             <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
               <div className="full">
@@ -419,73 +424,64 @@ export default function SettingsPage() {
               </div>
             </form>
           </div>
-        </div>
-      )}
 
-      {/* =========================================================================
-          MODULE 02: WhatsApp Service (DEDICATED SINGLE PAGE)
-         ========================================================================= */}
-      {activeTab === 'whatsapp' && (
-        <div style={{ maxWidth: '750px', margin: '0 auto' }}>
-          <WhatsAppScannerCard compact={false} />
-        </div>
-      )}
+          {/* Right Column: WhatsApp Delivery + Data & Backup */}
+          <div className="settings-right-stack">
+            {/* WhatsApp Scanner Card */}
+            <WhatsAppScannerCard compact={true} />
 
-      {/* =========================================================================
-          MODULE 05: System & Database (DEDICATED SINGLE PAGE)
-         ========================================================================= */}
-      {activeTab === 'system' && (
-        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
-          <div className="settings-card">
-            <h4>🗄️ Neon PostgreSQL Cloud Database</h4>
+            {/* Data & Backup Card */}
+            <div className="settings-card">
+              <h4>Neon PostgreSQL Cloud Database</h4>
 
-            <div className="settings-data-note">
-              Live cloud database records, automated backups, and emergency recovery.
-            </div>
-
-            <div className="data-summary">
-              <div className="data-stat">
-                <span>Businesses</span>
-                <strong>{businessCount}</strong>
+              <div className="settings-data-note">
+                Live cloud database records & synchronization.
               </div>
-              <div className="data-stat">
-                <span>Clients</span>
-                <strong>{customerCount}</strong>
-              </div>
-              <div className="data-stat">
-                <span>Invoices</span>
-                <strong>{invoiceCount}</strong>
-              </div>
-              <div className="data-stat">
-                <span>Payment Entries</span>
-                <strong>{paymentCount}</strong>
-              </div>
-              <div className="data-stat">
-                <span>Reversal Records</span>
-                <strong>{reversalCount}</strong>
-              </div>
-            </div>
 
-            <div className="settings-data-actions" style={{ marginTop: '20px' }}>
-              <Button variant="light" onClick={backupData}>
-                ⬇️ Backup JSON Data
-              </Button>
-              <Button variant="light" onClick={() => fileInputRef.current?.click()}>
-                ⬆️ Restore JSON Data
-              </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="application/json,.json"
-                className="hidden-file"
-                onChange={handleRestoreFileChange}
-              />
-            </div>
+              <div className="data-summary">
+                <div className="data-stat">
+                  <span>Businesses</span>
+                  <strong>{businessCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Clients</span>
+                  <strong>{customerCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Invoices</span>
+                  <strong>{invoiceCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Payment Entries</span>
+                  <strong>{paymentCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Reversal Records</span>
+                  <strong>{reversalCount}</strong>
+                </div>
+              </div>
 
-            <div className="data-danger" style={{ marginTop: '24px' }}>
-              <Button variant="danger" onClick={clearAllData}>
-                ⚠️ Clear All Data (Reset)
-              </Button>
+              <div className="settings-data-actions" style={{ marginTop: '16px' }}>
+                <Button variant="light" onClick={backupData}>
+                  ⬇️ Backup JSON Data
+                </Button>
+                <Button variant="light" onClick={() => fileInputRef.current?.click()}>
+                  ⬆️ Restore JSON Data
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden-file"
+                  onChange={handleRestoreFileChange}
+                />
+              </div>
+
+              <div className="data-danger" style={{ marginTop: '18px' }}>
+                <Button variant="danger" onClick={clearAllData}>
+                  ⚠️ Clear All Data (Reset)
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -823,7 +819,8 @@ export default function SettingsPage() {
           MODULE 03: Invoice Settings & Global Defaults
          ========================================================================= */}
       {activeTab === 'invoice' && (
-        <div className="settings-layout">
+        <div>
+          <div className="settings-layout">
           {/* Left Column: General Invoice Defaults */}
           <div className="settings-card">
             <h4>🧾 Invoice &amp; Billing Defaults</h4>
@@ -941,7 +938,42 @@ export default function SettingsPage() {
             </form>
           </div>
         </div>
-      )}
+
+        {/* Live Invoice Preview Section right below the details */}
+        <div className="settings-card" style={{ marginTop: '24px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
+            <div>
+              <h4 style={{ margin: 0 }}>📄 Live Invoice Template Preview</h4>
+              <div className="settings-data-note" style={{ marginTop: '4px' }}>
+                Real-time preview of how invoices look with current prefix, currency, footer notes, and bank credentials.
+              </div>
+            </div>
+          </div>
+
+          <div style={{
+            background: '#f8fafc',
+            padding: '24px',
+            borderRadius: '12px',
+            display: 'flex',
+            justifyContent: 'center',
+            overflowX: 'auto',
+            border: '1px solid #e2e8f0'
+          }}>
+            <div
+              style={{
+                background: '#ffffff',
+                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                borderRadius: '8px',
+                width: '750px',
+                maxWidth: '100%',
+                overflow: 'hidden'
+              }}
+              dangerouslySetInnerHTML={{ __html: sampleInvoiceHtml }}
+            />
+          </div>
+        </div>
+      </div>
+    )}
 
       {/* Live A4 Proposal Preview Modal */}
       <ProposalPreviewModal
