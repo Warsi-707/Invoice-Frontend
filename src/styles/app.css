@@ -1150,8 +1150,9 @@ tr:last-child td {
 
 .settings-layout {
   display: grid;
-  grid-template-columns: minmax(0, 1.8fr) minmax(300px, 0.9fr);
-  gap: 16px;
+  grid-template-columns: minmax(0, 1.1fr) minmax(360px, 1fr);
+  gap: 20px;
+  align-items: start;
 }
 
 .settings-card {
@@ -2554,77 +2555,25 @@ tr:last-child td {
     gap: 10px;
   }
 
-  #settings .settings-card,
-  #settings .wa-scanner-card.compact {
-    padding: 11px;
+  #settings .settings-card {
+    padding: 16px;
   }
 
   #settings .settings-card h4 {
-    margin-bottom: 8px;
-    font-size: 12px;
+    margin-bottom: 12px;
+    font-size: 14px;
   }
 
   #settings .settings-form-grid {
-    gap: 7px 9px;
-  }
-
-  #settings .settings-form-grid textarea {
-    height: 58px;
-    min-height: 58px;
+    gap: 12px 14px;
   }
 
   #settings .settings-card .settings-save {
-    margin-top: 7px;
+    margin-top: 12px;
   }
 
   #settings .settings-right-stack {
-    gap: 6px;
-  }
-
-  #settings .wa-scanner-card.compact .wa-card-header {
-    margin-bottom: 7px;
-  }
-
-  #settings .wa-scanner-card.compact .wa-icon-box {
-    width: 30px;
-    height: 30px;
-  }
-
-  #settings .wa-scanner-card.compact .wa-title-group h3 {
-    font-size: 12px;
-  }
-
-  #settings .wa-scanner-card.compact .wa-subtitle {
-    font-size: 9px;
-  }
-
-  #settings .wa-scanner-card.compact .wa-qr-frame {
-    width: 92px;
-    height: 92px;
-    padding: 5px;
-    margin-bottom: 4px;
-  }
-
-  #settings .wa-scanner-card.compact .wa-instructions,
-  #settings .wa-scanner-card.compact .wa-step-highlight {
-    font-size: 9px !important;
-  }
-
-  #settings .wa-scanner-card.compact .wa-step-sub {
-    font-size: 8px !important;
-  }
-
-  #settings .wa-scanner-card.compact .wa-card-body {
-    margin-bottom: 6px;
-  }
-
-  #settings .wa-scanner-card.compact .wa-card-actions {
-    margin-bottom: 5px;
-    gap: 5px;
-  }
-
-  #settings .wa-scanner-card.compact .wa-card-footer {
-    display: none;
+    gap: 12px;
   }
 
   #settings .data-stat {

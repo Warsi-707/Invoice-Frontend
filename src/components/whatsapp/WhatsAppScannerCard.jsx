@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { whatsappApi } from '../../services/api';
 import { cleanPhoneInput } from '../../utils/formatters';
 
-export default function WhatsAppScannerCard({ isStandalone = false, compact = false }) {
-  const [status, setStatus] = useState('CONNECTING'); // 'DISCONNECTED' | 'CONNECTING' | 'SCAN_QR' | 'CONNECTED'
+export default function WhatsAppScannerCard({ isStandalone = false }) {
+  const [status, setStatus] = useState('SCAN_QR'); // 'DISCONNECTED' | 'CONNECTING' | 'SCAN_QR' | 'CONNECTED'
   const [qrCode, setQrCode] = useState(null);
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -17,8 +17,8 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
       const res = await whatsappApi.getStatus();
       if (res) {
         setStatus(res.status);
-        setQrCode(res.qrCode);
-        setUser(res.user);
+        if (res.qrCode) setQrCode(res.qrCode);
+        if (res.user) setUser(res.user);
         setErrorMsg('');
       }
     } catch (err) {
@@ -33,11 +33,11 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
       const res = await whatsappApi.connect(force);
       if (res) {
         setStatus(res.status);
-        setQrCode(res.qrCode);
-        setUser(res.user);
+        if (res.qrCode) setQrCode(res.qrCode);
+        if (res.user) setUser(res.user);
       }
     } catch (err) {
-      setErrorMsg('Failed to initialize WhatsApp: ' + err.message);
+      console.warn('Failed to connect WhatsApp:', err.message);
     } finally {
       setLoading(false);
     }
@@ -48,7 +48,7 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
     setLoading(true);
     try {
       await whatsappApi.logout();
-      setStatus('DISCONNECTED');
+      setStatus('SCAN_QR');
       setQrCode(null);
       setUser(null);
     } catch (err) {
@@ -81,14 +81,13 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
     }
   };
 
-  // Initial connect & auto-polling
   useEffect(() => {
     handleConnect(false);
     fetchStatus();
 
     pollTimerRef.current = setInterval(() => {
       fetchStatus();
-    }, 1000);
+    }, 1200);
 
     return () => {
       if (pollTimerRef.current) clearInterval(pollTimerRef.current);
@@ -98,18 +97,18 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
   const isConnected = status === 'CONNECTED';
 
   return (
-    <div className={`wa-scanner-card ${isStandalone ? 'standalone' : ''} ${compact ? 'compact' : ''}`}>
+    <div className={`wa-scanner-card ${isStandalone ? 'standalone' : ''}`}>
       {/* Top Header */}
       <div className="wa-card-header">
         <div className="wa-title-group">
           <div className="wa-icon-box">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
               <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
             </svg>
           </div>
           <div>
             <h3>WhatsApp Automatic Delivery</h3>
-            <p className="wa-subtitle">Bilkut Free — apna WhatsApp connect karo</p>
+            <p className="wa-subtitle">Bilkut Free — apna WhatsApp connect karo, challans auto jayenge</p>
           </div>
         </div>
 
@@ -118,13 +117,9 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
             <span className="wa-status-badge connected">
               <span className="dot"></span> Connected {user?.phone ? `(${user.phone})` : ''}
             </span>
-          ) : status === 'SCAN_QR' ? (
-            <span className="wa-status-badge scan">
-              <span className="dot"></span> Scan QR Code
-            </span>
           ) : (
-            <span className="wa-status-badge connecting">
-              <span className="dot"></span> {status === 'CONNECTING' ? 'Connecting...' : 'Disconnected'}
+            <span className="wa-status-badge scan" style={{ background: '#fef3c7', color: '#b45309', border: '1px solid #fde68a' }}>
+              <span className="dot" style={{ background: '#f59e0b' }}></span> Scan QR Code
             </span>
           )}
         </div>
@@ -143,7 +138,6 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
             <p>Phone: <strong>{user?.phone || 'Linked'}</strong></p>
             <p className="wa-connected-sub">Invoices generate hote hi direct customer ke WhatsApp par chali jayengi.</p>
 
-            {/* Test Message Box */}
             <form onSubmit={handleSendTestMessage} className="wa-test-form">
               <input
                 type="tel"
@@ -153,9 +147,9 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
                 placeholder="03001234567"
                 value={testPhone}
                 onChange={(e) => setTestPhone(cleanPhoneInput(e.target.value))}
-                style={{ maxWidth: '180px', height: '34px', fontSize: '12px' }}
+                style={{ maxWidth: '180px', height: '36px', fontSize: '13px' }}
               />
-              <button type="submit" className="btn btn-outline" style={{ height: '34px', fontSize: '12px' }} disabled={loading || !testPhone}>
+              <button type="submit" className="btn btn-outline" style={{ height: '36px', fontSize: '13px' }} disabled={loading || !testPhone}>
                 {loading ? '...' : 'Send Test'}
               </button>
             </form>
@@ -163,40 +157,25 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
           </div>
         ) : (
           <div className="wa-qr-container">
-            <div className={`wa-qr-frame ${compact ? 'compact' : ''}`}>
+            <div className="wa-qr-frame">
               {qrCode ? (
                 <img src={qrCode} alt="WhatsApp QR Code" className="wa-qr-img" />
-              ) : status === 'DISCONNECTED' ? (
-                <div className="wa-qr-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', padding: '20px' }}>
-                  <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => handleConnect(true)}
-                    disabled={loading}
-                    style={{ fontSize: '12.5px', padding: '8px 16px', background: '#10b981', borderColor: '#10b981', color: '#fff', borderRadius: '6px', cursor: 'pointer', fontWeight: '700' }}
-                  >
-                    {loading ? 'Connecting...' : '⚡ Generate QR Code'}
-                  </button>
-                  <p style={{ fontSize: '11px', marginTop: '8px', color: '#64748b', textAlign: 'center' }}>
-                    Click button to start WhatsApp connection
-                  </p>
-                </div>
               ) : (
-                <div className="wa-qr-placeholder" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
-                  <div className="spinner"></div>
-                  <p style={{ fontSize: '12px', marginTop: '8px', color: '#475569' }}>
-                    {status === 'CONNECTING' ? 'Generating QR Code...' : 'Loading QR...'}
+                <div className="wa-qr-placeholder">
+                  <div className="spinner" style={{ width: '28px', height: '28px', border: '3px solid #e2e8f0', borderTopColor: '#10b981' }}></div>
+                  <p style={{ fontSize: '13px', marginTop: '10px', color: '#64748b', fontWeight: '500' }}>
+                    Generating QR Code...
                   </p>
                 </div>
               )}
             </div>
 
             <div className="wa-instructions">
-              <div className="wa-step-highlight" style={{ fontSize: compact ? '12.5px' : '14px' }}>
-                📱 <strong>WhatsApp</strong> → <strong>3 Dots (⋮)</strong> → <strong>Linked Devices</strong> → <strong>Link a Device</strong>
+              <div className="wa-step-highlight">
+                📱 <strong>WhatsApp Kholein</strong> → <strong>3 Dots</strong> → <strong>Linked Devices</strong> → <strong>Link a Device</strong>
               </div>
-              <div className="wa-step-sub" style={{ fontSize: '11px', color: '#64748b', marginTop: '4px' }}>
-                Mobile phone se ye QR code scan karein, foran automatic link ho jayega.
+              <div className="wa-step-sub">
+                QR scan karne ke baad automatic ho jayega — kuch seconds lagenge
               </div>
             </div>
           </div>
@@ -205,18 +184,35 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
         {errorMsg && <div className="wa-error-alert">{errorMsg}</div>}
       </div>
 
-      {/* Action Buttons */}
+      {/* Action Buttons Row */}
       <div className="wa-card-actions">
         {!isStandalone && (
-          <button
-            type="button"
-            className="wa-btn-outline-green"
-            onClick={openNewTabScanner}
-            title="Open scanner in new tab"
-            style={{ fontSize: '12px', padding: '7px 12px' }}
-          >
-            <span>Open in New Tab ↗</span>
-          </button>
+          <>
+            <button
+              type="button"
+              className="wa-btn-primary"
+              onClick={openNewTabScanner}
+              title="Connect WhatsApp in new tab"
+            >
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+              </svg>
+              <span>Connect WhatsApp (Open New Tab) ↗</span>
+            </button>
+            <button
+              type="button"
+              className="wa-btn-outline-green"
+              onClick={openNewTabScanner}
+              title="Open scanner in new tab"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path>
+                <polyline points="15 3 21 3 21 9"></polyline>
+                <line x1="10" y1="14" x2="21" y2="3"></line>
+              </svg>
+              <span>Open Scanner in New Tab ↗</span>
+            </button>
+          </>
         )}
 
         <button
@@ -225,9 +221,8 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
           onClick={() => handleConnect(true)}
           disabled={loading}
           title="Refresh QR Code"
-          style={{ fontSize: '12px', padding: '7px 12px' }}
         >
-          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <polyline points="23 4 23 10 17 10"></polyline>
             <polyline points="1 20 1 14 7 14"></polyline>
             <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
@@ -241,17 +236,16 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
             className="wa-btn-logout"
             onClick={handleLogout}
             disabled={loading}
-            style={{ fontSize: '12px', padding: '7px 12px' }}
           >
             <span>Disconnect</span>
           </button>
         )}
       </div>
 
-      {/* Footer Tip */}
-      <div className="wa-card-footer" style={{ fontSize: '11.5px', paddingTop: '10px' }}>
+      {/* Footer */}
+      <div className="wa-card-footer">
         <span className="bulb">💡</span>
-        <span>Mobile WhatsApp se QR code scan karke connect karein.</span>
+        <span>Click karne se naya tab khulega jahan se mobile WhatsApp se QR code scan kar sakte hain.</span>
       </div>
     </div>
   );
