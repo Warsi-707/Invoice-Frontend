@@ -60,13 +60,13 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
       // Allow DOM layout and style computation
       setTimeout(async () => {
         try {
-          const targetElement = iframeDoc.querySelector('.a4-page') || iframeDoc.querySelector('.invoice') || iframeDoc.body;
+          const targetElement = iframeDoc.querySelector('.a4-page') || iframeDoc.querySelector('.inv-container') || iframeDoc.querySelector('.invoice') || iframeDoc.body;
           if (targetElement && targetElement.scrollHeight) {
-            iframe.style.height = `${Math.max(1123, targetElement.scrollHeight + 40)}px`;
+            iframe.style.height = `${Math.max(1150, targetElement.scrollHeight + 40)}px`;
           }
 
           const opt = {
-            margin: [5, 5, 5, 5],
+            margin: [6, 6, 6, 6],
             filename: fileName,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: {

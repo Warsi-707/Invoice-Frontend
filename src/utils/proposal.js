@@ -50,8 +50,9 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
       print-color-adjust: exact;
     }
     .a4-page {
-      width: 790px !important;
-      max-width: 790px !important;
+      width: 750px !important;
+      min-height: 1060px !important;
+      max-width: 750px !important;
       margin: 0 auto !important;
       background: #ffffff !important;
       border: 1.5px solid #cbd5e1 !important;
@@ -59,6 +60,12 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
       padding: 24px 28px !important;
       box-sizing: border-box !important;
       color: #0f172a;
+      display: flex !important;
+      flex-direction: column !important;
+      justify-content: space-between !important;
+    }
+    .prop-top-content {
+      width: 100%;
     }
     .prop-head {
       border-bottom: 2px solid #0b4b8f;
@@ -213,158 +220,176 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
       font-size: 10px;
       color: #64748b;
     }
+    @media print {
+      body {
+        background: #ffffff !important;
+        margin: 0 !important;
+        padding: 0 !important;
+      }
+      .a4-page {
+        width: 100% !important;
+        max-width: 100% !important;
+        min-height: 98vh !important;
+        border: 1.5px solid #cbd5e1 !important;
+        border-radius: 10px !important;
+        box-shadow: none !important;
+        page-break-inside: avoid !important;
+      }
+    }
   </style>
 </head>
 <body>
   <div class="a4-page">
-    <!-- Letterhead Top Header -->
-    <div class="prop-head">
-      <div class="prop-brand">
-        <h2>${esc(bizName)}</h2>
-        ${proposal.tagline ? `<div class="prop-tagline">${esc(proposal.tagline)}</div>` : ''}
-        ${(proposal.officeAddress || business.address) ? `<p>${esc(proposal.officeAddress || business.address)}</p>` : ''}
-        ${[proposal.supportPhone || business.phone, proposal.inquiryEmail || business.email, proposal.websiteUrl].filter(Boolean).length > 0 ? `<p>${esc([proposal.supportPhone || business.phone, proposal.inquiryEmail || business.email, proposal.websiteUrl].filter(Boolean).join(' • '))}</p>` : ''}
-        ${proposal.ntnTax ? `<div class="prop-tax-badge">${esc(proposal.ntnTax)}</div>` : ''}
+    <div class="prop-top-content">
+      <!-- Letterhead Top Header -->
+      <div class="prop-head">
+        <div class="prop-brand">
+          <h2>${esc(bizName)}</h2>
+          ${proposal.tagline ? `<div class="prop-tagline">${esc(proposal.tagline)}</div>` : ''}
+          ${(proposal.officeAddress || business.address) ? `<p>${esc(proposal.officeAddress || business.address)}</p>` : ''}
+          ${[proposal.supportPhone || business.phone, proposal.inquiryEmail || business.email, proposal.websiteUrl].filter(Boolean).length > 0 ? `<p>${esc([proposal.supportPhone || business.phone, proposal.inquiryEmail || business.email, proposal.websiteUrl].filter(Boolean).join(' • '))}</p>` : ''}
+          ${proposal.ntnTax ? `<div class="prop-tax-badge">${esc(proposal.ntnTax)}</div>` : ''}
+        </div>
+        <div class="prop-meta">
+          <div class="prop-badge">Commercial Proposal</div>
+          <div>Proposal #: <strong>${esc(proposalNo)}</strong></div>
+          <div>Date: <strong>${esc(proposalDate)}</strong></div>
+          <div>Validity: <strong>${esc(validity)}</strong></div>
+        </div>
       </div>
-      <div class="prop-meta">
-        <div class="prop-badge">Commercial Proposal</div>
-        <div>Proposal #: <strong>${esc(proposalNo)}</strong></div>
-        <div>Date: <strong>${esc(proposalDate)}</strong></div>
-        <div>Validity: <strong>${esc(validity)}</strong></div>
+
+      <!-- Client Box -->
+      <div class="prop-client-grid">
+        <div class="prop-client-card">
+          <h4>Prepared For</h4>
+          <p><strong>${esc(clientName)}</strong></p>
+          ${clientCompany ? `<p>Organization: ${esc(clientCompany)}</p>` : ''}
+          ${customer.phone ? `<p>Phone: ${esc(customer.phone)}</p>` : ''}
+        </div>
+        <div class="prop-client-card">
+          <h4>Proposal Details</h4>
+          <p><strong>${esc(proposal.title || 'Commercial Proposal & Quotation')}</strong></p>
+          <p>Currency: <strong>${esc(cur)}</strong></p>
+        </div>
       </div>
-    </div>
 
-    <!-- Client Box -->
-    <div class="prop-client-grid">
-      <div class="prop-client-card">
-        <h4>Prepared For</h4>
-        <p><strong>${esc(clientName)}</strong></p>
-        ${clientCompany ? `<p>Organization: ${esc(clientCompany)}</p>` : ''}
-        ${customer.phone ? `<p>Phone: ${esc(customer.phone)}</p>` : ''}
-      </div>
-      <div class="prop-client-card">
-        <h4>Proposal Details</h4>
-        <p><strong>${esc(proposal.title || 'Commercial Proposal & Quotation')}</strong></p>
-        <p>Currency: <strong>${esc(cur)}</strong></p>
-      </div>
-    </div>
-
-    <!-- 1. Overview -->
-    <div class="prop-section">
-      <div class="prop-section-title">1. Project Overview & Scope of Work</div>
-      <div class="prop-overview-text">${esc(summaryText)}</div>
-    </div>
-
-    <!-- 2. Deliverables Table -->
-    <div class="prop-section">
-      <div class="prop-section-title">2. Deliverables & Commercial Pricing</div>
-      <table class="prop-table">
-        <thead>
-          <tr>
-            <th style="width: 32px; text-align: center;">#</th>
-            <th style="text-align: left;">Deliverable / Service</th>
-            <th style="width: 55px; text-align: center;">Qty</th>
-            <th style="width: 110px; text-align: right;">Unit Price</th>
-            <th style="width: 90px; text-align: right;">Discount</th>
-            <th style="width: 65px; text-align: center;">Tax</th>
-            <th style="width: 125px; text-align: right;">Total</th>
-          </tr>
-        </thead>
-        <tbody>
-          ${items.map((it, idx) => {
-            const gross = Number(it.qty || 1) * Number(it.price || 0);
-            const disc = Number(it.discount || 0);
-            const taxP = Number(it.taxPct || 0);
-            const taxBase = Math.max(0, gross - disc);
-            const lineTax = (taxBase * taxP) / 100;
-            const lineTot = taxBase + lineTax;
-
-            return `
-              <tr>
-                <td style="text-align: center; color: #64748b;">${idx + 1}</td>
-                <td>
-                  <strong>${esc(it.name || 'Deliverable')}</strong>
-                  ${it.desc ? `<div style="font-size: 10px; color: #64748b; margin-top: 2px;">${esc(it.desc)}</div>` : ''}
-                </td>
-                <td style="text-align: center;">${it.qty || 1}</td>
-                <td style="text-align: right;">${money(it.price || 0, cur)}</td>
-                <td style="text-align: right; color: ${disc > 0 ? '#dc2626' : '#64748b'};">
-                  ${disc > 0 ? `- ${money(disc, cur)}` : '—'}
-                </td>
-                <td style="text-align: center; color: ${taxP > 0 ? '#0369a1' : '#64748b'};">
-                  ${taxP > 0 ? `${taxP}%` : '—'}
-                </td>
-                <td style="text-align: right; font-weight: 750;">
-                  ${money(lineTot, cur)}
-                </td>
-              </tr>
-            `;
-          }).join('')}
-        </tbody>
-        <tfoot>
-          <tr>
-            <td colspan="6" style="text-align: right; font-weight: 750; font-size: 11px; background: #f8fafc; color: #475569;">Subtotal:</td>
-            <td style="text-align: right; font-weight: 750; font-size: 11.5px; background: #f8fafc;">${money(subtotal, cur)}</td>
-          </tr>
-          ${totalDiscount > 0 ? `
-            <tr>
-              <td colspan="6" style="text-align: right; font-size: 11px; color: #dc2626; background: #f8fafc;">Total Discount:</td>
-              <td style="text-align: right; font-weight: 700; font-size: 11px; color: #dc2626; background: #f8fafc;">- ${money(totalDiscount, cur)}</td>
-            </tr>
-          ` : ''}
-          ${totalTaxAmount > 0 ? `
-            <tr>
-              <td colspan="6" style="text-align: right; font-size: 11px; color: #0369a1; background: #f8fafc;">Total Tax:</td>
-              <td style="text-align: right; font-weight: 700; font-size: 11px; color: #0369a1; background: #f8fafc;">+ ${money(totalTaxAmount, cur)}</td>
-            </tr>
-          ` : ''}
-          <tr style="border-top: 2px solid #0b4b8f;">
-            <td colspan="6" style="text-align: right; font-weight: 800; font-size: 12px; color: #0b4b8f; background: #edf4fe; text-transform: uppercase;">Total Investment:</td>
-            <td style="text-align: right; font-weight: 800; font-size: 12.5px; color: #0b4b8f; background: #edf4fe;">${money(grandTotal, cur)}</td>
-          </tr>
-        </tfoot>
-      </table>
-    </div>
-
-    <!-- 3. Payment Milestones (If present) -->
-    ${proposal.milestones && proposal.milestones.length > 0 ? `
+      <!-- 1. Overview -->
       <div class="prop-section">
-        <div class="prop-section-title">3. Payment Milestones & Billing Schedule</div>
+        <div class="prop-section-title">1. Project Overview & Scope of Work</div>
+        <div class="prop-overview-text">${esc(summaryText)}</div>
+      </div>
+
+      <!-- 2. Deliverables Table -->
+      <div class="prop-section">
+        <div class="prop-section-title">2. Deliverables & Commercial Pricing</div>
         <table class="prop-table">
           <thead>
             <tr>
-              <th style="width: 36px; text-align: center;">#</th>
-              <th>Milestone / Deliverable</th>
-              <th style="width: 70px; text-align: center;">%</th>
-              <th style="width: 140px; text-align: right;">Amount (${esc(cur)})</th>
-              <th style="width: 220px;">Due Condition</th>
+              <th style="width: 32px; text-align: center;">#</th>
+              <th style="text-align: left;">Deliverable / Service</th>
+              <th style="width: 55px; text-align: center;">Qty</th>
+              <th style="width: 110px; text-align: right;">Unit Price</th>
+              <th style="width: 90px; text-align: right;">Discount</th>
+              <th style="width: 65px; text-align: center;">Tax</th>
+              <th style="width: 125px; text-align: right;">Total</th>
             </tr>
           </thead>
           <tbody>
-            ${proposal.milestones.map((ms, idx) => {
-              const msAmt = grandTotal > 0 ? (Number(ms.pct || 0) / 100) * grandTotal : 0;
+            ${items.map((it, idx) => {
+              const gross = Number(it.qty || 1) * Number(it.price || 0);
+              const disc = Number(it.discount || 0);
+              const taxP = Number(it.taxPct || 0);
+              const taxBase = Math.max(0, gross - disc);
+              const lineTax = (taxBase * taxP) / 100;
+              const lineTot = taxBase + lineTax;
+
               return `
                 <tr>
                   <td style="text-align: center; color: #64748b;">${idx + 1}</td>
-                  <td><strong>${esc(ms.name || `Milestone ${idx + 1}`)}</strong></td>
-                  <td style="text-align: center; font-weight: 700; color: #0b4b8f;">${ms.pct || 0}%</td>
-                  <td style="text-align: right; font-weight: 800; color: #065f46;">${money(msAmt, cur)}</td>
-                  <td style="font-size: 10.5px; color: #475569;">${esc(ms.dueCondition || '—')}</td>
+                  <td>
+                    <strong>${esc(it.name || 'Deliverable')}</strong>
+                    ${it.desc ? `<div style="font-size: 10px; color: #64748b; margin-top: 2px;">${esc(it.desc)}</div>` : ''}
+                  </td>
+                  <td style="text-align: center;">${it.qty || 1}</td>
+                  <td style="text-align: right;">${money(it.price || 0, cur)}</td>
+                  <td style="text-align: right; color: ${disc > 0 ? '#dc2626' : '#64748b'};">
+                    ${disc > 0 ? `- ${money(disc, cur)}` : '—'}
+                  </td>
+                  <td style="text-align: center; color: ${taxP > 0 ? '#0369a1' : '#64748b'};">
+                    ${taxP > 0 ? `${taxP}%` : '—'}
+                  </td>
+                  <td style="text-align: right; font-weight: 750;">
+                    ${money(lineTot, cur)}
+                  </td>
                 </tr>
               `;
             }).join('')}
           </tbody>
+          <tfoot>
+            <tr>
+              <td colspan="6" style="text-align: right; font-weight: 750; font-size: 11px; background: #f8fafc; color: #475569;">Subtotal:</td>
+              <td style="text-align: right; font-weight: 750; font-size: 11.5px; background: #f8fafc;">${money(subtotal, cur)}</td>
+            </tr>
+            ${totalDiscount > 0 ? `
+              <tr>
+                <td colspan="6" style="text-align: right; font-size: 11px; color: #dc2626; background: #f8fafc;">Total Discount:</td>
+                <td style="text-align: right; font-weight: 700; font-size: 11px; color: #dc2626; background: #f8fafc;">- ${money(totalDiscount, cur)}</td>
+              </tr>
+            ` : ''}
+            ${totalTaxAmount > 0 ? `
+              <tr>
+                <td colspan="6" style="text-align: right; font-size: 11px; color: #0369a1; background: #f8fafc;">Total Tax:</td>
+                <td style="text-align: right; font-weight: 700; font-size: 11px; color: #0369a1; background: #f8fafc;">+ ${money(totalTaxAmount, cur)}</td>
+              </tr>
+            ` : ''}
+            <tr style="border-top: 2px solid #0b4b8f;">
+              <td colspan="6" style="text-align: right; font-weight: 800; font-size: 12px; color: #0b4b8f; background: #edf4fe; text-transform: uppercase;">Total Investment:</td>
+              <td style="text-align: right; font-weight: 800; font-size: 12.5px; color: #0b4b8f; background: #edf4fe;">${money(grandTotal, cur)}</td>
+            </tr>
+          </tfoot>
         </table>
       </div>
-    ` : ''}
 
-    <!-- 4. Terms & Conditions -->
-    <div class="prop-section">
-      <div class="prop-section-title">${proposal.milestones && proposal.milestones.length > 0 ? '4.' : '3.'} Payment Terms & Conditions</div>
-      <div class="prop-terms-box">${esc(termsText)}</div>
+      <!-- 3. Payment Milestones (If present) -->
+      ${proposal.milestones && proposal.milestones.length > 0 ? `
+        <div class="prop-section">
+          <div class="prop-section-title">3. Payment Milestones & Billing Schedule</div>
+          <table class="prop-table">
+            <thead>
+              <tr>
+                <th style="width: 36px; text-align: center;">#</th>
+                <th>Milestone / Deliverable</th>
+                <th style="width: 70px; text-align: center;">%</th>
+                <th style="width: 140px; text-align: right;">Amount (${esc(cur)})</th>
+                <th style="width: 220px;">Due Condition</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${proposal.milestones.map((ms, idx) => {
+                const msAmt = grandTotal > 0 ? (Number(ms.pct || 0) / 100) * grandTotal : 0;
+                return `
+                  <tr>
+                    <td style="text-align: center; color: #64748b;">${idx + 1}</td>
+                    <td><strong>${esc(ms.name || `Milestone ${idx + 1}`)}</strong></td>
+                    <td style="text-align: center; font-weight: 700; color: #0b4b8f;">${ms.pct || 0}%</td>
+                    <td style="text-align: right; font-weight: 800; color: #065f46;">${money(msAmt, cur)}</td>
+                    <td style="font-size: 10.5px; color: #475569;">${esc(ms.dueCondition || '—')}</td>
+                  </tr>
+                `;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      ` : ''}
+
+      <!-- 4. Terms & Conditions -->
+      <div class="prop-section">
+        <div class="prop-section-title">${proposal.milestones && proposal.milestones.length > 0 ? '4.' : '3.'} Payment Terms & Conditions</div>
+        <div class="prop-terms-box">${esc(termsText)}</div>
+      </div>
     </div>
 
-    <!-- Signatures -->
+    <!-- Signatures (Pinned at bottom of A4) -->
     <div class="prop-sigs">
       <div class="prop-sig-line">
         <div>Client Signature</div>
