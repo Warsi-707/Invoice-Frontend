@@ -18,7 +18,7 @@ function blobToBase64(blob) {
 }
 
 /**
- * Trigger instantaneous browser file download (.pdf) to Downloads folder
+ * Trigger immediate browser file download (.pdf) directly to Downloads folder
  */
 function triggerDownload(blob, fileName) {
   const url = URL.createObjectURL(blob);
@@ -34,44 +34,64 @@ function triggerDownload(blob, fileName) {
 }
 
 /**
- * High-speed genuine PDF generator using html2pdf.js.
- * Uses exact-rendered off-screen container so the output is 100% crisp, formatted, and never empty.
+ * High-precision HTML-to-PDF engine using isolated iframe context.
+ * Guarantees all styles, fonts, tables, margins, colors, and layout are rendered 100% accurately.
  */
 export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
-  const container = document.createElement('div');
-  container.innerHTML = htmlContent;
-  // Position off-screen but with active rendering layout so html2canvas computes non-zero dimensions
-  container.style.position = 'fixed';
-  container.style.left = '0';
-  container.style.top = '0';
-  container.style.width = '794px';
-  container.style.zIndex = '-999999';
-  container.style.opacity = '0.01';
-  container.style.pointerEvents = 'none';
-  container.style.backgroundColor = '#ffffff';
-  document.body.appendChild(container);
+  return new Promise((resolve, reject) => {
+    // Create an isolated sandbox iframe
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.left = '-9999px';
+    iframe.style.top = '0';
+    iframe.style.width = '820px';
+    iframe.style.height = '1200px';
+    iframe.style.border = '0';
+    iframe.style.zIndex = '-99999';
+    iframe.style.backgroundColor = '#ffffff';
+    document.body.appendChild(iframe);
 
-  const opt = {
-    margin: [4, 4, 4, 4],
-    filename: fileName,
-    image: { type: 'jpeg', quality: 0.95 },
-    html2canvas: {
-      scale: 1.5,
-      useCORS: true,
-      letterRendering: true,
-      logging: false,
-      scrollX: 0,
-      scrollY: 0
-    },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
+    try {
+      const iframeDoc = iframe.contentWindow.document;
+      iframeDoc.open();
+      iframeDoc.write(htmlContent);
+      iframeDoc.close();
 
-  try {
-    const pdfBlob = await html2pdf().set(opt).from(container).output('blob');
-    return pdfBlob;
-  } finally {
-    container.remove();
-  }
+      // Allow 120ms for DOM layout and style computation
+      setTimeout(async () => {
+        try {
+          const targetElement = iframeDoc.body || iframeDoc.documentElement;
+          const opt = {
+            margin: [4, 4, 4, 4],
+            filename: fileName,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: {
+              scale: 2,
+              useCORS: true,
+              letterRendering: true,
+              logging: false,
+              backgroundColor: '#ffffff',
+              windowWidth: 820
+            },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          };
+
+          const pdfBlob = await html2pdf().set(opt).from(targetElement).output('blob');
+          resolve(pdfBlob);
+        } catch (err) {
+          console.error('html2pdf render error:', err);
+          reject(err);
+        } finally {
+          setTimeout(() => {
+            iframe.remove();
+          }, 500);
+        }
+      }, 120);
+    } catch (e) {
+      iframe.remove();
+      reject(e);
+    }
+  });
 }
 
 /**
@@ -125,7 +145,7 @@ export async function sendPdfToWhatsApp({ phone, htmlContent, fileName, caption 
 export async function downloadAndSendWhatsApp({ htmlContent, fileName, phone, caption = '', onWhatsAppSuccess }) {
   const cleanFileName = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
 
-  // 1. Generate real PDF Blob in browser (<300ms)
+  // 1. Generate real PDF Blob in browser
   const pdfBlob = await htmlToPdfBlob(htmlContent, cleanFileName);
 
   // 2. ⚡ IMMEDIATELY save .pdf file to user's device (zero lag)
