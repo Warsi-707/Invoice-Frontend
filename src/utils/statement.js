@@ -66,7 +66,7 @@ export function generateStatementHtml(customer = {}, business = {}, invoices = [
     @page { margin: 8mm; size: A4 portrait; }
     * { box-sizing: border-box; }
     html, body { font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif; background: #ffffff !important; padding: 0 !important; margin: 0 !important; color: #172033; }
-    .statement { width: 750px !important; max-width: 750px !important; margin: 0 auto !important; padding: 24px 28px !important; background: #ffffff !important; border: 1.5px solid #cbd5e1 !important; border-radius: 10px !important; box-sizing: border-box !important; position: relative; }
+    .statement { width: 750px !important; max-width: 750px !important; margin: 0 !important; padding: 24px 28px !important; background: #ffffff !important; border: 1.5px solid #cbd5e1 !important; border-radius: 10px !important; box-sizing: border-box !important; position: relative; }
     .st-head { display: flex; justify-content: space-between; gap: 24px; padding-bottom: 16px; border-bottom: 2px solid #0b4b8f; }
     .st-brand { display: flex; gap: 14px; }
     .st-logo { width: 56px; height: 56px; border: 1px solid #d6deea; border-radius: 8px; display: grid; place-items: center; overflow: hidden; font-weight: 800; color: #64748b; background: #fafbfd; }

@@ -52,7 +52,7 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
     .a4-page {
       width: 750px !important;
       max-width: 750px !important;
-      margin: 0 auto !important;
+      margin: 0 !important;
       background: #ffffff !important;
       border: 1.5px solid #cbd5e1 !important;
       border-radius: 10px !important;

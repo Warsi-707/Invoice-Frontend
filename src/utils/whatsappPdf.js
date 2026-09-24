@@ -59,13 +59,14 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
     staging.style.position = 'fixed';
     staging.style.left = '0px';
     staging.style.top = '0px';
-    staging.style.width = '794px';
+    staging.style.width = '750px';
     staging.style.zIndex = '-99999';
     staging.style.opacity = '1';
     staging.style.pointerEvents = 'none';
     staging.style.background = '#ffffff';
     staging.style.margin = '0';
     staging.style.padding = '0';
+    staging.style.boxSizing = 'border-box';
 
     if (parsed.body) {
       staging.innerHTML = parsed.body.innerHTML;
@@ -84,12 +85,20 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
                               staging.firstElementChild || 
                               staging;
 
+        // Force exact zero horizontal offset and 750px width on targetElement
+        targetElement.style.margin = '0';
+        targetElement.style.marginLeft = '0';
+        targetElement.style.marginRight = '0';
+        targetElement.style.width = '750px';
+        targetElement.style.maxWidth = '750px';
+        targetElement.style.boxSizing = 'border-box';
+
         // Calculate exact content height in mm so PDF doesn't have trailing blank space
         const elementHeightPx = targetElement.scrollHeight || targetElement.offsetHeight || 800;
-        const elementWidthPx = targetElement.offsetWidth || 750;
+        const elementWidthPx = 750;
         const marginMm = 8;
         const pdfWidthMm = 210;
-        const printableWidthMm = pdfWidthMm - (marginMm * 2); // 194mm
+        const printableWidthMm = pdfWidthMm - (marginMm * 2); // 194mm (centered: 8mm left, 8mm right)
         const contentHeightMm = (elementHeightPx / elementWidthPx) * printableWidthMm;
         const pdfHeightMm = Math.max(130, Math.ceil(contentHeightMm + (marginMm * 2) + 2));
 
@@ -103,7 +112,12 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
             letterRendering: true,
             logging: false,
             backgroundColor: '#ffffff',
-            windowWidth: 794
+            width: 750,
+            windowWidth: 750,
+            x: 0,
+            y: 0,
+            scrollX: 0,
+            scrollY: 0
           },
           jsPDF: { unit: 'mm', format: [pdfWidthMm, pdfHeightMm], orientation: 'portrait' },
           pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }

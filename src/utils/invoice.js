@@ -120,7 +120,7 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
     .inv-container {
       width: 750px !important;
       max-width: 750px !important;
-      margin: 0 auto !important;
+      margin: 0 !important;
       padding: 24px 28px !important;
       background: #ffffff !important;
       box-sizing: border-box !important;
@@ -265,8 +265,10 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       margin-bottom: 5px;
     }
     table.inv-table {
-      width: 100%;
-      border-collapse: collapse;
+      width: 100% !important;
+      border-collapse: collapse !important;
+      table-layout: fixed !important;
+      box-sizing: border-box !important;
       page-break-inside: avoid;
     }
     table.inv-table th {
@@ -277,12 +279,15 @@ export function generateInvoiceHtml(invoice = {}, business = {}, customer = {}) 
       padding: 6px 8px;
       text-align: left;
       border: 1px solid #0b4b8f;
+      box-sizing: border-box !important;
     }
     table.inv-table td {
       font-size: 11px;
       padding: 6px 8px;
       border: 1px solid #e2e8f0;
       color: #1e293b;
+      box-sizing: border-box !important;
+      word-break: break-word !important;
     }
     table.inv-table tbody tr:nth-child(even) {
       background: #fafcff;
