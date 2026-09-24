@@ -13,15 +13,57 @@ import {
 
 const AppContext = createContext(null);
 
+const getInitialPage = () => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const pageParam = params.get('page');
+    if (pageParam) return pageParam;
+    const saved = localStorage.getItem('invoice_manager_active_page');
+    if (saved) return saved;
+  }
+  return 'dashboard';
+};
+
+const getInitialSettingsTab = () => {
+  if (typeof window !== 'undefined') {
+    const params = new URLSearchParams(window.location.search);
+    const tabParam = params.get('tab');
+    if (tabParam) return tabParam;
+    const saved = localStorage.getItem('invoice_manager_settings_tab');
+    if (saved) return saved;
+  }
+  return 'org';
+};
+
 export function AppProvider({ children }) {
   const [state, setState] = useState(() => loadStoredState());
-  const [currentPage, setCurrentPage] = useState('dashboard');
-  const [settingsTab, setSettingsTab] = useState('org'); // 'org' | 'proposal' | 'invoice'
+  const [currentPage, setCurrentPageInternal] = useState(getInitialPage);
+  const [settingsTab, setSettingsTabInternal] = useState(getInitialSettingsTab);
   const [isAdminModalOpen, setIsAdminModalOpen] = useState(false);
   const [previewInvoice, setPreviewInvoice] = useState(null);
   const [toast, setToast] = useState({ show: false, message: '' });
   const [isDbConnected, setIsDbConnected] = useState(false);
   const toastTimerRef = useRef(null);
+
+  const setCurrentPage = useCallback((page) => {
+    setCurrentPageInternal(page);
+    try {
+      localStorage.setItem('invoice_manager_active_page', page);
+      const url = new URL(window.location.href);
+      url.searchParams.set('page', page);
+      window.history.replaceState({}, '', url.toString());
+    } catch (e) {}
+  }, []);
+
+  const setSettingsTab = useCallback((tab) => {
+    setSettingsTabInternal(tab);
+    try {
+      localStorage.setItem('invoice_manager_settings_tab', tab);
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', tab);
+      window.history.replaceState({}, '', url.toString());
+    } catch (e) {}
+  }, []);
 
   // Toast notification dispatcher
   const showToast = useCallback((message) => {
@@ -120,6 +162,7 @@ export function AppProvider({ children }) {
             ...(res.settings || {})
           }
         }));
+        setCurrentPage('dashboard');
         refreshFromBackend().catch(() => {});
         showToast(`Welcome, ${username.trim()}`);
         return { success: true };
@@ -128,7 +171,7 @@ export function AppProvider({ children }) {
     } catch (err) {
       return { success: false, message: err.message || 'Invalid username or password.' };
     }
-  }, [refreshFromBackend, showToast]);
+  }, [refreshFromBackend, showToast, setCurrentPage]);
 
   const logout = useCallback(async () => {
     try {
@@ -143,8 +186,9 @@ export function AppProvider({ children }) {
         username: prev.settings?.admin || 'Administrator'
       }
     }));
+    setCurrentPage('dashboard');
     showToast('Logged out successfully.');
-  }, [showToast]);
+  }, [showToast, setCurrentPage]);
 
   // Business / Customer Actions
   const addBusinessAndCustomer = useCallback(async ({
