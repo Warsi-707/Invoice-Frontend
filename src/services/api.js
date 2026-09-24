@@ -22,10 +22,13 @@ async function request(endpoint, options = {}) {
 
   const response = await fetch(`${API_BASE_URL}${endpoint}`, config);
   if (!response.ok) {
+    const error = await response.json().catch(() => ({ message: 'API request failed' }));
     if (response.status === 401 && !endpoint.includes('/auth/login')) {
       localStorage.removeItem(TOKEN_KEY);
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { message: error.message } }));
+      }
     }
-    const error = await response.json().catch(() => ({ message: 'API request failed' }));
     throw new Error(error.message || `HTTP ${response.status}`);
   }
   return response.json();

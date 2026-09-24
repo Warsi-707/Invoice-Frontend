@@ -24,9 +24,11 @@ export function loadStoredState() {
     const parsed = JSON.parse(raw);
     if (!parsed || typeof parsed !== 'object') return { ...DEFAULT_STATE };
 
+    const hasToken = Boolean(localStorage.getItem('invoice_manager_jwt'));
+
     return {
       session: {
-        isAuthenticated: Boolean(parsed.session?.isAuthenticated),
+        isAuthenticated: Boolean(parsed.session?.isAuthenticated && hasToken),
         username: parsed.session?.username || parsed.settings?.admin || 'Admin'
       },
       settings: {

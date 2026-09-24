@@ -64,6 +64,26 @@ export function AppProvider({ children }) {
     saveStoredState(state);
   }, [state]);
 
+  // Handle automatic session expiration on 401 Unauthorized API responses
+  useEffect(() => {
+    const handleUnauthorized = () => {
+      setState((prev) => {
+        if (!prev.session?.isAuthenticated) return prev;
+        return {
+          ...prev,
+          session: {
+            isAuthenticated: false,
+            username: prev.settings?.admin || 'Administrator'
+          }
+        };
+      });
+      showToast('Session expired. Please sign in again.');
+    };
+
+    window.addEventListener('auth:unauthorized', handleUnauthorized);
+    return () => window.removeEventListener('auth:unauthorized', handleUnauthorized);
+  }, [showToast]);
+
   // Lookup helpers
   const getBusiness = useCallback((id) => state.businesses.find((b) => b.id === id), [state.businesses]);
   const getCustomer = useCallback((id) => state.customers.find((c) => c.id === id), [state.customers]);
