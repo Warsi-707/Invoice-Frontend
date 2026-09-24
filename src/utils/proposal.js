@@ -327,10 +327,12 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
             }).join('')}
           </tbody>
           <tfoot>
-            <tr>
-              <td colspan="6" style="text-align: right; font-weight: 750; font-size: 11px; background: #f8fafc; color: #475569;">Subtotal:</td>
-              <td style="text-align: right; font-weight: 750; font-size: 11.5px; background: #f8fafc;">${money(subtotal, cur)}</td>
-            </tr>
+            ${(totalDiscount > 0 || totalTaxAmount > 0) ? `
+              <tr>
+                <td colspan="6" style="text-align: right; font-weight: 750; font-size: 11px; background: #f8fafc; color: #475569;">Subtotal:</td>
+                <td style="text-align: right; font-weight: 750; font-size: 11.5px; background: #f8fafc;">${money(subtotal, cur)}</td>
+              </tr>
+            ` : ''}
             ${totalDiscount > 0 ? `
               <tr>
                 <td colspan="6" style="text-align: right; font-size: 11px; color: #dc2626; background: #f8fafc;">Total Discount:</td>
@@ -344,7 +346,7 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
               </tr>
             ` : ''}
             <tr style="border-top: 2px solid #0b4b8f;">
-              <td colspan="6" style="text-align: right; font-weight: 800; font-size: 12px; color: #0b4b8f; background: #edf4fe; text-transform: uppercase;">Total Investment:</td>
+              <td colspan="6" style="text-align: right; font-weight: 800; font-size: 12px; color: #0b4b8f; background: #edf4fe; text-transform: uppercase;">TOTAL:</td>
               <td style="text-align: right; font-weight: 800; font-size: 12.5px; color: #0b4b8f; background: #edf4fe;">${money(grandTotal, cur)}</td>
             </tr>
           </tfoot>

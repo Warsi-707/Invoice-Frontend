@@ -537,11 +537,13 @@ export default function ProposalBuilderModal({
                   })}
                 </tbody>
                 <tfoot>
-                  <tr>
-                    <td colSpan={6} style={{ textAlign: 'right', fontWeight: '750', fontSize: '11px', background: '#f8fafc', color: '#475569' }}>Subtotal:</td>
-                    <td style={{ textAlign: 'right', fontWeight: '750', fontSize: '11.5px', background: '#f8fafc' }}>{money(subtotal, cur)}</td>
-                    <td style={{ background: '#f8fafc' }}></td>
-                  </tr>
+                  {(totalDiscount > 0 || totalTaxAmount > 0) && (
+                    <tr>
+                      <td colSpan={6} style={{ textAlign: 'right', fontWeight: '750', fontSize: '11px', background: '#f8fafc', color: '#475569' }}>Subtotal:</td>
+                      <td style={{ textAlign: 'right', fontWeight: '750', fontSize: '11.5px', background: '#f8fafc' }}>{money(subtotal, cur)}</td>
+                      <td style={{ background: '#f8fafc' }}></td>
+                    </tr>
+                  )}
                   {totalDiscount > 0 && (
                     <tr>
                       <td colSpan={6} style={{ textAlign: 'right', fontSize: '11px', color: '#dc2626', background: '#f8fafc' }}>Total Discount:</td>
@@ -557,7 +559,7 @@ export default function ProposalBuilderModal({
                     </tr>
                   )}
                   <tr style={{ borderTop: '2px solid #0b4b8f' }}>
-                    <td colSpan={6} style={{ textAlign: 'right', fontWeight: '800', fontSize: '12px', color: '#0b4b8f', background: '#edf4fe', textTransform: 'uppercase' }}>Total Investment:</td>
+                    <td colSpan={6} style={{ textAlign: 'right', fontWeight: '800', fontSize: '12px', color: '#0b4b8f', background: '#edf4fe', textTransform: 'uppercase' }}>TOTAL:</td>
                     <td style={{ textAlign: 'right', fontWeight: '800', fontSize: '12.5px', color: '#0b4b8f', background: '#edf4fe' }}>{money(grandTotal, cur)}</td>
                     <td style={{ background: '#edf4fe' }}></td>
                   </tr>
