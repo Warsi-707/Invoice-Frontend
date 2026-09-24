@@ -40,11 +40,12 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
       print-color-adjust: exact;
     }
     .a4-page {
-      width: 100% !important;
-      max-width: 100% !important;
-      margin: 0 !important;
+      width: 794px !important;
+      max-width: 794px !important;
+      margin: 0 auto !important;
       background: #ffffff !important;
-      padding: 12px 14px !important;
+      padding: 28px 32px !important;
+      box-sizing: border-box !important;
     }
     .prop-head {
       border-bottom: 2px solid #0b4b8f;
@@ -58,12 +59,12 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
     }
     .prop-brand h2 {
       margin: 0 0 3px;
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 800;
       color: #0b4b8f;
     }
     .prop-tagline {
-      font-size: 11px;
+      font-size: 11.5px;
       font-weight: 600;
       color: #0284c7;
       margin-bottom: 4px;

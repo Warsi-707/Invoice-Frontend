@@ -44,8 +44,8 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
     iframe.style.position = 'fixed';
     iframe.style.left = '-9999px';
     iframe.style.top = '0';
-    iframe.style.width = '820px';
-    iframe.style.height = '1200px';
+    iframe.style.width = '794px';
+    iframe.style.height = '1000px';
     iframe.style.border = '0';
     iframe.style.zIndex = '-99999';
     iframe.style.backgroundColor = '#ffffff';
@@ -57,12 +57,12 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
       iframeDoc.write(htmlContent);
       iframeDoc.close();
 
-      // Allow 120ms for DOM layout and style computation
+      // Allow 150ms for DOM layout and style computation
       setTimeout(async () => {
         try {
-          const targetElement = iframeDoc.body || iframeDoc.documentElement;
+          const targetElement = iframeDoc.querySelector('.a4-page') || iframeDoc.querySelector('.invoice') || iframeDoc.body;
           const opt = {
-            margin: [4, 4, 4, 4],
+            margin: 0,
             filename: fileName,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: {
@@ -71,7 +71,7 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
               letterRendering: true,
               logging: false,
               backgroundColor: '#ffffff',
-              windowWidth: 820
+              windowWidth: 794
             },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
           };
