@@ -10,7 +10,28 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
   const [testPhone, setTestPhone] = useState('');
   const [testMsgSent, setTestMsgSent] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [linkMode, setLinkMode] = useState('qr'); // 'qr' | 'pairing'
+  const [pairingPhone, setPairingPhone] = useState('');
+  const [pairingCode, setPairingCode] = useState('');
+  const [pairingLoading, setPairingLoading] = useState(false);
   const pollTimerRef = useRef(null);
+
+  const handleRequestPairingCode = async (e) => {
+    if (e) e.preventDefault();
+    if (!pairingPhone) return;
+    setPairingLoading(true);
+    setErrorMsg('');
+    try {
+      const res = await whatsappApi.requestPairingCode(pairingPhone);
+      if (res && res.code) {
+        setPairingCode(res.code);
+      }
+    } catch (err) {
+      setErrorMsg(err.message || 'Linking code nahi ban saka. Phone number check karein.');
+    } finally {
+      setPairingLoading(false);
+    }
+  };
 
   const fetchStatus = useCallback(async () => {
     try {
@@ -160,27 +181,98 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
           </div>
         ) : (
           <div className="wa-qr-container">
-            <div className="wa-qr-frame">
-              {qrCode ? (
-                <img src={qrCode} alt="WhatsApp QR Code" className="wa-qr-img" />
-              ) : (
-                <div className="wa-qr-placeholder">
-                  <div className="spinner" style={{ width: '28px', height: '28px', border: '3px solid #e2e8f0', borderTopColor: '#10b981' }}></div>
-                  <p style={{ fontSize: '13px', marginTop: '10px', color: '#64748b', fontWeight: '500' }}>
-                    Generating QR Code...
-                  </p>
-                </div>
-              )}
+            {/* Dual Mode Switcher Tabs */}
+            <div style={{ display: 'flex', gap: '8px', marginBottom: '14px', justifyContent: 'center' }}>
+              <button
+                type="button"
+                className={`btn ${linkMode === 'qr' ? 'btn-primary' : 'btn-outline'}`}
+                style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '6px' }}
+                onClick={() => setLinkMode('qr')}
+              >
+                📷 Scan QR Code
+              </button>
+              <button
+                type="button"
+                className={`btn ${linkMode === 'pairing' ? 'btn-primary' : 'btn-outline'}`}
+                style={{ fontSize: '12px', padding: '6px 14px', borderRadius: '6px' }}
+                onClick={() => setLinkMode('pairing')}
+              >
+                🔢 Link with Phone Number (Code)
+              </button>
             </div>
 
-            <div className="wa-instructions">
-              <div className="wa-step-highlight">
-                <strong>WhatsApp Kholein</strong> → <strong>3 Dots</strong> → <strong>Linked Devices</strong> → <strong>Link a Device</strong>
+            {linkMode === 'qr' ? (
+              <>
+                <div className="wa-qr-frame">
+                  {qrCode ? (
+                    <img src={qrCode} alt="WhatsApp QR Code" className="wa-qr-img" />
+                  ) : (
+                    <div className="wa-qr-placeholder">
+                      <div className="spinner" style={{ width: '28px', height: '28px', border: '3px solid #e2e8f0', borderTopColor: '#10b981' }}></div>
+                      <p style={{ fontSize: '13px', marginTop: '10px', color: '#64748b', fontWeight: '500' }}>
+                        Generating QR Code...
+                      </p>
+                    </div>
+                  )}
+                </div>
+
+                <div className="wa-instructions">
+                  <div className="wa-step-highlight">
+                    <strong>WhatsApp Kholein</strong> → <strong>3 Dots</strong> → <strong>Linked Devices</strong> → <strong>Link a Device</strong>
+                  </div>
+                  <div className="wa-step-sub">
+                    Agar scan me problem aaye to upar <strong>"Link with Phone Number"</strong> select karein.
+                  </div>
+                </div>
+              </>
+            ) : (
+              <div className="wa-pairing-box" style={{ maxWidth: '380px', margin: '0 auto', textAlign: 'center' }}>
+                <p style={{ fontSize: '13px', color: '#475569', marginBottom: '10px' }}>
+                  Apna WhatsApp number daalein aur 8-digit linking code hasil karein:
+                </p>
+                <form onSubmit={handleRequestPairingCode} style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginBottom: '12px' }}>
+                  <input
+                    type="tel"
+                    inputMode="numeric"
+                    maxLength={11}
+                    className="input phone11"
+                    placeholder="03001234567"
+                    value={pairingPhone}
+                    onChange={(e) => setPairingPhone(cleanPhoneInput(e.target.value))}
+                    style={{ maxWidth: '170px', height: '38px', fontSize: '13.5px' }}
+                    disabled={pairingLoading}
+                  />
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    style={{ height: '38px', fontSize: '12.5px', whiteSpace: 'nowrap' }}
+                    disabled={pairingLoading || !pairingPhone}
+                  >
+                    {pairingLoading ? 'Generating...' : 'Get Code'}
+                  </button>
+                </form>
+
+                {pairingCode && (
+                  <div style={{ background: '#f0fdf4', border: '2px solid #86efac', borderRadius: '8px', padding: '12px', margin: '12px 0' }}>
+                    <div style={{ fontSize: '11px', color: '#166534', fontWeight: '700', textTransform: 'uppercase' }}>
+                      Aapka WhatsApp Linking Code:
+                    </div>
+                    <div style={{ fontSize: '28px', fontWeight: '900', color: '#15803d', letterSpacing: '4px', margin: '6px 0', fontFamily: 'monospace' }}>
+                      {pairingCode}
+                    </div>
+                    <div style={{ fontSize: '11.5px', color: '#166534', lineHeight: '1.4' }}>
+                      Mobile WhatsApp me <strong>"Link with phone number instead"</strong> par click karke yeh code enter karein.
+                    </div>
+                  </div>
+                )}
+
+                <div className="wa-instructions" style={{ marginTop: '8px' }}>
+                  <div className="wa-step-highlight">
+                    <strong>WhatsApp</strong> → <strong>3 Dots</strong> → <strong>Linked Devices</strong> → <strong>Link with phone number instead</strong>
+                  </div>
+                </div>
               </div>
-              <div className="wa-step-sub">
-                QR scan karne ke baad automatic ho jayega — kuch seconds lagenge
-              </div>
-            </div>
+            )}
           </div>
         )}
 

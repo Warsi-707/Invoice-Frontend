@@ -131,6 +131,7 @@ export const settingsApi = {
 export const whatsappApi = {
   getStatus: async () => request('/whatsapp/status'),
   connect: async (force = false) => request('/whatsapp/connect', { method: 'POST', body: { force } }),
+  requestPairingCode: async (phone) => request('/whatsapp/pairing-code', { method: 'POST', body: { phone } }),
   logout: async () => request('/whatsapp/logout', { method: 'POST' }),
   sendInvoice: async (data) => request('/whatsapp/send-invoice', { method: 'POST', body: data }),
   sendText: async (phone, message) => request('/whatsapp/send-text', { method: 'POST', body: { phone, message } }),
