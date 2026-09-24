@@ -27,7 +27,7 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
   <style>
     @page {
       size: A4 portrait;
-      margin: 12mm 15mm;
+      margin: 10mm 12mm;
     }
     * { box-sizing: border-box; }
     html, body {
@@ -44,13 +44,10 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
       max-width: 100% !important;
       margin: 0 !important;
       background: #ffffff !important;
-      border: none !important;
-      border-radius: 0 !important;
-      padding: 0 !important;
-      box-shadow: none !important;
+      padding: 12px 14px !important;
     }
-    .letterhead-top {
-      border-bottom: 2.5px solid #0b4b8f;
+    .prop-head {
+      border-bottom: 2px solid #0b4b8f;
       padding-bottom: 14px;
       margin-bottom: 14px;
       display: flex;
@@ -58,287 +55,234 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
       align-items: flex-start;
       gap: 20px;
       page-break-inside: avoid;
-      break-inside: avoid;
     }
-    .brand-block h1 {
+    .prop-brand h2 {
       margin: 0 0 3px;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 800;
       color: #0b4b8f;
-      letter-spacing: -0.5px;
     }
-    .brand-block p {
-      margin: 2px 0;
-      font-size: 10.5px;
-      color: #475569;
-      line-height: 1.4;
-    }
-    .brand-tagline {
-      font-size: 10.5px;
+    .prop-tagline {
+      font-size: 11px;
       font-weight: 600;
       color: #0284c7;
-      margin-bottom: 4px !important;
+      margin-bottom: 4px;
     }
-    .tax-badge {
+    .prop-brand p {
+      margin: 2px 0;
+      font-size: 11px;
+      color: #475569;
+    }
+    .prop-tax-badge {
       display: inline-block;
-      background: #f8fafc;
+      background: #f1f5f9;
       border: 1px solid #cbd5e1;
-      padding: 2px 7px;
+      padding: 2px 6px;
       border-radius: 4px;
-      font-size: 9.5px;
+      font-size: 10px;
       font-weight: 700;
       color: #334155;
-      margin-top: 3px;
+      margin-top: 4px;
     }
-    .doc-meta {
+    .prop-meta {
       text-align: right;
+      font-size: 11px;
     }
-    .doc-title-badge {
+    .prop-badge {
       background: #0b4b8f;
       color: #fff;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 800;
-      padding: 5px 12px;
-      border-radius: 5px;
+      padding: 4px 10px;
+      border-radius: 4px;
       display: inline-block;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
       margin-bottom: 8px;
     }
-    .meta-row {
-      font-size: 10.5px;
+    .prop-meta div {
       margin: 2px 0;
       color: #475569;
     }
-    .meta-row strong {
+    .prop-meta strong {
       color: #0f172a;
     }
-
-    /* Client & Overview */
-    .proposal-target {
+    .prop-client-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 16px;
-      margin: 12px 0 14px;
-      padding: 10px 14px;
+      margin: 14px 0 16px;
+      padding: 12px 14px;
       background: #f8fbff;
       border: 1px solid #dbeafe;
-      border-radius: 6px;
+      border-radius: 8px;
       page-break-inside: avoid;
-      break-inside: avoid;
     }
-    .target-box h4 {
+    .prop-client-card h4 {
       margin: 0 0 4px;
       font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: #0369a1;
+      color: #0284c7;
     }
-    .target-box p {
+    .prop-client-card p {
       margin: 2px 0;
       font-size: 11.5px;
-      color: #334155;
+      color: #1e293b;
     }
-
-    .section-title {
+    .prop-section {
+      margin-top: 14px;
+      page-break-inside: auto;
+    }
+    .prop-section-title {
       font-size: 12px;
       font-weight: 800;
       color: #0b4b8f;
       text-transform: uppercase;
-      letter-spacing: 0.4px;
-      margin: 14px 0 6px;
-      padding-bottom: 3px;
+      letter-spacing: 0.3px;
+      margin-bottom: 6px;
       border-bottom: 1px solid #e2e8f0;
-      display: flex;
-      align-items: center;
-      gap: 6px;
+      padding-bottom: 3px;
       page-break-after: avoid;
-      break-after: avoid;
     }
-
-    .overview-text {
+    .prop-overview-text {
       font-size: 11.5px;
       line-height: 1.5;
       color: #334155;
-      margin: 0 0 12px;
       white-space: pre-line;
-      page-break-inside: avoid;
-      break-inside: avoid;
+      margin-bottom: 10px;
     }
-
-    /* Table */
-    table {
-      width: 100%;
+    .prop-table {
+      width: 100% !important;
       border-collapse: collapse;
-      margin: 8px 0 12px;
+      margin-top: 6px;
     }
-    thead {
-      display: table-header-group;
-    }
-    tfoot {
-      display: table-footer-group;
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    tr {
-      page-break-inside: avoid;
-      break-inside: avoid;
-    }
-    th {
-      background: #edf4fe;
+    .prop-table th {
+      background: #eff6ff;
       color: #1e3a8a;
       font-size: 10.5px;
       font-weight: 750;
       text-transform: uppercase;
+      letter-spacing: 0.3px;
       padding: 7px 9px;
       border: 1px solid #cbd5e1;
       text-align: left;
     }
-    td {
+    .prop-table td {
       padding: 7px 9px;
       font-size: 11px;
       border: 1px solid #e2e8f0;
-      color: #1e293b;
-      vertical-align: top;
+      vertical-align: middle;
     }
-    tr:nth-child(even) td {
-      background: #fafcff;
-    }
-    .item-desc {
-      font-size: 10px;
-      color: #64748b;
-      margin-top: 2px;
-    }
-
-    /* Terms */
-    .terms-box {
-      margin-top: 8px;
-      padding: 10px 12px;
+    .prop-terms-box {
+      padding: 8px 12px;
       background: #f8fafc;
       border-left: 3px solid #0b4b8f;
-      border-radius: 0 4px 4px 0;
-      font-size: 10.5px;
-      color: #475569;
+      font-size: 11px;
       line-height: 1.5;
-      page-break-inside: avoid;
-      break-inside: avoid;
+      color: #334155;
     }
-
-    /* Signatures */
-    .sigs {
+    .prop-sigs {
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 80px;
       margin-top: 36px;
       page-break-inside: avoid;
-      break-inside: avoid;
     }
-    .sig {
+    .prop-sig-line {
       text-align: center;
       border-top: 1px solid #9aa6b6;
       padding-top: 6px;
       font-size: 10px;
       color: #64748b;
     }
-    @media print {
-      html, body {
-        background: #ffffff !important;
-        margin: 0 !important;
-        padding: 0 !important;
-      }
-      .a4-page {
-        border: none !important;
-        box-shadow: none !important;
-        padding: 0 !important;
-        width: 100% !important;
-        max-width: 100% !important;
-      }
-      @page {
-        size: A4 portrait;
-        margin: 12mm 15mm;
-      }
-    }
   </style>
 </head>
 <body>
   <div class="a4-page">
-    <div>
-      <!-- Letterhead Top Header -->
-      <div class="letterhead-top">
-        <div class="brand-block">
-          <h1>${esc(bizName)}</h1>
-          ${proposal.tagline ? `<p class="brand-tagline">${esc(proposal.tagline)}</p>` : ''}
-          ${(proposal.officeAddress || business.address) ? `<p>${esc(proposal.officeAddress || business.address)}</p>` : ''}
-          ${[proposal.supportPhone || business.phone, proposal.inquiryEmail || business.email, proposal.websiteUrl].filter(Boolean).length > 0 ? `<p>${esc([proposal.supportPhone || business.phone, proposal.inquiryEmail || business.email, proposal.websiteUrl].filter(Boolean).join(' • '))}</p>` : ''}
-          ${proposal.ntnTax ? `<div class="tax-badge">${esc(proposal.ntnTax)}</div>` : ''}
-        </div>
-        <div class="doc-meta">
-          <div class="doc-title-badge">Proposal & Quotation</div>
-          <div class="meta-row">Proposal #: <strong>${esc(proposalNo)}</strong></div>
-          <div class="meta-row">Issue Date: <strong>${esc(proposalDate)}</strong></div>
-          <div class="meta-row">Validity: <strong>${esc(validity)}</strong></div>
-        </div>
+    <!-- Letterhead Top Header -->
+    <div class="prop-head">
+      <div class="prop-brand">
+        <h2>${esc(bizName)}</h2>
+        ${proposal.tagline ? `<div class="prop-tagline">${esc(proposal.tagline)}</div>` : ''}
+        ${(proposal.officeAddress || business.address) ? `<p>${esc(proposal.officeAddress || business.address)}</p>` : ''}
+        ${[proposal.supportPhone || business.phone, proposal.inquiryEmail || business.email, proposal.websiteUrl].filter(Boolean).length > 0 ? `<p>${esc([proposal.supportPhone || business.phone, proposal.inquiryEmail || business.email, proposal.websiteUrl].filter(Boolean).join(' • '))}</p>` : ''}
+        ${proposal.ntnTax ? `<div class="prop-tax-badge">${esc(proposal.ntnTax)}</div>` : ''}
       </div>
-
-      <!-- Proposal Target Client -->
-      <div class="proposal-target">
-        <div class="target-box">
-          <h4>Prepared For</h4>
-          <p><strong>${esc(clientName)}</strong></p>
-          ${clientCompany ? `<p>Organization: ${esc(clientCompany)}</p>` : ''}
-          ${customer.phone ? `<p>Phone: ${esc(customer.phone)}</p>` : ''}
-          ${customer.whatsapp ? `<p>WhatsApp: ${esc(customer.whatsapp)}</p>` : ''}
-        </div>
-        <div class="target-box">
-          <h4>Proposal Subject</h4>
-          <p><strong>${esc(proposal.title || 'Software Development & Billing Services')}</strong></p>
-          <p>Currency: <strong>${esc(cur)}</strong></p>
-          <p>Commercial Reference: <strong>${esc(proposalNo)}</strong></p>
-        </div>
+      <div class="prop-meta">
+        <div class="prop-badge">Commercial Proposal</div>
+        <div>Proposal #: <strong>${esc(proposalNo)}</strong></div>
+        <div>Date: <strong>${esc(proposalDate)}</strong></div>
+        <div>Validity: <strong>${esc(validity)}</strong></div>
       </div>
+    </div>
 
-      <!-- Executive Summary / Scope (Optional) -->
-      ${proposal.summary ? `
-        <div class="section-title">1. Project Overview & Scope of Work</div>
-        <div class="overview-text">${esc(proposal.summary)}</div>
-      ` : ''}
+    <!-- Client Box -->
+    <div class="prop-client-grid">
+      <div class="prop-client-card">
+        <h4>Prepared For</h4>
+        <p><strong>${esc(clientName)}</strong></p>
+        ${clientCompany ? `<p>Organization: ${esc(clientCompany)}</p>` : ''}
+        ${customer.phone ? `<p>Phone: ${esc(customer.phone)}</p>` : ''}
+      </div>
+      <div class="prop-client-card">
+        <h4>Proposal Details</h4>
+        <p><strong>${esc(proposal.title || 'Commercial Proposal & Quotation')}</strong></p>
+        <p>Currency: <strong>${esc(cur)}</strong></p>
+      </div>
+    </div>
 
-      <!-- Commercial Deliverables Table -->
-      <div class="section-title">${proposal.summary ? '2.' : '1.'} Commercial Proposal &amp; Deliverables</div>
-      <table>
+    <!-- Overview (Optional) -->
+    ${proposal.summary ? `
+      <div class="prop-section">
+        <div class="prop-section-title">1. Project Overview & Scope of Work</div>
+        <div class="prop-overview-text">${esc(proposal.summary)}</div>
+      </div>
+    ` : ''}
+
+    <!-- Deliverables Table -->
+    <div class="prop-section">
+      <div class="prop-section-title">${proposal.summary ? '2.' : '1.'} Deliverables & Commercial Pricing</div>
+      <table class="prop-table">
         <thead>
           <tr>
-            <th style="width: 35px; text-align: center;">#</th>
-            <th>Deliverable / Service</th>
+            <th style="width: 32px; text-align: center;">#</th>
+            <th style="text-align: left;">Deliverable / Service</th>
             <th style="width: 55px; text-align: center;">Qty</th>
             <th style="width: 110px; text-align: right;">Unit Price</th>
             <th style="width: 90px; text-align: right;">Discount</th>
             <th style="width: 65px; text-align: center;">Tax</th>
-            <th style="width: 125px; text-align: right;">Total (${esc(cur)})</th>
+            <th style="width: 125px; text-align: right;">Total</th>
           </tr>
         </thead>
         <tbody>
-          ${items.map((item, idx) => {
-            const gross = Number(item.qty || 1) * Number(item.price || 0);
-            const disc = Number(item.discount || 0);
-            const taxP = Number(item.taxPct || 0);
+          ${items.map((it, idx) => {
+            const gross = Number(it.qty || 1) * Number(it.price || 0);
+            const disc = Number(it.discount || 0);
+            const taxP = Number(it.taxPct || 0);
             const taxBase = Math.max(0, gross - disc);
             const lineTax = (taxBase * taxP) / 100;
             const lineTot = taxBase + lineTax;
+
             return `
-            <tr>
-              <td style="text-align: center; color: #64748b;">${idx + 1}</td>
-              <td>
-                <strong>${esc(item.name || 'Deliverable Item')}</strong>
-                ${item.desc ? `<div class="item-desc">${esc(item.desc)}</div>` : ''}
-              </td>
-              <td style="text-align: center;">${item.qty || 1}</td>
-              <td style="text-align: right;">${money(item.price || 0, cur)}</td>
-              <td style="text-align: right; color: ${disc > 0 ? '#dc2626' : '#64748b'};">${disc > 0 ? `- ${money(disc, cur)}` : '—'}</td>
-              <td style="text-align: center; color: ${taxP > 0 ? '#0369a1' : '#64748b'};">${taxP > 0 ? `${taxP}%` : '—'}</td>
-              <td style="text-align: right; font-weight: 750;">${money(lineTot, cur)}</td>
-            </tr>
-          `;}).join('')}
+              <tr>
+                <td style="text-align: center; color: #64748b;">${idx + 1}</td>
+                <td>
+                  <strong>${esc(it.name || 'Deliverable')}</strong>
+                  ${it.desc ? `<div style="font-size: 10px; color: #64748b; margin-top: 2px;">${esc(it.desc)}</div>` : ''}
+                </td>
+                <td style="text-align: center;">${it.qty || 1}</td>
+                <td style="text-align: right;">${money(it.price || 0, cur)}</td>
+                <td style="text-align: right; color: ${disc > 0 ? '#dc2626' : '#64748b'};">
+                  ${disc > 0 ? `- ${money(disc, cur)}` : '—'}
+                </td>
+                <td style="text-align: center; color: ${taxP > 0 ? '#0369a1' : '#64748b'};">
+                  ${taxP > 0 ? `${taxP}%` : '—'}
+                </td>
+                <td style="text-align: right; font-weight: 750;">
+                  ${money(lineTot, cur)}
+                </td>
+              </tr>
+            `;
+          }).join('')}
         </tbody>
         <tfoot>
           <tr>
@@ -363,18 +307,20 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
           </tr>
         </tfoot>
       </table>
+    </div>
 
-      <!-- 3. Payment Milestones Table (Above Terms) -->
-      ${proposal.milestones && proposal.milestones.length > 0 ? `
-        <div class="section-title">${proposal.summary ? '3.' : '2.'} Payment Milestones & Billing Schedule</div>
-        <table>
+    <!-- 3. Payment Milestones (Above Terms) -->
+    ${proposal.milestones && proposal.milestones.length > 0 ? `
+      <div class="prop-section">
+        <div class="prop-section-title">${proposal.summary ? '3.' : '2.'} Payment Milestones & Billing Schedule</div>
+        <table class="prop-table">
           <thead>
             <tr>
-              <th style="width: 40px; text-align: center;">#</th>
+              <th style="width: 36px; text-align: center;">#</th>
               <th>Milestone / Deliverable</th>
-              <th style="width: 65px; text-align: center;">%</th>
-              <th style="width: 150px; text-align: right;">Amount (${esc(cur)})</th>
-              <th style="width: 200px;">Due Condition</th>
+              <th style="width: 70px; text-align: center;">%</th>
+              <th style="width: 140px; text-align: right;">Amount (${esc(cur)})</th>
+              <th style="width: 220px;">Due Condition</th>
             </tr>
           </thead>
           <tbody>
@@ -387,30 +333,31 @@ export function generateProposalHtml(proposal = {}, business = {}, customer = {}
                   <td style="text-align: center; font-weight: 700; color: #0b4b8f;">${ms.pct || 0}%</td>
                   <td style="text-align: right; font-weight: 800; color: #065f46;">${money(msAmt, cur)}</td>
                   <td style="font-size: 10.5px; color: #475569;">${esc(ms.dueCondition || '—')}</td>
-                </tr>`;
+                </tr>
+              `;
             }).join('')}
           </tbody>
         </table>
-      ` : ''}
+      </div>
+    ` : ''}
 
-      <!-- 4. Payment Terms & Conditions (Below Milestones) -->
-      ${proposal.terms ? `
-        <div class="section-title">${(proposal.summary ? 2 : 1) + (proposal.milestones && proposal.milestones.length > 0 ? 2 : 1)}. Payment Terms & Conditions</div>
-        <div class="terms-box">${esc(proposal.terms)}</div>
-      ` : ''}
-    </div>
+    <!-- 4. Terms & Conditions (Below Milestones) -->
+    ${proposal.terms ? `
+      <div class="prop-section">
+        <div class="prop-section-title">${(proposal.summary ? 2 : 1) + (proposal.milestones && proposal.milestones.length > 0 ? 2 : 1)}. Payment Terms & Conditions</div>
+        <div class="prop-terms-box">${esc(proposal.terms)}</div>
+      </div>
+    ` : ''}
 
     <!-- Signatures -->
-    <div style="page-break-inside: avoid; break-inside: avoid; margin-top: 36px;">
-      <div class="sigs">
-        <div class="sig">
-          <div>Client Signature</div>
-          ${clientName ? `<div style="font-size: 9px; color: #64748b; margin-top: 2px;">${esc(clientName)}</div>` : ''}
-        </div>
-        <div class="sig">
-          <div>${esc(proposal.signatoryName || 'Authorized Signature')}</div>
-          ${proposal.signatoryTitle ? `<div style="font-size: 9px; color: #64748b; margin-top: 2px;">${esc(proposal.signatoryTitle)}</div>` : ''}
-        </div>
+    <div class="prop-sigs">
+      <div class="prop-sig-line">
+        <div>Client Signature</div>
+        ${clientName ? `<div style="font-size: 9px; color: #94a3b8; margin-top: 2px;">${esc(clientName)}</div>` : ''}
+      </div>
+      <div class="prop-sig-line">
+        <div>${esc(proposal.signatoryName || 'Authorized Signature')}</div>
+        ${proposal.signatoryTitle ? `<div style="font-size: 9px; color: #94a3b8; margin-top: 2px;">${esc(proposal.signatoryTitle)}</div>` : ''}
       </div>
     </div>
   </div>
