@@ -145,7 +145,7 @@ export default function Sidebar() {
             </span>
           </button>
 
-          {/* 3 Sub-Modules Dropdown Menu */}
+          {/* 5 Modular Settings Sub-Items */}
           {isSettingsOpen && (
             <div className="nav-submenu">
               <button
@@ -155,6 +155,15 @@ export default function Sidebar() {
               >
                 <span className="nav-sub-bullet">🏛️</span>
                 <span>Organization Identity</span>
+              </button>
+
+              <button
+                type="button"
+                className={`nav-sub-item ${currentPage === 'settings' && settingsTab === 'whatsapp' ? 'active' : ''}`}
+                onClick={() => handleSubTabClick('whatsapp')}
+              >
+                <span className="nav-sub-bullet">💬</span>
+                <span>WhatsApp Service</span>
               </button>
 
               <button
@@ -172,7 +181,16 @@ export default function Sidebar() {
                 onClick={() => handleSubTabClick('invoice')}
               >
                 <span className="nav-sub-bullet">🧾</span>
-                <span>Invoice Settings</span>
+                <span>Invoice & Banking</span>
+              </button>
+
+              <button
+                type="button"
+                className={`nav-sub-item ${currentPage === 'settings' && settingsTab === 'system' ? 'active' : ''}`}
+                onClick={() => handleSubTabClick('system')}
+              >
+                <span className="nav-sub-bullet">🗄️</span>
+                <span>System & Database</span>
               </button>
             </div>
           )}

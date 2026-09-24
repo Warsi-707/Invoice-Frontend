@@ -252,13 +252,13 @@ export default function SettingsPage() {
         <div className="settings-header-title">
           <h2>
             <span>Settings & System Configuration</span>
-            <span className="modular-badge">3 Modules</span>
+            <span className="modular-badge">5 Modules</span>
           </h2>
-          <p>Configure organization identity, letterhead proposal branding, and global invoice defaults.</p>
+          <p>Configure organization identity, WhatsApp automation, letterhead proposal branding, invoice defaults, and cloud database.</p>
         </div>
       </div>
 
-      {/* 3 Modular Navigation Tabs */}
+      {/* 5 Modular Navigation Tabs */}
       <div className="settings-nav-tabs">
         {/* Module 1 Tab */}
         <button
@@ -274,12 +274,30 @@ export default function SettingsPage() {
           </div>
           <div className="tab-btn-content">
             <div className="tab-btn-title">Organization Identity</div>
-            <div className="tab-btn-sub">Admin, Cloud DB & WhatsApp</div>
+            <div className="tab-btn-sub">Admin Profile & Access Credentials</div>
           </div>
           <span className="tab-num-badge">Module 01</span>
         </button>
 
         {/* Module 2 Tab */}
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === 'whatsapp' ? 'active' : ''}`}
+          onClick={() => setSettingsTab('whatsapp')}
+        >
+          <div className="tab-btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+            </svg>
+          </div>
+          <div className="tab-btn-content">
+            <div className="tab-btn-title">WhatsApp Service</div>
+            <div className="tab-btn-sub">Auto Delivery & QR Code Scanner</div>
+          </div>
+          <span className="tab-num-badge">Module 02</span>
+        </button>
+
+        {/* Module 3 Tab */}
         <button
           type="button"
           className={`settings-tab-btn ${activeTab === 'proposal' ? 'active' : ''}`}
@@ -298,10 +316,10 @@ export default function SettingsPage() {
             <div className="tab-btn-title">Proposal & Letterhead</div>
             <div className="tab-btn-sub">Corporate ID, A4 Sheet & Signature</div>
           </div>
-          <span className="tab-num-badge">Module 02</span>
+          <span className="tab-num-badge">Module 03</span>
         </button>
 
-        {/* Module 3 Tab */}
+        {/* Module 4 Tab */}
         <button
           type="button"
           className={`settings-tab-btn ${activeTab === 'invoice' ? 'active' : ''}`}
@@ -316,21 +334,43 @@ export default function SettingsPage() {
             </svg>
           </div>
           <div className="tab-btn-content">
-            <div className="tab-btn-title">Invoice Settings</div>
-            <div className="tab-btn-sub">Currency, Due Days & Footer Notes</div>
+            <div className="tab-btn-title">Invoice & Banking</div>
+            <div className="tab-btn-sub">Currency, Due Days & Bank Accounts</div>
           </div>
-          <span className="tab-num-badge">Module 03</span>
+          <span className="tab-num-badge">Module 04</span>
+        </button>
+
+        {/* Module 5 Tab */}
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === 'system' ? 'active' : ''}`}
+          onClick={() => setSettingsTab('system')}
+        >
+          <div className="tab-btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <ellipse cx="12" cy="5" rx="9" ry="3"></ellipse>
+              <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"></path>
+              <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"></path>
+            </svg>
+          </div>
+          <div className="tab-btn-content">
+            <div className="tab-btn-title">System & Database</div>
+            <div className="tab-btn-sub">Neon Cloud DB, Backup & Recovery</div>
+          </div>
+          <span className="tab-num-badge">Module 05</span>
         </button>
       </div>
 
       {/* =========================================================================
-          MODULE 01: Organization Identity & System Details
+          MODULE 01: Organization Identity & Security (SINGLE CARD - NO MIXED CONTENT)
          ========================================================================= */}
       {activeTab === 'org' && (
-        <div className="settings-layout">
-          {/* Left Column: Admin & System Details */}
+        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
           <div className="settings-card">
-            <h4>🏛️ Organization & Admin Security</h4>
+            <h4>🏛️ Organization Profile & Admin Security</h4>
+            <div className="settings-data-note">
+              Manage system administrator credentials and application security.
+            </div>
 
             <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
               <div className="full">
@@ -379,64 +419,73 @@ export default function SettingsPage() {
               </div>
             </form>
           </div>
+        </div>
+      )}
 
-          {/* Right Column: WhatsApp Delivery + Data & Backup */}
-          <div className="settings-right-stack">
-            {/* WhatsApp Scanner Card */}
-            <WhatsAppScannerCard compact={true} />
+      {/* =========================================================================
+          MODULE 02: WhatsApp Service (DEDICATED SINGLE PAGE)
+         ========================================================================= */}
+      {activeTab === 'whatsapp' && (
+        <div style={{ maxWidth: '750px', margin: '0 auto' }}>
+          <WhatsAppScannerCard compact={false} />
+        </div>
+      )}
 
-            {/* Data & Backup Card */}
-            <div className="settings-card">
-              <h4>Neon PostgreSQL Cloud Database</h4>
+      {/* =========================================================================
+          MODULE 05: System & Database (DEDICATED SINGLE PAGE)
+         ========================================================================= */}
+      {activeTab === 'system' && (
+        <div style={{ maxWidth: '850px', margin: '0 auto' }}>
+          <div className="settings-card">
+            <h4>🗄️ Neon PostgreSQL Cloud Database</h4>
 
-              <div className="settings-data-note">
-                Live cloud database records & synchronization.
+            <div className="settings-data-note">
+              Live cloud database records, automated backups, and emergency recovery.
+            </div>
+
+            <div className="data-summary">
+              <div className="data-stat">
+                <span>Businesses</span>
+                <strong>{businessCount}</strong>
               </div>
-
-              <div className="data-summary">
-                <div className="data-stat">
-                  <span>Businesses</span>
-                  <strong>{businessCount}</strong>
-                </div>
-                <div className="data-stat">
-                  <span>Clients</span>
-                  <strong>{customerCount}</strong>
-                </div>
-                <div className="data-stat">
-                  <span>Invoices</span>
-                  <strong>{invoiceCount}</strong>
-                </div>
-                <div className="data-stat">
-                  <span>Payment Entries</span>
-                  <strong>{paymentCount}</strong>
-                </div>
-                <div className="data-stat">
-                  <span>Reversal Records</span>
-                  <strong>{reversalCount}</strong>
-                </div>
+              <div className="data-stat">
+                <span>Clients</span>
+                <strong>{customerCount}</strong>
               </div>
-
-              <div className="settings-data-actions" style={{ marginTop: '16px' }}>
-                <Button variant="light" onClick={backupData}>
-                  ⬇️ Backup JSON Data
-                </Button>
-                <Button variant="light" onClick={() => fileInputRef.current?.click()}>
-                  ⬆️ Restore JSON Data
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept="application/json,.json"
-                  className="hidden-file"
-                  onChange={handleRestoreFileChange}
-                />
+              <div className="data-stat">
+                <span>Invoices</span>
+                <strong>{invoiceCount}</strong>
               </div>
-
-              <div className="data-danger" style={{ marginTop: '18px' }}>
-                <Button variant="danger" onClick={clearAllData}>
-                  ⚠️ Clear All Data (Reset)
-                </Button>
+              <div className="data-stat">
+                <span>Payment Entries</span>
+                <strong>{paymentCount}</strong>
               </div>
+              <div className="data-stat">
+                <span>Reversal Records</span>
+                <strong>{reversalCount}</strong>
+              </div>
+            </div>
+
+            <div className="settings-data-actions" style={{ marginTop: '20px' }}>
+              <Button variant="light" onClick={backupData}>
+                ⬇️ Backup JSON Data
+              </Button>
+              <Button variant="light" onClick={() => fileInputRef.current?.click()}>
+                ⬆️ Restore JSON Data
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="application/json,.json"
+                className="hidden-file"
+                onChange={handleRestoreFileChange}
+              />
+            </div>
+
+            <div className="data-danger" style={{ marginTop: '24px' }}>
+              <Button variant="danger" onClick={clearAllData}>
+                ⚠️ Clear All Data (Reset)
+              </Button>
             </div>
           </div>
         </div>
