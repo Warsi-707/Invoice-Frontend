@@ -5,7 +5,26 @@
 const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 const TOKEN_KEY = 'invoice_manager_jwt';
 
+// ⚡ Ultra High-Speed In-Memory Client Cache (React-Query style, 0ms latency)
+const getRequestCache = new Map();
+const GET_CACHE_TTL_MS = 60000; // 60s cache
+
+export function clearClientApiCache() {
+  getRequestCache.clear();
+}
+
 async function request(endpoint, options = {}) {
+  const method = (options.method || 'GET').toUpperCase();
+  const isGet = method === 'GET';
+
+  // Check client-side in-memory cache for instant 0ms responses
+  if (isGet) {
+    const cached = getRequestCache.get(endpoint);
+    if (cached && (Date.now() - cached.timestamp < GET_CACHE_TTL_MS)) {
+      return cached.data;
+    }
+  }
+
   const token = localStorage.getItem(TOKEN_KEY);
   const config = {
     headers: {
@@ -25,13 +44,24 @@ async function request(endpoint, options = {}) {
     const error = await response.json().catch(() => ({ message: 'API request failed' }));
     if (response.status === 401 && !endpoint.includes('/auth/login')) {
       localStorage.removeItem(TOKEN_KEY);
+      clearClientApiCache();
       if (typeof window !== 'undefined') {
         window.dispatchEvent(new CustomEvent('auth:unauthorized', { detail: { message: error.message } }));
       }
     }
     throw new Error(error.message || `HTTP ${response.status}`);
   }
-  return response.json();
+
+  const data = await response.json();
+
+  // If GET, cache result; if Mutation (POST/PUT/DELETE), invalidate cache
+  if (isGet) {
+    getRequestCache.set(endpoint, { data, timestamp: Date.now() });
+  } else {
+    clearClientApiCache();
+  }
+
+  return data;
 }
 
 export const bootstrapApi = {

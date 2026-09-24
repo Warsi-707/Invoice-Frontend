@@ -75,64 +75,66 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
     }
     document.body.appendChild(staging);
 
-    // 4. Allow layout calculation and CSSOM attachment
-    setTimeout(async () => {
-      try {
-        const targetElement = staging.querySelector('.a4-page') || 
-                              staging.querySelector('.inv-container') || 
-                              staging.querySelector('.statement') || 
-                              staging.querySelector('.invoice') || 
-                              staging.firstElementChild || 
-                              staging;
+    // 4. Allow layout calculation and CSSOM attachment in next render frame
+    requestAnimationFrame(() => {
+      setTimeout(async () => {
+        try {
+          const targetElement = staging.querySelector('.a4-page') || 
+                                staging.querySelector('.inv-container') || 
+                                staging.querySelector('.statement') || 
+                                staging.querySelector('.invoice') || 
+                                staging.firstElementChild || 
+                                staging;
 
-        // Force exact zero horizontal offset and 750px width on targetElement
-        targetElement.style.margin = '0';
-        targetElement.style.marginLeft = '0';
-        targetElement.style.marginRight = '0';
-        targetElement.style.width = '750px';
-        targetElement.style.maxWidth = '750px';
-        targetElement.style.boxSizing = 'border-box';
+          // Force exact zero horizontal offset and 750px width on targetElement
+          targetElement.style.margin = '0';
+          targetElement.style.marginLeft = '0';
+          targetElement.style.marginRight = '0';
+          targetElement.style.width = '750px';
+          targetElement.style.maxWidth = '750px';
+          targetElement.style.boxSizing = 'border-box';
 
-        // Calculate exact content height in mm so PDF doesn't have trailing blank space
-        const elementHeightPx = targetElement.scrollHeight || targetElement.offsetHeight || 800;
-        const elementWidthPx = 750;
-        const marginMm = 8;
-        const pdfWidthMm = 210;
-        const printableWidthMm = pdfWidthMm - (marginMm * 2); // 194mm (centered: 8mm left, 8mm right)
-        const contentHeightMm = (elementHeightPx / elementWidthPx) * printableWidthMm;
-        const pdfHeightMm = Math.max(130, Math.ceil(contentHeightMm + (marginMm * 2) + 6));
+          // Calculate exact content height in mm so PDF doesn't have trailing blank space
+          const elementHeightPx = targetElement.scrollHeight || targetElement.offsetHeight || 800;
+          const elementWidthPx = 750;
+          const marginMm = 8;
+          const pdfWidthMm = 210;
+          const printableWidthMm = pdfWidthMm - (marginMm * 2); // 194mm (centered: 8mm left, 8mm right)
+          const contentHeightMm = (elementHeightPx / elementWidthPx) * printableWidthMm;
+          const pdfHeightMm = Math.max(130, Math.ceil(contentHeightMm + (marginMm * 2) + 6));
 
-        const opt = {
-          margin: [marginMm, marginMm, marginMm, marginMm],
-          filename: fileName,
-          image: { type: 'jpeg', quality: 0.98 },
-          html2canvas: {
-            scale: 2,
-            useCORS: true,
-            letterRendering: true,
-            logging: false,
-            backgroundColor: '#ffffff',
-            width: 750,
-            windowWidth: 750,
-            x: 0,
-            y: 0,
-            scrollX: 0,
-            scrollY: 0
-          },
-          jsPDF: { unit: 'mm', format: [pdfWidthMm, pdfHeightMm], orientation: 'portrait' },
-          pagebreak: { mode: 'avoid-all' }
-        };
+          const opt = {
+            margin: [marginMm, marginMm, marginMm, marginMm],
+            filename: fileName,
+            image: { type: 'jpeg', quality: 0.95 },
+            html2canvas: {
+              scale: 1.8,
+              useCORS: true,
+              letterRendering: true,
+              logging: false,
+              backgroundColor: '#ffffff',
+              width: 750,
+              windowWidth: 750,
+              x: 0,
+              y: 0,
+              scrollX: 0,
+              scrollY: 0
+            },
+            jsPDF: { unit: 'mm', format: [pdfWidthMm, pdfHeightMm], orientation: 'portrait' },
+            pagebreak: { mode: 'avoid-all' }
+          };
 
-        const pdfBlob = await html2pdf().set(opt).from(targetElement).output('blob');
-        resolve(pdfBlob);
-      } catch (err) {
-        console.error('PDF render error:', err);
-        reject(err);
-      } finally {
-        staging.remove();
-        styleEl.remove();
-      }
-    }, 200);
+          const pdfBlob = await html2pdf().set(opt).from(targetElement).output('blob');
+          resolve(pdfBlob);
+        } catch (err) {
+          console.error('PDF render error:', err);
+          reject(err);
+        } finally {
+          staging.remove();
+          styleEl.remove();
+        }
+      }, 25);
+    });
   });
 }
 

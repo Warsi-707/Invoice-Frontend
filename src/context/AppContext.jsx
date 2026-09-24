@@ -8,7 +8,8 @@ import {
   businessCustomerApi,
   invoiceApi,
   reversalApi,
-  settingsApi
+  settingsApi,
+  clearClientApiCache
 } from '../services/api';
 
 const AppContext = createContext(null);
@@ -162,6 +163,7 @@ export function AppProvider({ children }) {
             ...(res.settings || {})
           }
         }));
+        clearClientApiCache();
         setCurrentPage('dashboard');
         refreshFromBackend().catch(() => {});
         showToast(`Welcome, ${username.trim()}`);
@@ -179,6 +181,7 @@ export function AppProvider({ children }) {
     } catch (e) {
       // ignore
     }
+    clearClientApiCache();
     setState((prev) => ({
       ...prev,
       session: {
@@ -703,6 +706,7 @@ export function AppProvider({ children }) {
 
       // Sync to PostgreSQL backend
       await settingsApi.restore(validatedState);
+      clearClientApiCache();
       showToast('Backup restored to PostgreSQL.');
       return true;
     } catch (err) {
@@ -725,6 +729,7 @@ export function AppProvider({ children }) {
     showToast('All data cleared.');
     try {
       await settingsApi.reset();
+      clearClientApiCache();
     } catch (err) {
       console.error('API Error resetting data:', err);
     }
