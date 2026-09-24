@@ -2217,56 +2217,85 @@ tr:last-child td {
 
 /* Compact WhatsApp Scanner inside Settings */
 .wa-scanner-card.compact {
-  padding: 20px;
+  padding: 16px;
   margin-bottom: 0;
   border-radius: 12px;
 }
 
 .wa-scanner-card.compact .wa-card-header {
-  margin-bottom: 14px;
+  margin-bottom: 10px;
 }
 
 .wa-scanner-card.compact .wa-icon-box {
-  width: 38px;
-  height: 38px;
-  border-radius: 10px;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
 }
 
 .wa-scanner-card.compact .wa-title-group h3 {
-  font-size: 15px;
+  font-size: 14px;
 }
 
 .wa-scanner-card.compact .wa-subtitle {
-  font-size: 11.5px;
+  font-size: 11px;
+}
+
+.wa-scanner-card.compact .wa-card-body {
+  margin-bottom: 10px;
+}
+
+.wa-scanner-card.compact .wa-qr-container {
+  padding: 2px 0;
 }
 
 .wa-scanner-card.compact .wa-qr-frame {
-  width: 170px;
-  height: 170px;
-  border-radius: 14px;
-  padding: 8px;
-  margin-bottom: 12px;
+  width: 145px;
+  height: 145px;
+  border-radius: 12px;
+  padding: 6px;
+  margin-bottom: 8px;
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.1);
 }
 
 .wa-scanner-card.compact .wa-connected-box {
-  padding: 16px;
-  border-radius: 12px;
+  padding: 12px;
+  border-radius: 10px;
 }
 
 .wa-scanner-card.compact .wa-check-circle {
-  width: 46px;
-  height: 46px;
-  margin-bottom: 10px;
+  width: 38px;
+  height: 38px;
+  margin-bottom: 8px;
 }
 
 .wa-scanner-card.compact .wa-connected-box h4 {
-  font-size: 15px;
-  margin-bottom: 4px;
+  font-size: 14px;
+  margin-bottom: 2px;
+}
+
+.wa-scanner-card.compact .wa-step-highlight {
+  font-size: 11.5px;
+  margin-bottom: 2px;
+}
+
+.wa-scanner-card.compact .wa-step-sub {
+  font-size: 10.5px;
 }
 
 .wa-scanner-card.compact .wa-card-actions {
-  margin-bottom: 10px;
-  gap: 8px;
+  margin-bottom: 6px;
+  gap: 6px;
+}
+
+.wa-scanner-card.compact .wa-card-actions button {
+  padding: 6px 10px;
+  font-size: 11.5px;
+}
+
+.wa-scanner-card.compact .wa-card-footer {
+  margin-top: 6px;
+  padding-top: 6px;
+  font-size: 10.5px;
 }
 
 /* Outstanding Previous Dues (Purana Paisa) Alert Banner */

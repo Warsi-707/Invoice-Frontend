@@ -153,7 +153,6 @@ export default function Sidebar() {
                 className={`nav-sub-item ${currentPage === 'settings' && (settingsTab === 'org' || !settingsTab) ? 'active' : ''}`}
                 onClick={() => handleSubTabClick('org')}
               >
-                <span className="nav-sub-bullet">🏛️</span>
                 <span>Organization Identity</span>
               </button>
 
@@ -162,7 +161,6 @@ export default function Sidebar() {
                 className={`nav-sub-item ${currentPage === 'settings' && settingsTab === 'proposal' ? 'active' : ''}`}
                 onClick={() => handleSubTabClick('proposal')}
               >
-                <span className="nav-sub-bullet">📜</span>
                 <span>Proposal & Letterhead</span>
               </button>
 
@@ -171,7 +169,6 @@ export default function Sidebar() {
                 className={`nav-sub-item ${currentPage === 'settings' && settingsTab === 'invoice' ? 'active' : ''}`}
                 onClick={() => handleSubTabClick('invoice')}
               >
-                <span className="nav-sub-bullet">🧾</span>
                 <span>Invoice Settings</span>
               </button>
             </div>

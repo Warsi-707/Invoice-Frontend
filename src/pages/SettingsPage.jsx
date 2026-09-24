@@ -62,6 +62,7 @@ export default function SettingsPage() {
   const [validityDays, setValidityDays] = useState(savedProp.validityDays || 14);
   const [propTerms, setPropTerms] = useState(savedProp.terms || '');
   const [showA4Preview, setShowA4Preview] = useState(true);
+  const [showInvoicePreview, setShowInvoicePreview] = useState(true);
 
   // Tab 03: Invoice Settings State
   const [currency, setCurrency] = useState(state.settings?.currency || 'PKR');
@@ -294,7 +295,7 @@ export default function SettingsPage() {
     <section id="settings" className="page active">
       {/* Dynamic Header for Selected Module */}
       <div className="settings-header-top" style={{ marginBottom: '24px' }}>
-        <div className="settings-header-title">
+        <div className="settings-header-title" style={{ width: '100%' }}>
           {activeTab === 'org' && (
             <>
               <h2>
@@ -314,12 +315,30 @@ export default function SettingsPage() {
           )}
 
           {activeTab === 'invoice' && (
-            <>
-              <h2>
-                <span>Invoice Settings & Live Template Preview</span>
-              </h2>
-              <p>Configure default billing currency, payment due days, invoice prefix, footer terms, and banking credentials.</p>
-            </>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', flexWrap: 'wrap', gap: '12px' }}>
+              <div>
+                <h2>
+                  <span>Invoice Settings & Live Template Preview</span>
+                </h2>
+                <p>Configure default billing currency, payment due days, invoice prefix, footer terms, and banking credentials.</p>
+              </div>
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Button
+                  variant="light"
+                  size="sm"
+                  onClick={() => setShowInvoicePreview(!showInvoicePreview)}
+                >
+                  {showInvoicePreview ? 'Hide Preview' : 'View Preview'}
+                </Button>
+                <Button
+                  variant="primary"
+                  size="sm"
+                  onClick={handleSaveAllSettings}
+                >
+                  Save Invoice Settings
+                </Button>
+              </div>
+            </div>
           )}
         </div>
       </div>
@@ -331,7 +350,7 @@ export default function SettingsPage() {
         <div className="settings-layout">
           {/* Left Column: Admin & System Details */}
           <div className="settings-card">
-            <h4>🏛️ Organization & Admin Security</h4>
+            <h4>Organization & Admin Security</h4>
 
             <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
               <div className="full">
@@ -375,7 +394,7 @@ export default function SettingsPage() {
 
               <div className="full settings-save">
                 <Button variant="primary" type="submit">
-                  💾 Save Security Settings
+                  Save Security Settings
                 </Button>
               </div>
             </form>
@@ -419,10 +438,10 @@ export default function SettingsPage() {
 
               <div className="settings-data-actions" style={{ marginTop: '16px' }}>
                 <Button variant="light" onClick={backupData}>
-                  ⬇️ Backup JSON Data
+                  Backup JSON Data
                 </Button>
                 <Button variant="light" onClick={() => fileInputRef.current?.click()}>
-                  ⬆️ Restore JSON Data
+                  Restore JSON Data
                 </Button>
                 <input
                   ref={fileInputRef}
@@ -435,7 +454,7 @@ export default function SettingsPage() {
 
               <div className="data-danger" style={{ marginTop: '18px' }}>
                 <Button variant="danger" onClick={clearAllData}>
-                  ⚠️ Clear All Data (Reset)
+                  Clear All Data (Reset)
                 </Button>
               </div>
             </div>
@@ -465,16 +484,16 @@ export default function SettingsPage() {
               </div>
               <div className="prop-btn-group">
                 <Button variant="light" size="xs" onClick={() => setShowA4Preview(!showA4Preview)}>
-                  👁️ {showA4Preview ? 'Hide A4 Preview' : 'Show A4 Preview'}
+                  {showA4Preview ? 'Hide A4 Preview' : 'Show A4 Preview'}
                 </Button>
                 <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
-                  💾 Save Proposal Settings
+                  Save Proposal Settings
                 </Button>
               </div>
             </div>
 
             <div className="prop-sub-heading">
-              <span>🏛️ OFFICIAL CORPORATE IDENTITY &amp; TAX CREDENTIALS</span>
+              <span>OFFICIAL CORPORATE IDENTITY &amp; TAX CREDENTIALS</span>
             </div>
 
             <div className="prop-form-grid">
@@ -648,10 +667,10 @@ export default function SettingsPage() {
                 </div>
                 <div className="prop-btn-group">
                   <Button variant="light" size="xs" onClick={handleDownloadProposal}>
-                    📄 Download HTML / PDF
+                    Download HTML / PDF
                   </Button>
                   <Button variant="primary" size="xs" onClick={handlePreviewProposal}>
-                    👁️ Fullscreen Preview
+                    Fullscreen Preview
                   </Button>
                 </div>
               </div>
@@ -746,23 +765,22 @@ export default function SettingsPage() {
               <div className="prop-actions-bar" style={{ marginTop: '16px' }}>
                 <div className="prop-btn-group">
                   <Button variant="primary" onClick={handlePreviewProposal}>
-                    👁️ Fullscreen A4 Preview
+                    Fullscreen A4 Preview
                   </Button>
                   <Button variant="light" onClick={handleDownloadProposal}>
-                    📄 Download A4 Proposal
+                    Download A4 Proposal
                   </Button>
                   <Button
                     variant="green"
                     onClick={handlePreviewProposal}
                     style={{ background: '#10b981', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
                   >
-                    <span>💬</span>
                     <span>Send via WhatsApp</span>
                   </Button>
                 </div>
                 <div>
                   <Button variant="primary" onClick={handleSaveAllSettings}>
-                    💾 Save Proposal Settings
+                    Save Proposal Settings
                   </Button>
                 </div>
               </div>
@@ -779,7 +797,7 @@ export default function SettingsPage() {
           <div className="settings-layout">
           {/* Left Column: General Invoice Defaults */}
           <div className="settings-card">
-            <h4>🧾 Invoice &amp; Billing Defaults</h4>
+            <h4>Invoice &amp; Billing Defaults</h4>
 
             <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
               <div>
@@ -842,7 +860,7 @@ export default function SettingsPage() {
 
               <div className="full settings-save">
                 <Button variant="primary" type="submit">
-                  💾 Save Invoice Defaults
+                  Save Invoice Settings
                 </Button>
               </div>
             </form>
@@ -850,7 +868,7 @@ export default function SettingsPage() {
 
           {/* Right Column: Bank Details & Payment Instructions */}
           <div className="settings-card">
-            <h4>🏦 Bank &amp; Payment Details (For Invoices)</h4>
+            <h4>Bank &amp; Payment Details (For Invoices)</h4>
             <div className="settings-data-note">
               These details appear on invoices and customer payment reminders.
             </div>
@@ -888,7 +906,7 @@ export default function SettingsPage() {
 
               <div className="full settings-save">
                 <Button variant="primary" type="submit">
-                  💾 Save Bank Details
+                  Save Invoice Settings
                 </Button>
               </div>
             </form>
@@ -896,38 +914,48 @@ export default function SettingsPage() {
         </div>
 
         {/* Live Invoice Preview Section right below the details */}
-        <div className="settings-card" style={{ marginTop: '24px' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-            <div>
-              <h4 style={{ margin: 0 }}>📄 Live Invoice Template Preview</h4>
-              <div className="settings-data-note" style={{ marginTop: '4px' }}>
-                Real-time preview of how invoices look with current prefix, currency, footer notes, and bank credentials.
+        {showInvoicePreview && (
+          <div className="settings-card" style={{ marginTop: '24px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px', flexWrap: 'wrap', gap: '10px' }}>
+              <div>
+                <h4 style={{ margin: 0 }}>Live Invoice Template Preview</h4>
+                <div className="settings-data-note" style={{ marginTop: '4px' }}>
+                  Real-time preview of how invoices look with current prefix, currency, footer notes, and bank credentials.
+                </div>
+              </div>
+              <div style={{ display: 'flex', gap: '8px' }}>
+                <Button variant="light" size="xs" onClick={() => setShowInvoicePreview(false)}>
+                  Hide Preview
+                </Button>
+                <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
+                  Save Invoice Settings
+                </Button>
               </div>
             </div>
-          </div>
 
-          <div style={{
-            background: '#f8fafc',
-            padding: '24px',
-            borderRadius: '12px',
-            display: 'flex',
-            justifyContent: 'center',
-            overflowX: 'auto',
-            border: '1px solid #e2e8f0'
-          }}>
-            <div
-              style={{
-                background: '#ffffff',
-                boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
-                borderRadius: '8px',
-                width: '750px',
-                maxWidth: '100%',
-                overflow: 'hidden'
-              }}
-              dangerouslySetInnerHTML={{ __html: sampleInvoiceHtml }}
-            />
+            <div style={{
+              background: '#f8fafc',
+              padding: '24px',
+              borderRadius: '12px',
+              display: 'flex',
+              justifyContent: 'center',
+              overflowX: 'auto',
+              border: '1px solid #e2e8f0'
+            }}>
+              <div
+                style={{
+                  background: '#ffffff',
+                  boxShadow: '0 4px 20px rgba(0,0,0,0.08)',
+                  borderRadius: '8px',
+                  width: '750px',
+                  maxWidth: '100%',
+                  overflow: 'hidden'
+                }}
+                dangerouslySetInnerHTML={{ __html: sampleInvoiceHtml }}
+              />
+            </div>
           </div>
-        </div>
+        )}
       </div>
     )}
 

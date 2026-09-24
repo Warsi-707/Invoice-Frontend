@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { whatsappApi } from '../../services/api';
 import { cleanPhoneInput } from '../../utils/formatters';
 
-export default function WhatsAppScannerCard({ isStandalone = false }) {
+export default function WhatsAppScannerCard({ isStandalone = false, compact = false }) {
   const [status, setStatus] = useState('SCAN_QR'); // 'DISCONNECTED' | 'CONNECTING' | 'SCAN_QR' | 'CONNECTED'
   const [qrCode, setQrCode] = useState(null);
   const [user, setUser] = useState(null);
@@ -97,7 +97,7 @@ export default function WhatsAppScannerCard({ isStandalone = false }) {
   const isConnected = status === 'CONNECTED';
 
   return (
-    <div className={`wa-scanner-card ${isStandalone ? 'standalone' : ''}`}>
+    <div className={`wa-scanner-card ${isStandalone ? 'standalone' : ''} ${compact ? 'compact' : ''}`}>
       {/* Top Header */}
       <div className="wa-card-header">
         <div className="wa-title-group">
@@ -172,7 +172,7 @@ export default function WhatsAppScannerCard({ isStandalone = false }) {
 
             <div className="wa-instructions">
               <div className="wa-step-highlight">
-                📱 <strong>WhatsApp Kholein</strong> → <strong>3 Dots</strong> → <strong>Linked Devices</strong> → <strong>Link a Device</strong>
+                <strong>WhatsApp Kholein</strong> → <strong>3 Dots</strong> → <strong>Linked Devices</strong> → <strong>Link a Device</strong>
               </div>
               <div className="wa-step-sub">
                 QR scan karne ke baad automatic ho jayega — kuch seconds lagenge
@@ -244,7 +244,6 @@ export default function WhatsAppScannerCard({ isStandalone = false }) {
 
       {/* Footer */}
       <div className="wa-card-footer">
-        <span className="bulb">💡</span>
         <span>Click karne se naya tab khulega jahan se mobile WhatsApp se QR code scan kar sakte hain.</span>
       </div>
     </div>
