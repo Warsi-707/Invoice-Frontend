@@ -3,10 +3,8 @@ import { useApp } from '../context/AppContext';
 import Button from '../components/common/Button';
 import WhatsAppScannerCard from '../components/whatsapp/WhatsAppScannerCard';
 import ProposalPreviewModal from '../components/proposal/ProposalPreviewModal';
-import InvoicePreview from '../components/invoice/InvoicePreview';
 import { downloadProposalFile } from '../utils/proposal';
-import { downloadInvoiceFile } from '../utils/invoice';
-import { MONTHS, money, today, cleanPhoneInput } from '../utils/formatters';
+import { money, today, cleanPhoneInput } from '../utils/formatters';
 
 const PRESET_TERMS = {
   preset1: `1. Validity: This commercial quotation is valid for 14 calendar days from the date of issuance.
@@ -28,100 +26,6 @@ const PRESET_TERMS = {
 5. Returns: Opened software license keys and activated hardware units are non-refundable.`
 };
 
-// Sleek Flat SVG Icons (no emojis, no bulky vectors)
-const FlatIcons = {
-  settings: (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <circle cx="12" cy="12" r="3" />
-      <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
-    </svg>
-  ),
-  building: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="4" y="2" width="16" height="20" rx="2" ry="2" />
-      <line x1="9" y1="22" x2="9" y2="22.01" />
-      <line x1="15" y1="22" x2="15" y2="22.01" />
-      <line x1="9" y1="6" x2="9" y2="6.01" />
-      <line x1="15" y1="6" x2="15" y2="6.01" />
-      <line x1="9" y1="10" x2="9" y2="10.01" />
-      <line x1="15" y1="10" x2="15" y2="10.01" />
-      <line x1="9" y1="14" x2="9" y2="14.01" />
-      <line x1="15" y1="14" x2="15" y2="14.01" />
-      <line x1="9" y1="18" x2="9" y2="18.01" />
-      <line x1="15" y1="18" x2="15" y2="18.01" />
-    </svg>
-  ),
-  invoice: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
-      <polyline points="14 2 14 8 20 8" />
-      <line x1="16" y1="13" x2="8" y2="13" />
-      <line x1="16" y1="17" x2="8" y2="17" />
-      <polyline points="10 9 9 9 8 9" />
-    </svg>
-  ),
-  proposal: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-      <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-      <line x1="9" y1="7" x2="15" y2="7" />
-      <line x1="9" y1="11" x2="15" y2="11" />
-    </svg>
-  ),
-  database: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <ellipse cx="12" cy="5" rx="9" ry="3" />
-      <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
-      <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
-    </svg>
-  ),
-  whatsapp: (
-    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
-    </svg>
-  ),
-  save: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
-      <polyline points="17 21 17 13 7 13 7 21" />
-      <polyline points="7 3 7 8 15 8" />
-    </svg>
-  ),
-  eye: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ),
-  download: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="7 10 12 15 17 10" />
-      <line x1="12" y1="15" x2="12" y2="3" />
-    </svg>
-  ),
-  upload: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-      <polyline points="17 8 12 3 7 8" />
-      <line x1="12" y1="3" x2="12" y2="15" />
-    </svg>
-  ),
-  trash: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="3 6 5 6 21 6" />
-      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-      <line x1="10" y1="11" x2="10" y2="17" />
-      <line x1="14" y1="11" x2="14" y2="17" />
-    </svg>
-  ),
-  check: (
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <polyline points="20 6 9 17 4 12" />
-    </svg>
-  )
-};
-
 export default function SettingsPage() {
   const {
     state,
@@ -131,54 +35,65 @@ export default function SettingsPage() {
     clearAllData,
     showToast,
     getBusiness,
-    getCustomer
+    getCustomer,
+    settingsTab,
+    setSettingsTab
   } = useApp();
 
   const fileInputRef = useRef(null);
-  const [activeSection, setActiveSection] = useState('all'); // 'all' | 'org' | 'invoice' | 'proposal' | 'system' | 'whatsapp'
+  const activeTab = settingsTab || 'org'; // 'org' | 'proposal' | 'invoice'
 
-  // Organization Identity & Corporate Details
-  const savedProp = state.settings?.proposalData || {};
-  const [companyName, setCompanyName] = useState(savedProp.companyName || 'iSysware');
-  const [tagline, setTagline] = useState(savedProp.tagline || 'ERP • Custom Software • Web • AI Solutions');
-  const [officeAddress, setOfficeAddress] = useState(savedProp.officeAddress || 'Karachi, Pakistan');
-  const [ntnTax, setNtnTax] = useState(savedProp.ntnTax || '');
-  const [supportPhone, setSupportPhone] = useState(savedProp.supportPhone || '+92 314 8843707');
-  const [inquiryEmail, setInquiryEmail] = useState(savedProp.inquiryEmail || 'info@isysware.com');
-  const [websiteUrl, setWebsiteUrl] = useState(savedProp.websiteUrl || 'isysware.com');
-
-  // Admin & Security Credentials
+  // Tab 01: Organization Identity State
   const [adminUser, setAdminUser] = useState(state.settings?.admin || 'Administrator');
   const [adminPass, setAdminPass] = useState(state.settings?.password || 'admin123');
 
-  // Proposal & Letterhead State
+  // Tab 02: Proposal & Letterhead State
+  const savedProp = state.settings?.proposalData || {};
+  const [companyName, setCompanyName] = useState(savedProp.companyName || '');
+  const [tagline, setTagline] = useState(savedProp.tagline || '');
+  const [officeAddress, setOfficeAddress] = useState(savedProp.officeAddress || '');
+  const [ntnTax, setNtnTax] = useState(savedProp.ntnTax || '');
+  const [supportPhone, setSupportPhone] = useState(savedProp.supportPhone || '');
+  const [inquiryEmail, setInquiryEmail] = useState(savedProp.inquiryEmail || '');
+  const [websiteUrl, setWebsiteUrl] = useState(savedProp.websiteUrl || '');
   const [signatoryName, setSignatoryName] = useState(savedProp.signatoryName || '');
   const [signatoryTitle, setSignatoryTitle] = useState(savedProp.signatoryTitle || '');
   const [validityDays, setValidityDays] = useState(savedProp.validityDays || 14);
-  const [propTerms, setPropTerms] = useState(savedProp.terms || PRESET_TERMS.preset2);
+  const [propTerms, setPropTerms] = useState(savedProp.terms || '');
+  const [showA4Preview, setShowA4Preview] = useState(true);
 
-  // Invoice Settings State
+  // Tab 03: Invoice Settings State
   const [currency, setCurrency] = useState(state.settings?.currency || 'PKR');
   const [dueDays, setDueDays] = useState(state.settings?.dueDays ?? 0);
-  const [bankName, setBankName] = useState(savedProp.bankName || 'Meezan Bank');
-  const [accountTitle, setAccountTitle] = useState(savedProp.accountTitle || 'iSysware Software Solution');
-  const [accountIban, setAccountIban] = useState(savedProp.accountIban || 'PK36MEZN00012345678901');
-  const [invoicePrefix, setInvoicePrefix] = useState(savedProp.invoicePrefix || 'ISW-');
-  const [paymentMethod, setPaymentMethod] = useState(savedProp.paymentMethod || 'Bank Transfer / Online');
-  const [invoiceSubtitle, setInvoiceSubtitle] = useState(savedProp.invoiceSubtitle || 'Professional Services Invoice');
-  const [preparedBy, setPreparedBy] = useState(savedProp.preparedBy || savedProp.companyName || 'iSysware');
-  const [thankYouMsg, setThankYouMsg] = useState(savedProp.thankYouMsg || 'Thank you for choosing iSysware. • Please reference the invoice number when making payment.');
-  const [invoiceNotes, setInvoiceNotes] = useState(savedProp.invoiceNotes || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.');
+  const [footerNote, setFooterNote] = useState(state.settings?.footerNote || 'Thank you for your business.');
+  const [bankName, setBankName] = useState(savedProp.bankName || '');
+  const [accountTitle, setAccountTitle] = useState(savedProp.accountTitle || '');
+  const [accountIban, setAccountIban] = useState(savedProp.accountIban || '');
+  const [invoicePrefix, setInvoicePrefix] = useState(savedProp.invoicePrefix || 'INV-');
 
-  // Preview Modal States
-  const [isPropPreviewOpen, setIsPropPreviewOpen] = useState(false);
-  const [isInvPreviewOpen, setIsInvPreviewOpen] = useState(false);
+  // Proposal Dynamic Form Preview State
+  const [propTitle, setPropTitle] = useState('');
+  const [selectedCustomerId, setSelectedCustomerId] = useState('');
+  const [customClientName, setCustomClientName] = useState('');
+  const [customClientCompany, setCustomClientCompany] = useState('');
+  const [propDate, setPropDate] = useState(today());
+  const [propDiscount, setPropDiscount] = useState(0);
+  const [propTaxPct, setPropTaxPct] = useState(0);
+
+  // Proposal Line Items
+  const [propItems, setPropItems] = useState([
+    { id: 'item-1', name: '', desc: '', type: 'Service', qty: 1, price: '' }
+  ]);
+
+  // Preview Modal State
+  const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
   useEffect(() => {
     setAdminUser(state.settings?.admin || 'Administrator');
     setAdminPass(state.settings?.password || 'admin123');
     setCurrency(state.settings?.currency || 'PKR');
     setDueDays(state.settings?.dueDays ?? 0);
+    setFooterNote(state.settings?.footerNote || 'Thank you for your business.');
 
     const p = state.settings?.proposalData;
     if (p) {
@@ -197,11 +112,6 @@ export default function SettingsPage() {
       if (p.accountTitle !== undefined) setAccountTitle(p.accountTitle);
       if (p.accountIban !== undefined) setAccountIban(p.accountIban);
       if (p.invoicePrefix !== undefined) setInvoicePrefix(p.invoicePrefix);
-      if (p.paymentMethod !== undefined) setPaymentMethod(p.paymentMethod);
-      if (p.invoiceSubtitle !== undefined) setInvoiceSubtitle(p.invoiceSubtitle);
-      if (p.preparedBy !== undefined) setPreparedBy(p.preparedBy);
-      if (p.thankYouMsg !== undefined) setThankYouMsg(p.thankYouMsg);
-      if (p.invoiceNotes !== undefined) setInvoiceNotes(p.invoiceNotes);
     }
   }, [state.settings]);
 
@@ -224,12 +134,7 @@ export default function SettingsPage() {
       bankName: bankName.trim(),
       accountTitle: accountTitle.trim(),
       accountIban: accountIban.trim(),
-      invoicePrefix: invoicePrefix.trim() || 'ISW-',
-      paymentMethod: paymentMethod.trim() || 'Bank Transfer / Online',
-      invoiceSubtitle: invoiceSubtitle.trim() || 'Professional Services Invoice',
-      preparedBy: preparedBy.trim() || companyName.trim() || 'iSysware',
-      thankYouMsg: thankYouMsg.trim() || `Thank you for choosing ${companyName.trim() || 'iSysware'}. • Please reference the invoice number when making payment.`,
-      invoiceNotes: invoiceNotes.trim()
+      invoicePrefix: invoicePrefix.trim() || 'INV-'
     };
 
     updateSettings({
@@ -237,82 +142,55 @@ export default function SettingsPage() {
       password: adminPass.trim() || 'admin123',
       currency,
       dueDays: Math.max(0, Number(dueDays || 0)),
-      footerNote: invoiceNotes.trim(),
+      footerNote: footerNote.trim(),
       proposalData: proposalDataPayload
     });
 
-    showToast('Settings saved successfully.');
+    showToast('✅ Settings saved successfully.');
   };
 
-  // Sample Invoice Object for Preview
-  const sampleInvoiceObject = {
-    id: 'sample-inv',
-    invoiceNo: `${invoicePrefix || 'ISW-'}0001`,
-    date: today(),
-    dueDate: today(),
-    currency: currency || 'PKR',
-    project: 'Enterprise Software & Cloud Billing',
-    serviceType: 'Software Development & Hosting',
-    billingCycle: 'Monthly Retainer Cycle',
-    servicePeriod: `${MONTHS[new Date().getMonth()]} ${new Date().getFullYear()}`,
-    items: [
-      { itemId: '1', name: 'Custom ERP Software Maintenance & Cloud Hosting', period: 'Current Month', qty: 1, price: 45000, amount: 45000 },
-      { itemId: '2', name: 'Dedicated Technical Support & Automated Daily Backups', period: 'Current Month', qty: 1, price: 15000, amount: 15000 }
-    ],
-    subtotal: 60000,
-    discount: 0,
-    taxPct: 0,
-    taxAmount: 0,
-    total: 60000,
-    paid: 0,
-    balance: 60000,
-    status: 'Unpaid',
-    notes: invoiceNotes || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.'
+  // Proposal Item Handlers
+  const handleAddItem = () => {
+    setPropItems([
+      ...propItems,
+      { id: `prop-item-${Date.now()}`, name: '', desc: '', type: 'Service', qty: 1, price: 0 }
+    ]);
   };
 
-  const sampleInvoiceBusiness = {
-    name: companyName || 'iSysware',
-    companyName: companyName || 'iSysware',
-    tagline: tagline || 'ERP • Custom Software • Web • AI Solutions',
-    email: inquiryEmail || 'info@isysware.com',
-    phone: supportPhone || '+92 314 8843707',
-    website: websiteUrl || 'isysware.com',
-    currency: currency || 'PKR',
-    paymentMethod: paymentMethod || 'Bank Transfer / Online',
-    bankName: bankName || 'Meezan Bank',
-    accountTitle: accountTitle || 'iSysware Software Solution',
-    accountIban: accountIban || 'PK36MEZN00012345678901',
-    invoiceSubtitle: invoiceSubtitle || 'Professional Services Invoice',
-    preparedBy: preparedBy || companyName || 'iSysware',
-    thankYouMsg: thankYouMsg || `Thank you for choosing ${companyName || 'iSysware'}. • Please reference the invoice number when making payment.`,
-    footerNote: invoiceNotes || 'Add payment terms, renewal note, support period, milestone details, tax note, or any client-specific instructions.'
+  const handleUpdateItem = (index, field, value) => {
+    const updated = [...propItems];
+    updated[index] = { ...updated[index], [field]: value };
+    setPropItems(updated);
   };
 
-  const sampleCustomer = {
-    name: 'Al-Falah Textiles Ltd',
-    contactPerson: 'Director Operations',
-    email: 'finance@alfalah.com',
-    phone: '0300-1234567',
-    address: 'Plot 42, Industrial Area, Karachi, Pakistan'
+  const handleRemoveItem = (index) => {
+    setPropItems(propItems.filter((_, idx) => idx !== index));
   };
 
-  // Sample Proposal Object for Preview
-  const sampleProposalObject = {
-    title: 'Enterprise Software & Cloud Automation',
-    proposalNo: `PROP-${new Date().getFullYear()}-0001`,
-    date: today(),
-    validity: `${validityDays || 14} Days`,
+  // Calculate Proposal Totals
+  const propSubtotal = propItems.reduce((acc, it) => acc + (Number(it.qty || 1) * Number(it.price || 0)), 0);
+  const propTaxAmount = ((propSubtotal - Number(propDiscount || 0)) * Number(propTaxPct || 0)) / 100;
+  const propGrandTotal = Math.max(0, propSubtotal - Number(propDiscount || 0) + propTaxAmount);
+
+  // Selected Client
+  const selectedCust = getCustomer(selectedCustomerId) || {};
+  const currentClientName = selectedCust.name || customClientName || 'Al-Falah Textiles Ltd';
+  const currentClientCompany = selectedCust.businessId ? (getBusiness(selectedCust.businessId)?.name || customClientCompany) : customClientCompany;
+
+  // Assembled Proposal Object
+  const currentProposalObject = {
+    title: propTitle.trim() || 'Enterprise Software Solution Proposal',
+    proposalNo: `PROP-${new Date().getFullYear()}-0042`,
+    date: propDate,
+    validity: `${validityDays} Days`,
     validityDays: Number(validityDays || 14),
-    summary: 'We are pleased to submit this commercial proposal for enterprise cloud software deployment, tailored database architecture, and automated collections infrastructure.',
-    items: [
-      { id: '1', name: 'Enterprise Cloud System & Database Architecture', desc: 'Complete backend API and high-availability database cluster setup', qty: 1, price: 65000, discount: 0, taxPct: 0 },
-      { id: '2', name: 'Automated Invoice & WhatsApp Billing Gateway', desc: 'Real-time client ledger sync and automated document dispatch', qty: 1, price: 35000, discount: 0, taxPct: 0 }
-    ],
-    subtotal: 100000,
-    discount: 0,
-    taxPct: 0,
-    taxAmount: 0,
-    total: 100000,
+    summary: 'Commercial proposal for enterprise software deployment and automated billing solutions.',
+    items: propItems,
+    subtotal: propSubtotal,
+    discount: Number(propDiscount || 0),
+    taxPct: Number(propTaxPct || 0),
+    taxAmount: propTaxAmount,
+    total: propGrandTotal,
     terms: propTerms,
     companyName: companyName.trim(),
     tagline: tagline.trim(),
@@ -323,8 +201,22 @@ export default function SettingsPage() {
     websiteUrl: websiteUrl.trim(),
     signatoryName: signatoryName.trim(),
     signatoryTitle: signatoryTitle.trim(),
-    clientName: 'Al-Falah Textiles Ltd',
-    clientCompany: 'Al-Falah Group'
+    clientName: currentClientName,
+    clientCompany: currentClientCompany
+  };
+
+  const handlePreviewProposal = () => {
+    setIsPreviewOpen(true);
+  };
+
+  const handleDownloadProposal = async () => {
+    try {
+      showToast('⏳ Generating PDF...');
+      await downloadProposalFile(currentProposalObject, { currency }, selectedCust);
+      showToast('✅ Proposal PDF downloaded.');
+    } catch (err) {
+      showToast('❌ Failed to download PDF: ' + err.message);
+    }
   };
 
   // Restore handler
@@ -354,495 +246,661 @@ export default function SettingsPage() {
   const reversalCount = (state.reversals || []).length;
 
   return (
-    <section id="settings" className="page active" style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '40px' }}>
-      {/* Unified Settings Top Header */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '14px', marginBottom: '18px', borderBottom: '1px solid #e2e8f0', paddingBottom: '14px' }}>
+    <section id="settings" className="page active">
+      {/* Header */}
+      <div className="settings-header-top">
+        <div className="settings-header-title">
+          <h2>
+            <span>Settings & System Configuration</span>
+            <span className="modular-badge">3 Modules</span>
+          </h2>
+          <p>Configure organization identity, letterhead proposal branding, and global invoice defaults.</p>
+        </div>
+      </div>
+
+      {/* 3 Modular Navigation Tabs */}
+      <div className="settings-nav-tabs">
+        {/* Module 1 Tab */}
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === 'org' ? 'active' : ''}`}
+          onClick={() => setSettingsTab('org')}
+        >
+          <div className="tab-btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+              <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+            </svg>
+          </div>
+          <div className="tab-btn-content">
+            <div className="tab-btn-title">Organization Identity</div>
+            <div className="tab-btn-sub">Admin, Cloud DB & WhatsApp</div>
+          </div>
+          <span className="tab-num-badge">Module 01</span>
+        </button>
+
+        {/* Module 2 Tab */}
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === 'proposal' ? 'active' : ''}`}
+          onClick={() => setSettingsTab('proposal')}
+        >
+          <div className="tab-btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+          </div>
+          <div className="tab-btn-content">
+            <div className="tab-btn-title">Proposal & Letterhead</div>
+            <div className="tab-btn-sub">Corporate ID, A4 Sheet & Signature</div>
+          </div>
+          <span className="tab-num-badge">Module 02</span>
+        </button>
+
+        {/* Module 3 Tab */}
+        <button
+          type="button"
+          className={`settings-tab-btn ${activeTab === 'invoice' ? 'active' : ''}`}
+          onClick={() => setSettingsTab('invoice')}
+        >
+          <div className="tab-btn-icon">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1z" />
+              <line x1="8" y1="7" x2="16" y2="7" />
+              <line x1="8" y1="11" x2="16" y2="11" />
+              <line x1="8" y1="15" x2="12" y2="15" />
+            </svg>
+          </div>
+          <div className="tab-btn-content">
+            <div className="tab-btn-title">Invoice Settings</div>
+            <div className="tab-btn-sub">Currency, Due Days & Footer Notes</div>
+          </div>
+          <span className="tab-num-badge">Module 03</span>
+        </button>
+      </div>
+
+      {/* =========================================================================
+          MODULE 01: Organization Identity & System Details
+         ========================================================================= */}
+      {activeTab === 'org' && (
+        <div className="settings-layout">
+          {/* Left Column: Admin & System Details */}
+          <div className="settings-card">
+            <h4>🏛️ Organization & Admin Security</h4>
+
+            <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+              <div className="full">
+                <label>System Application Name</label>
+                <input
+                  id="sAppName"
+                  className="input"
+                  value="Invoice Manager (Multi-Business Billing)"
+                  readOnly
+                />
+              </div>
+
+              <div>
+                <label>
+                  Admin Username <span className="req">*</span>
+                </label>
+                <input
+                  id="sAdmin"
+                  className="input"
+                  placeholder="Administrator"
+                  value={adminUser}
+                  onChange={(e) => setAdminUser(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+
+              <div>
+                <label>
+                  Admin Login Password <span className="req">*</span>
+                </label>
+                <input
+                  id="sPass"
+                  className="input"
+                  type="text"
+                  placeholder="admin123"
+                  value={adminPass}
+                  onChange={(e) => setAdminPass(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="full settings-save">
+                <Button variant="primary" type="submit">
+                  💾 Save Security Settings
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          {/* Right Column: WhatsApp Delivery + Data & Backup */}
+          <div className="settings-right-stack">
+            {/* WhatsApp Scanner Card */}
+            <WhatsAppScannerCard compact={true} />
+
+            {/* Data & Backup Card */}
+            <div className="settings-card">
+              <h4>Neon PostgreSQL Cloud Database</h4>
+
+              <div className="settings-data-note">
+                Live cloud database records & synchronization.
+              </div>
+
+              <div className="data-summary">
+                <div className="data-stat">
+                  <span>Businesses</span>
+                  <strong>{businessCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Clients</span>
+                  <strong>{customerCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Invoices</span>
+                  <strong>{invoiceCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Payment Entries</span>
+                  <strong>{paymentCount}</strong>
+                </div>
+                <div className="data-stat">
+                  <span>Reversal Records</span>
+                  <strong>{reversalCount}</strong>
+                </div>
+              </div>
+
+              <div className="settings-data-actions" style={{ marginTop: '16px' }}>
+                <Button variant="light" onClick={backupData}>
+                  ⬇️ Backup JSON Data
+                </Button>
+                <Button variant="light" onClick={() => fileInputRef.current?.click()}>
+                  ⬆️ Restore JSON Data
+                </Button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="application/json,.json"
+                  className="hidden-file"
+                  onChange={handleRestoreFileChange}
+                />
+              </div>
+
+              <div className="data-danger" style={{ marginTop: '18px' }}>
+                <Button variant="danger" onClick={clearAllData}>
+                  ⚠️ Clear All Data (Reset)
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          MODULE 02: Proposal Letterhead & PDF Builder
+         ========================================================================= */}
+      {activeTab === 'proposal' && (
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span style={{ color: '#0b4b8f', display: 'flex', alignItems: 'center' }}>{FlatIcons.settings}</span>
-            <h2 style={{ margin: 0, fontSize: '20px', fontWeight: '800', color: '#0f172a' }}>
-              Settings &amp; System Configuration
-            </h2>
-          </div>
-          <p style={{ margin: '4px 0 0', fontSize: '12.5px', color: '#64748b' }}>
-            Manage organization identity, invoice branding, bank credentials, proposal letterhead, and cloud database.
-          </p>
-        </div>
-
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <Button variant="light" size="sm" onClick={() => setIsInvPreviewOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span>{FlatIcons.eye}</span>
-            <span>Invoice Preview</span>
-          </Button>
-          <Button variant="light" size="sm" onClick={() => setIsPropPreviewOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span>{FlatIcons.eye}</span>
-            <span>Proposal Preview</span>
-          </Button>
-          <Button variant="primary" size="sm" onClick={handleSaveAllSettings} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
-            <span>{FlatIcons.save}</span>
-            <span>Save All Settings</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Flat Section Filter Pills */}
-      <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '20px' }}>
-        {[
-          { id: 'all', label: 'All Settings', icon: FlatIcons.settings },
-          { id: 'org', label: 'Organization Identity', icon: FlatIcons.building },
-          { id: 'invoice', label: 'Invoice & Banking', icon: FlatIcons.invoice },
-          { id: 'proposal', label: 'Proposal & Letterhead', icon: FlatIcons.proposal },
-          { id: 'system', label: 'System & Database', icon: FlatIcons.database },
-          { id: 'whatsapp', label: 'WhatsApp Service', icon: FlatIcons.whatsapp }
-        ].map((sec) => (
-          <button
-            key={sec.id}
-            type="button"
-            onClick={() => setActiveSection(sec.id)}
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 14px',
-              borderRadius: '20px',
-              fontSize: '12px',
-              fontWeight: '600',
-              border: activeSection === sec.id ? '1px solid #0b4b8f' : '1px solid #cbd5e1',
-              background: activeSection === sec.id ? '#0b4b8f' : '#ffffff',
-              color: activeSection === sec.id ? '#ffffff' : '#475569',
-              cursor: 'pointer',
-              transition: 'all 0.15s ease'
-            }}
-          >
-            <span style={{ display: 'flex', alignItems: 'center' }}>{sec.icon}</span>
-            <span>{sec.label}</span>
-          </button>
-        ))}
-      </div>
-
-      <form onSubmit={handleSaveAllSettings} autoComplete="off">
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '22px' }}>
-
-          {/* SECTION 1: Organization Identity & Corporate Profile */}
-          {(activeSection === 'all' || activeSection === 'org') && (
-            <div className="settings-card" style={{ padding: '20px 24px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' }}>
-                <span style={{ color: '#0b4b8f', display: 'flex', alignItems: 'center' }}>{FlatIcons.building}</span>
-                <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0b4b8f' }}>
-                  1. Organization Identity &amp; Corporate Profile
+          {/* Section 1: Corporate Identity & Tax Credentials */}
+          <div className="proposal-builder-card">
+            <div className="prop-card-header">
+              <div>
+                <h3>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#0b4b8f" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="16" y1="13" x2="8" y2="13"></line>
+                    <line x1="16" y1="17" x2="8" y2="17"></line>
+                  </svg>
+                  <span>Official Corporate Identity &amp; Proposal Credentials</span>
                 </h3>
+                <p>Manage company heading, registered address, NTN registration, and official signatory stamp for proposal documents.</p>
               </div>
-              <p style={{ margin: '0 0 16px', fontSize: '12px', color: '#64748b' }}>
-                This identity is used as the top header brand name across all generated Invoices, Quotations, and Proposals.
-              </p>
-
-              <div className="settings-form-grid enter-flow">
-                <div>
-                  <label>Company / Brand Name <span className="req">*</span></label>
-                  <input
-                    className="input"
-                    placeholder="e.g. iSysware Software Solution"
-                    value={companyName}
-                    onChange={(e) => setCompanyName(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Tagline / Services Subtitle</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. ERP • Custom Software • Web • AI Solutions"
-                    value={tagline}
-                    onChange={(e) => setTagline(e.target.value)}
-                  />
-                </div>
-
-                <div className="full">
-                  <label>Registered Office Address</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. Suite 402, Business Avenue, Karachi, Pakistan"
-                    value={officeAddress}
-                    onChange={(e) => setOfficeAddress(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>NTN / Tax Registration / STRN</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. NTN: 646383-1"
-                    value={ntnTax}
-                    onChange={(e) => setNtnTax(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Official Support Phone</label>
-                  <input
-                    type="tel"
-                    className="input phone11"
-                    placeholder="e.g. +92 314 8843707"
-                    value={supportPhone}
-                    onChange={(e) => setSupportPhone(cleanPhoneInput(e.target.value))}
-                  />
-                </div>
-
-                <div>
-                  <label>Inquiry Email</label>
-                  <input
-                    type="email"
-                    className="input"
-                    placeholder="e.g. info@isysware.com"
-                    value={inquiryEmail}
-                    onChange={(e) => setInquiryEmail(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Official Website</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. isysware.com"
-                    value={websiteUrl}
-                    onChange={(e) => setWebsiteUrl(e.target.value)}
-                  />
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* SECTION 2: Invoice Layout, Defaults & Bank Credentials */}
-          {(activeSection === 'all' || activeSection === 'invoice') && (
-            <div className="settings-card" style={{ padding: '20px 24px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#0b4b8f', display: 'flex', alignItems: 'center' }}>{FlatIcons.invoice}</span>
-                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0b4b8f' }}>
-                    2. Invoice Layout, Defaults &amp; Bank Credentials
-                  </h3>
-                </div>
-                <Button variant="light" size="xs" onClick={() => setIsInvPreviewOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <span>{FlatIcons.eye}</span>
-                  <span>Preview Layout</span>
+              <div className="prop-btn-group">
+                <Button variant="light" size="xs" onClick={() => setShowA4Preview(!showA4Preview)}>
+                  👁️ {showA4Preview ? 'Hide A4 Preview' : 'Show A4 Preview'}
+                </Button>
+                <Button variant="primary" size="xs" onClick={handleSaveAllSettings}>
+                  💾 Save Proposal Settings
                 </Button>
               </div>
-
-              <div className="settings-form-grid enter-flow">
-                <div>
-                  <label>Invoice Number Prefix</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. ISW- or INV-"
-                    value={invoicePrefix}
-                    onChange={(e) => setInvoicePrefix(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Default Currency</label>
-                  <select
-                    className="select"
-                    value={currency}
-                    onChange={(e) => setCurrency(e.target.value)}
-                  >
-                    <option value="PKR">PKR (Pakistani Rupee)</option>
-                    <option value="USD">USD (US Dollar)</option>
-                    <option value="AED">AED (UAE Dirham)</option>
-                    <option value="SAR">SAR (Saudi Riyal)</option>
-                    <option value="GBP">GBP (British Pound)</option>
-                    <option value="EUR">EUR (Euro)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label>Default Due Days</label>
-                  <input
-                    type="number"
-                    min="0"
-                    max="365"
-                    className="input"
-                    placeholder="0"
-                    value={dueDays}
-                    onChange={(e) => setDueDays(e.target.value)}
-                  />
-                  <div style={{ fontSize: '10px', color: '#64748b', marginTop: '2px' }}>
-                    0 = Due immediately upon receipt
-                  </div>
-                </div>
-
-                <div>
-                  <label>Invoice Subtitle (Top Right)</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. Professional Services Invoice"
-                    value={invoiceSubtitle}
-                    onChange={(e) => setInvoiceSubtitle(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Payment Method</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. Bank Transfer / Online"
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Bank / Wallet Name</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. Meezan Bank / HBL"
-                    value={bankName}
-                    onChange={(e) => setBankName(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Account Title</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. iSysware Software Solution"
-                    value={accountTitle}
-                    onChange={(e) => setAccountTitle(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Account Number / IBAN</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. PK36MEZN00012345678901"
-                    value={accountIban}
-                    onChange={(e) => setAccountIban(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Prepared By</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. iSysware"
-                    value={preparedBy}
-                    onChange={(e) => setPreparedBy(e.target.value)}
-                  />
-                </div>
-
-                <div>
-                  <label>Thank You Footer Text</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. Thank you for choosing iSysware."
-                    value={thankYouMsg}
-                    onChange={(e) => setThankYouMsg(e.target.value)}
-                  />
-                </div>
-
-                <div className="full">
-                  <label>Default Invoice Notes &amp; Payment Terms</label>
-                  <textarea
-                    className="textarea"
-                    rows={2}
-                    placeholder="Add payment terms, renewal note, support period, milestone details, or client-specific instructions."
-                    value={invoiceNotes}
-                    onChange={(e) => setInvoiceNotes(e.target.value)}
-                  />
-                </div>
-              </div>
             </div>
-          )}
 
-          {/* SECTION 3: Proposal & Letterhead Profile */}
-          {(activeSection === 'all' || activeSection === 'proposal') && (
-            <div className="settings-card" style={{ padding: '20px 24px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                  <span style={{ color: '#0b4b8f', display: 'flex', alignItems: 'center' }}>{FlatIcons.proposal}</span>
-                  <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0b4b8f' }}>
-                    3. Commercial Proposal &amp; Letterhead Profile
-                  </h3>
-                </div>
-                <Button variant="light" size="xs" onClick={() => setIsPropPreviewOpen(true)} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                  <span>{FlatIcons.eye}</span>
-                  <span>Preview Proposal</span>
-                </Button>
+            <div className="prop-sub-heading">
+              <span>🏛️ OFFICIAL CORPORATE IDENTITY &amp; TAX CREDENTIALS</span>
+            </div>
+
+            <div className="prop-form-grid">
+              <div>
+                <label>Company / Agency Name</label>
+                <input
+                  className="input"
+                  placeholder="e.g. iSysware Software Solution"
+                  value={companyName}
+                  onChange={(e) => setCompanyName(e.target.value)}
+                />
               </div>
 
-              <div className="settings-form-grid enter-flow">
-                <div>
-                  <label>Authorized Signatory Name</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. Khuzaima Warsi"
-                    value={signatoryName}
-                    onChange={(e) => setSignatoryName(e.target.value)}
-                  />
-                </div>
+              <div>
+                <label>Tagline / Subtitle</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Software Development & Billing Systems"
+                  value={tagline}
+                  onChange={(e) => setTagline(e.target.value)}
+                />
+              </div>
 
-                <div>
-                  <label>Signatory Official Designation</label>
-                  <input
-                    className="input"
-                    placeholder="e.g. Managing Director / CEO"
-                    value={signatoryTitle}
-                    onChange={(e) => setSignatoryTitle(e.target.value)}
-                  />
-                </div>
+              <div>
+                <label>Official Registered Office Address</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Suite 402, Business Arcade, Main Shahrah-e-Faisal, Karachi"
+                  value={officeAddress}
+                  onChange={(e) => setOfficeAddress(e.target.value)}
+                />
+              </div>
 
-                <div>
-                  <label>Default Proposal Validity (Days)</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max="365"
-                    className="input"
-                    placeholder="14"
-                    value={validityDays}
-                    onChange={(e) => setValidityDays(Math.max(1, Number(e.target.value || 14)))}
-                  />
-                </div>
+              <div>
+                <label>NTN / Tax Registration / STRN</label>
+                <input
+                  className="input"
+                  placeholder="e.g. NTN: 1234567-8 | STRN: 1234567890123"
+                  value={ntnTax}
+                  onChange={(e) => setNtnTax(e.target.value)}
+                />
+              </div>
 
-                <div className="full">
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-                    <label style={{ margin: 0 }}>Standard Proposal Terms &amp; Clauses</label>
-                    <div style={{ display: 'flex', gap: '4px' }}>
-                      <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset1)} style={{ padding: '2px 8px', fontSize: '11px' }}>
-                        Preset 1 (Milestones)
-                      </button>
-                      <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset2)} style={{ padding: '2px 8px', fontSize: '11px' }}>
-                        Preset 2 (Retainer)
-                      </button>
-                      <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset3)} style={{ padding: '2px 8px', fontSize: '11px' }}>
-                        Preset 3 (Hardware)
-                      </button>
-                    </div>
-                  </div>
-                  <textarea
-                    className="textarea"
-                    rows={4}
-                    value={propTerms}
-                    onChange={(e) => setPropTerms(e.target.value)}
-                    placeholder="Enter standard commercial terms & conditions..."
-                    style={{ fontSize: '12px', lineHeight: '1.45' }}
-                  />
-                </div>
+              <div>
+                <label>Official Support / Inquiry Phone</label>
+                <input
+                  type="tel"
+                  inputMode="numeric"
+                  maxLength={11}
+                  className="input phone11"
+                  placeholder="03001234567"
+                  value={supportPhone}
+                  onChange={(e) => setSupportPhone(cleanPhoneInput(e.target.value))}
+                />
+              </div>
+
+              <div>
+                <label>Proposals &amp; Inquiries Email</label>
+                <input
+                  className="input"
+                  type="email"
+                  placeholder="e.g. info@isysware.com"
+                  value={inquiryEmail}
+                  onChange={(e) => setInquiryEmail(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Official Website URL</label>
+                <input
+                  className="input"
+                  placeholder="e.g. https://isysware.com"
+                  value={websiteUrl}
+                  onChange={(e) => setWebsiteUrl(e.target.value)}
+                />
               </div>
             </div>
-          )}
 
-          {/* SECTION 4 & 5: System Admin, Database Cloud Backup & WhatsApp Integration */}
-          {(activeSection === 'all' || activeSection === 'system' || activeSection === 'whatsapp') && (
-            <div style={{ display: 'grid', gridTemplateColumns: activeSection === 'all' ? '1fr 1fr' : '1fr', gap: '22px' }}>
-
-              {/* System Credentials & Neon PostgreSQL Backup */}
-              {(activeSection === 'all' || activeSection === 'system') && (
-                <div className="settings-card" style={{ padding: '20px 24px', borderRadius: '8px', border: '1px solid #e2e8f0', background: '#ffffff' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '14px', borderBottom: '1px solid #f1f5f9', paddingBottom: '10px' }}>
-                    <span style={{ color: '#0b4b8f', display: 'flex', alignItems: 'center' }}>{FlatIcons.database}</span>
-                    <h3 style={{ margin: 0, fontSize: '15px', fontWeight: '800', color: '#0b4b8f' }}>
-                      4. System Credentials &amp; Database Backup
-                    </h3>
-                  </div>
-
-                  <div className="settings-form-grid enter-flow" style={{ marginBottom: '16px' }}>
-                    <div>
-                      <label>Admin Username <span className="req">*</span></label>
-                      <input
-                        className="input"
-                        placeholder="Administrator"
-                        value={adminUser}
-                        onChange={(e) => setAdminUser(e.target.value)}
-                      />
-                    </div>
-
-                    <div>
-                      <label>Admin Login Password <span className="req">*</span></label>
-                      <input
-                        type="text"
-                        className="input"
-                        placeholder="admin123"
-                        value={adminPass}
-                        onChange={(e) => setAdminPass(e.target.value)}
-                      />
-                    </div>
-                  </div>
-
-                  <div style={{ background: '#f8fafc', padding: '12px 14px', borderRadius: '6px', border: '1px solid #e2e8f0', marginBottom: '14px' }}>
-                    <div style={{ fontSize: '11px', fontWeight: '700', color: '#64748b', textTransform: 'uppercase', marginBottom: '6px' }}>
-                      Database Summary (Neon PostgreSQL)
-                    </div>
-                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', fontSize: '12px' }}>
-                      <div>Businesses: <strong>{businessCount}</strong></div>
-                      <div>Clients: <strong>{customerCount}</strong></div>
-                      <div>Invoices: <strong>{invoiceCount}</strong></div>
-                      <div>Payments: <strong>{paymentCount}</strong></div>
-                      <div>Reversals: <strong>{reversalCount}</strong></div>
-                    </div>
-                  </div>
-
-                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                    <Button variant="light" size="xs" onClick={backupData} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <span>{FlatIcons.download}</span>
-                      <span>Backup JSON</span>
-                    </Button>
-                    <Button variant="light" size="xs" onClick={() => fileInputRef.current?.click()} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <span>{FlatIcons.upload}</span>
-                      <span>Restore JSON</span>
-                    </Button>
-                    <input
-                      ref={fileInputRef}
-                      type="file"
-                      accept="application/json,.json"
-                      style={{ display: 'none' }}
-                      onChange={handleRestoreFileChange}
-                    />
-                    <Button variant="danger" size="xs" onClick={clearAllData} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
-                      <span>{FlatIcons.trash}</span>
-                      <span>Reset Data</span>
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* WhatsApp Automatic Delivery */}
-              {(activeSection === 'all' || activeSection === 'whatsapp') && (
-                <div style={{ display: 'flex', flexDirection: 'column' }}>
-                  <WhatsAppScannerCard isStandalone={false} />
-                </div>
-              )}
+            {/* Authorized Signatory & Stamp */}
+            <div className="prop-sub-heading" style={{ marginTop: '22px' }}>
+              <span>✍️ AUTHORIZED SIGNATORY &amp; STAMP</span>
             </div>
-          )}
 
-          {/* Bottom Save Action Bar */}
-          <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px', marginTop: '10px', borderTop: '1px solid #e2e8f0', paddingTop: '16px' }}>
-            <Button variant="primary" type="submit" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 20px' }}>
-              <span>{FlatIcons.save}</span>
-              <span>Save All Settings</span>
-            </Button>
+            <div className="prop-form-grid">
+              <div>
+                <label>Signatory Full Name</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Muhammad Ali"
+                  value={signatoryName}
+                  onChange={(e) => setSignatoryName(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label>Official Designation / Title</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Chief Executive Officer / Managing Director"
+                  value={signatoryTitle}
+                  onChange={(e) => setSignatoryTitle(e.target.value)}
+                />
+              </div>
+            </div>
           </div>
 
+          {/* Section 2: Standard Proposal Validity & Terms & Conditions */}
+          <div className="proposal-builder-card">
+            <div className="prop-card-header">
+              <div>
+                <h3>
+                  <span>STANDARD PROPOSAL VALIDITY &amp; TERMS &amp; CONDITIONS</span>
+                </h3>
+                <p>Configure default quotation validity days and legal contract terms.</p>
+              </div>
+              <div className="preset-btn-group">
+                <span style={{ fontSize: '11px', color: '#64748b', marginRight: '4px' }}>Quick Template:</span>
+                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset1)}>
+                  Preset 1
+                </button>
+                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset2)}>
+                  Preset 2
+                </button>
+                <button type="button" className="preset-chip-btn" onClick={() => setPropTerms(PRESET_TERMS.preset3)}>
+                  Preset 3
+                </button>
+              </div>
+            </div>
+
+            <div className="prop-form-grid">
+              <div>
+                <label>Default Validity (Days)</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="365"
+                  className="input"
+                  placeholder="14"
+                  value={validityDays}
+                  onChange={(e) => setValidityDays(Math.max(1, Number(e.target.value || 14)))}
+                />
+              </div>
+
+              <div className="span-2" style={{ gridColumn: 'span 3' }}>
+                <label>Standard Commercial Terms &amp; Conditions (Clauses)</label>
+                <textarea
+                  className="textarea"
+                  rows={5}
+                  value={propTerms}
+                  onChange={(e) => setPropTerms(e.target.value)}
+                  placeholder="Enter custom commercial terms & conditions..."
+                  style={{ fontSize: '11.5px', lineHeight: '1.5' }}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Interactive A4 Proposal Sheet Preview */}
+          {showA4Preview && (
+            <div className="proposal-builder-card">
+              <div className="prop-card-header">
+                <div>
+                  <h3>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2563eb" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <polygon points="12 8 8 12 12 16 12 8"></polygon>
+                    </svg>
+                    <span>Interactive A4 Proposal Sheet Preview</span>
+                  </h3>
+                  <p>Shows exact layout generated for clients.</p>
+                </div>
+                <div className="prop-btn-group">
+                  <Button variant="light" size="xs" onClick={handleDownloadProposal}>
+                    📄 Download HTML / PDF
+                  </Button>
+                  <Button variant="primary" size="xs" onClick={handlePreviewProposal}>
+                    👁️ Fullscreen Preview
+                  </Button>
+                </div>
+              </div>
+
+              {/* Live Embedded A4 Paper Canvas */}
+              <div className="embedded-a4-wrapper">
+                <div className="embedded-a4-sheet">
+                  <div>
+                    {/* A4 Sheet Top Header */}
+                    <div className="a4-sheet-top">
+                      <div className="a4-sheet-brand">
+                        <h2>{companyName || 'Company / Agency Name'}</h2>
+                        {tagline && <div style={{ fontSize: '11px', color: '#0284c7', fontWeight: '600', marginBottom: '3px' }}>{tagline}</div>}
+                        <p>{officeAddress || 'Registered Office Address'}</p>
+                        {ntnTax ? <div className="tax-line">{ntnTax}</div> : <div className="tax-line" style={{ opacity: 0.6 }}>NTN: XXXXXXX-X | STRN: XXXXXXXXXXXXX</div>}
+                      </div>
+                      <div className="a4-sheet-badge-wrap">
+                        <div className="a4-commercial-badge">Commercial Proposal</div>
+                        <div className="a4-ref-line">Ref: PROP-2026-0042</div>
+                        <div className="a4-valid-line">Valid {validityDays} Days</div>
+                      </div>
+                    </div>
+
+                    {/* A4 Prepared For / Date Card */}
+                    <div className="a4-info-grid">
+                      <div className="a4-info-col">
+                        <h5>PREPARED FOR:</h5>
+                        <p><strong>{currentClientName || 'Client / Business Name'}</strong></p>
+                        <p style={{ color: '#475569' }}>{currentClientCompany || 'Client Representative / Designation'}</p>
+                      </div>
+                      <div className="a4-info-col right">
+                        <h5>DATE &amp; CURRENCY:</h5>
+                        <p><strong>{propDate}</strong></p>
+                        <p style={{ color: '#0369a1' }}>{currency} (Pakistani Rupee)</p>
+                      </div>
+                    </div>
+
+                    {/* A4 Deliverables Table */}
+                    <table className="a4-scope-table">
+                      <thead>
+                        <tr>
+                          <th style={{ width: '60%' }}>Scope Deliverable</th>
+                          <th style={{ width: '20%' }}>Type</th>
+                          <th style={{ width: '20%', textAlign: 'right' }}>Investment</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {propItems.length > 0 && propItems.some(it => it.name && it.name.trim()) ? (
+                          propItems.filter(it => it.name && it.name.trim()).map((it, idx) => (
+                            <tr key={it.id || idx}>
+                              <td>
+                                <strong>{it.name}</strong>
+                                {it.desc && <div style={{ fontSize: '9.5px', color: '#64748b', marginTop: '2px' }}>{it.desc}</div>}
+                              </td>
+                              <td>{it.type || 'Service'}</td>
+                              <td style={{ textAlign: 'right', fontWeight: '750' }}>
+                                {money((it.qty || 1) * (it.price || 0), currency)}
+                              </td>
+                            </tr>
+                          ))
+                        ) : (
+                          <tr>
+                            <td colSpan="3" style={{ textAlign: 'center', color: '#94a3b8', padding: '14px', fontSize: '11px' }}>
+                              No deliverables added yet.
+                            </td>
+                          </tr>
+                        )}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* A4 Bottom Terms & Signatory */}
+                  <div>
+                    <div className="a4-terms-summary">
+                      <strong>Terms Summary:</strong> {propTerms ? (propTerms.length > 240 ? propTerms.slice(0, 240) + '...' : propTerms) : 'Commercial terms & conditions will appear here.'}
+                    </div>
+
+                    <div className="a4-footer-row">
+                      <div>
+                        {[inquiryEmail, supportPhone].filter(Boolean).join(' • ') || 'Contact Details'}
+                      </div>
+                      <div className="a4-signatory-col">
+                        <div className="a4-signatory-name">{signatoryName || 'Authorized Signatory'}</div>
+                        <div className="a4-signatory-title">{signatoryTitle || 'Management Representative'}</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Action Toolbar */}
+              <div className="prop-actions-bar" style={{ marginTop: '16px' }}>
+                <div className="prop-btn-group">
+                  <Button variant="primary" onClick={handlePreviewProposal}>
+                    👁️ Fullscreen A4 Preview
+                  </Button>
+                  <Button variant="light" onClick={handleDownloadProposal}>
+                    📄 Download A4 Proposal
+                  </Button>
+                  <Button
+                    variant="green"
+                    onClick={handlePreviewProposal}
+                    style={{ background: '#10b981', color: '#fff', display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                  >
+                    <span>💬</span>
+                    <span>Send via WhatsApp</span>
+                  </Button>
+                </div>
+                <div>
+                  <Button variant="primary" onClick={handleSaveAllSettings}>
+                    💾 Save Proposal Settings
+                  </Button>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
-      </form>
+      )}
 
-      {/* Invoice Preview Modal */}
-      <InvoicePreview
-        isOpen={isInvPreviewOpen}
-        onClose={() => setIsInvPreviewOpen(false)}
-        invoice={sampleInvoiceObject}
-        business={sampleInvoiceBusiness}
-        customer={sampleCustomer}
-      />
+      {/* =========================================================================
+          MODULE 03: Invoice Settings & Global Defaults
+         ========================================================================= */}
+      {activeTab === 'invoice' && (
+        <div className="settings-layout">
+          {/* Left Column: General Invoice Defaults */}
+          <div className="settings-card">
+            <h4>🧾 Invoice &amp; Billing Defaults</h4>
 
-      {/* Proposal Preview Modal */}
+            <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+              <div>
+                <label>Default Currency</label>
+                <select
+                  id="sCur"
+                  className="select"
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                >
+                  <option value="PKR">PKR (Pakistani Rupee)</option>
+                  <option value="USD">USD (US Dollar)</option>
+                  <option value="AED">AED (UAE Dirham)</option>
+                  <option value="SAR">SAR (Saudi Riyal)</option>
+                  <option value="GBP">GBP (British Pound)</option>
+                  <option value="EUR">EUR (Euro)</option>
+                </select>
+              </div>
+
+              <div>
+                <label>Default Payment Due Days</label>
+                <input
+                  id="sDueDays"
+                  className="input"
+                  type="number"
+                  min="0"
+                  max="365"
+                  placeholder="0"
+                  value={dueDays}
+                  onChange={(e) => setDueDays(e.target.value)}
+                  autoComplete="off"
+                />
+                <div style={{ fontSize: '10px', color: '#64748b', marginTop: '3px' }}>
+                  0 = Due on receipt / same day.
+                </div>
+              </div>
+
+              <div className="full">
+                <label>Invoice Number Prefix</label>
+                <input
+                  className="input"
+                  placeholder="e.g. INV-"
+                  value={invoicePrefix}
+                  onChange={(e) => setInvoicePrefix(e.target.value)}
+                />
+              </div>
+
+              <div className="full">
+                <label>Standard Invoice Footer Note &amp; Terms</label>
+                <textarea
+                  id="sFooterNote"
+                  className="textarea"
+                  rows={4}
+                  placeholder="Thank you for your business. Please clear invoice within due date."
+                  value={footerNote}
+                  onChange={(e) => setFooterNote(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="full settings-save">
+                <Button variant="primary" type="submit">
+                  💾 Save Invoice Defaults
+                </Button>
+              </div>
+            </form>
+          </div>
+
+          {/* Right Column: Bank Details & Payment Instructions */}
+          <div className="settings-card">
+            <h4>🏦 Bank &amp; Payment Details (For Invoices)</h4>
+            <div className="settings-data-note">
+              These details appear on invoices and customer payment reminders.
+            </div>
+
+            <form onSubmit={handleSaveAllSettings} className="settings-form-grid enter-flow" autoComplete="off">
+              <div className="full">
+                <label>Bank Name</label>
+                <input
+                  className="input"
+                  placeholder="e.g. Meezan Bank / HBL / Bank Alfalah"
+                  value={bankName}
+                  onChange={(e) => setBankName(e.target.value)}
+                />
+              </div>
+
+              <div className="full">
+                <label>Account Title</label>
+                <input
+                  className="input"
+                  placeholder="e.g. iSysware Software Solution"
+                  value={accountTitle}
+                  onChange={(e) => setAccountTitle(e.target.value)}
+                />
+              </div>
+
+              <div className="full">
+                <label>Account Number / IBAN</label>
+                <input
+                  className="input"
+                  placeholder="e.g. PK36MEZN00012345678901"
+                  value={accountIban}
+                  onChange={(e) => setAccountIban(e.target.value)}
+                />
+              </div>
+
+              <div className="full settings-save">
+                <Button variant="primary" type="submit">
+                  💾 Save Bank Details
+                </Button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Live A4 Proposal Preview Modal */}
       <ProposalPreviewModal
-        isOpen={isPropPreviewOpen}
-        onClose={() => setIsPropPreviewOpen(false)}
-        proposal={sampleProposalObject}
-        business={sampleInvoiceBusiness}
-        customer={sampleCustomer}
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
+        proposal={currentProposalObject}
+        business={{ currency }}
+        customer={selectedCust}
       />
     </section>
   );
