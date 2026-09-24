@@ -45,7 +45,7 @@ export default function ProposalPreviewModal({
     const html = generateProposalHtml(proposal, business, customer);
     const cleanTitle = (proposal.title || 'Proposal').replace(/[^a-zA-Z0-9_-]/g, '_');
     const fileName = `${proposalNo}_${clientName}_${cleanTitle}.pdf`;
-    const recipientPhone = customer.whatsapp || customer.phone;
+    const recipientPhone = customer?.whatsapp || customer?.phone || proposal?.phone || proposal?.whatsapp || proposal?.clientPhone || proposal?.clientWhatsapp || '';
     const caption = `📄 *Proposal ${proposalNo}*\n🏢 ${bizName}\n👤 ${clientName}\n💰 Total: ${money(grandTotal, cur)}`;
 
     await downloadAndSendWhatsApp({
@@ -53,7 +53,8 @@ export default function ProposalPreviewModal({
       fileName,
       phone: recipientPhone,
       caption,
-      onWhatsAppSuccess: () => showToast(`✅ Proposal PDF sent to ${clientName} via WhatsApp!`)
+      onWhatsAppSuccess: () => showToast(`✅ Proposal PDF sent to ${clientName} via WhatsApp!`),
+      onWhatsAppError: (err) => showToast(`⚠️ WhatsApp: ${err.message || 'WhatsApp connect karein'}`)
     });
     showToast('✅ Proposal PDF downloaded!');
   };
@@ -61,7 +62,7 @@ export default function ProposalPreviewModal({
   const handleSendWhatsApp = async () => {
     setIsSendingWa(true);
     try {
-      const recipientPhone = customer.whatsapp || customer.phone;
+      const recipientPhone = customer?.whatsapp || customer?.phone || proposal?.phone || proposal?.whatsapp || proposal?.clientPhone || proposal?.clientWhatsapp || '';
       if (!recipientPhone) { alert('Please specify a client with a valid WhatsApp number.'); return; }
       showToast('⏳ Sending PDF to WhatsApp...');
       const html = generateProposalHtml(proposal, business, customer);

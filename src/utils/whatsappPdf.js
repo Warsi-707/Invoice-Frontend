@@ -186,7 +186,7 @@ export async function sendPdfToWhatsApp({ phone, htmlContent, fileName, caption 
 /**
  * ⚡ 1-Click Instant: Downloads real .pdf to Downloads folder + sends real .pdf file to WhatsApp!
  */
-export async function downloadAndSendWhatsApp({ htmlContent, fileName, phone, caption = '', onWhatsAppSuccess }) {
+export async function downloadAndSendWhatsApp({ htmlContent, fileName, phone, caption = '', onWhatsAppSuccess, onWhatsAppError }) {
   const cleanFileName = fileName.endsWith('.pdf') ? fileName : `${fileName}.pdf`;
 
   // 1. Generate real PDF Blob in browser
@@ -204,6 +204,9 @@ export async function downloadAndSendWhatsApp({ htmlContent, fileName, phone, ca
         if (onWhatsAppSuccess) onWhatsAppSuccess();
       } catch (err) {
         console.warn('WhatsApp auto-send error:', err.message);
+        if (onWhatsAppError) {
+          onWhatsAppError(err);
+        }
         if (caption) {
           whatsappApi.sendText(phone, caption).catch(() => {});
         }
