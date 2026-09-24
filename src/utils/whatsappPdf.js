@@ -66,7 +66,7 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
           }
 
           const opt = {
-            margin: 0,
+            margin: [5, 5, 5, 5],
             filename: fileName,
             image: { type: 'jpeg', quality: 0.98 },
             html2canvas: {
@@ -75,10 +75,10 @@ export async function htmlToPdfBlob(htmlContent, fileName = 'document.pdf') {
               letterRendering: true,
               logging: false,
               backgroundColor: '#ffffff',
-              windowWidth: 794,
-              width: 794
+              windowWidth: 794
             },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+            pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
           };
 
           const pdfBlob = await html2pdf().set(opt).from(targetElement).output('blob');
