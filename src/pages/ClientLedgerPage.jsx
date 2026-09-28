@@ -269,27 +269,9 @@ export default function ClientLedgerPage() {
                           </td>
 
                           <td>
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                              <div
-                                style={{
-                                  width: '32px',
-                                  height: '32px',
-                                  borderRadius: '6px',
-                                  background: 'rgba(11, 75, 143, 0.1)',
-                                  color: '#0b4b8f',
-                                  display: 'grid',
-                                  placeItems: 'center',
-                                  fontWeight: 800,
-                                  fontSize: '13px',
-                                  flexShrink: 0
-                                }}
-                              >
-                                {c?.name ? c.name.charAt(0).toUpperCase() : 'M'}
-                              </div>
-                              <span style={{ fontWeight: 750, color: '#0f172a', fontSize: '13.5px' }}>
-                                {c?.name}
-                              </span>
-                            </div>
+                            <span style={{ fontWeight: 700, color: '#0f172a', fontSize: '13px' }}>
+                              {c?.name}
+                            </span>
                           </td>
 
                           <td style={{ color: '#334155', fontWeight: 550 }}>
@@ -407,32 +389,15 @@ export default function ClientLedgerPage() {
                 gap: '10px'
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
-                <div
-                  style={{
-                    width: '42px',
-                    height: '42px',
-                    borderRadius: '8px',
-                    background: '#fff',
-                    color: '#0b4b8f',
-                    display: 'grid',
-                    placeItems: 'center',
-                    fontWeight: 900,
-                    fontSize: '18px'
-                  }}
-                >
-                  {selectedCustomer?.name?.charAt(0).toUpperCase() || 'M'}
-                </div>
-                <div>
-                  <h2 style={{ margin: 0, fontSize: '18px', color: '#fff', fontWeight: 800 }}>
-                    {selectedCustomer?.name}
-                  </h2>
-                  <div style={{ fontSize: '11.5px', color: '#bfdbfe', marginTop: '2px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
-                    <span>🏢 {selectedBusiness?.name || 'Business'}</span>
-                    {selectedCustomer?.phone && <span>📞 {selectedCustomer.phone}</span>}
-                    {selectedCustomer?.whatsapp && <span>💬 {selectedCustomer.whatsapp}</span>}
-                    {selectedCustomer?.address && <span>📍 {selectedCustomer.address}</span>}
-                  </div>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '18px', color: '#fff', fontWeight: 800 }}>
+                  {selectedCustomer?.name}
+                </h2>
+                <div style={{ fontSize: '11.5px', color: '#bfdbfe', marginTop: '2px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  <span>🏢 {selectedBusiness?.name || 'Business'}</span>
+                  {selectedCustomer?.phone && <span>📞 {selectedCustomer.phone}</span>}
+                  {selectedCustomer?.whatsapp && <span>💬 {selectedCustomer.whatsapp}</span>}
+                  {selectedCustomer?.address && <span>📍 {selectedCustomer.address}</span>}
                 </div>
               </div>
 
