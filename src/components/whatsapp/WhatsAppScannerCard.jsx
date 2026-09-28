@@ -498,17 +498,6 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
                   ✅ Timing configuration saved!
                 </span>
               )}
-
-              {!isStandalone && (
-                <button
-                  type="button"
-                  className="btn btn-outline"
-                  style={{ fontSize: '12px', padding: '6px 14px', borderColor: '#10b981', color: '#047857' }}
-                  onClick={() => setCurrentPage('whatsapp')}
-                >
-                  📢 Open Bulk WhatsApp Broadcast ↗
-                </button>
-              )}
             </div>
           </form>
         </div>

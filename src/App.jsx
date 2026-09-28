@@ -9,7 +9,6 @@ import InvoiceCollectionPage from './pages/InvoiceCollectionPage';
 import ReversalsPage from './pages/ReversalsPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
-import WhatsAppPage from './pages/WhatsAppPage';
 import WhatsAppScanPage from './pages/WhatsAppScanPage';
 import { handleEnterFlowKeyDown } from './utils/enterFlow';
 
@@ -50,8 +49,6 @@ export default function App() {
         return <ReversalsPage />;
       case 'reports':
         return <ReportsPage />;
-      case 'whatsapp':
-        return <WhatsAppPage />;
       case 'settings':
         return <SettingsPage />;
       default:
