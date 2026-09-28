@@ -1,14 +1,14 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import StatusBadge from '../components/common/StatusBadge';
-import { money, today, MONTHS } from '../utils/formatters';
+import { money, today } from '../utils/formatters';
 import {
   calculateClientLedger,
   generateLedgerStatementHtml,
   exportLedgerToExcel,
   printLedgerStatement
 } from '../utils/ledgerExport';
-import { downloadAsPdf, sendPdfToWhatsApp, downloadAndSendWhatsApp } from '../utils/whatsappPdf';
+import { downloadAsPdf } from '../utils/whatsappPdf';
 import { downloadInvoiceFile } from '../utils/invoice';
 
 export default function ClientLedgerPage() {
@@ -16,9 +16,7 @@ export default function ClientLedgerPage() {
     state,
     showToast,
     getBusiness,
-    getCustomer,
     getBusinessName,
-    getCustomerName,
     formatMoney,
     getCurrency
   } = useApp();
@@ -37,9 +35,6 @@ export default function ClientLedgerPage() {
   const [datePreset, setDatePreset] = useState('all'); // 'all', 'this-month', 'last-month', 'this-year', 'custom'
   const [transactionType, setTransactionType] = useState('all'); // 'all', 'invoices', 'payments'
   const [ledgerSearchQuery, setLedgerSearchQuery] = useState('');
-
-  // Dropdown state for directory rows
-  const [activeDropdown, setActiveDropdown] = useState(null);
 
   // Handle date preset change
   const handleDatePresetChange = (preset) => {
@@ -69,18 +64,22 @@ export default function ClientLedgerPage() {
     }
   };
 
+  const customersList = Array.isArray(state?.customers) ? state.customers : [];
+  const businessesList = Array.isArray(state?.businesses) ? state.businesses : [];
+  const invoicesList = Array.isArray(state?.invoices) ? state.invoices : [];
+
   // Compile all client financial profiles
   const clientsSummaryList = useMemo(() => {
-    return state.customers.map((c) => {
-      const b = getBusiness(c.businessId);
-      const ledger = calculateClientLedger(c, b, state.invoices);
+    return customersList.map((c) => {
+      const b = getBusiness(c?.businessId);
+      const ledger = calculateClientLedger(c, b, invoicesList);
       return {
         customer: c,
         business: b,
         ...ledger
       };
     });
-  }, [state.customers, state.businesses, state.invoices, getBusiness]);
+  }, [customersList, invoicesList, getBusiness]);
 
   // Filtered clients directory
   const filteredClients = useMemo(() => {
@@ -92,21 +91,21 @@ export default function ClientLedgerPage() {
 
       const matchesSearch =
         !q ||
-        (c.name && c.name.toLowerCase().includes(q)) ||
-        (c.phone && c.phone.toLowerCase().includes(q)) ||
-        (c.whatsapp && c.whatsapp.toLowerCase().includes(q)) ||
+        (c?.name && c.name.toLowerCase().includes(q)) ||
+        (c?.phone && c.phone.toLowerCase().includes(q)) ||
+        (c?.whatsapp && c.whatsapp.toLowerCase().includes(q)) ||
         (b?.name && b.name.toLowerCase().includes(q)) ||
-        (c.address && c.address.toLowerCase().includes(q));
+        (c?.address && c.address.toLowerCase().includes(q));
 
-      const matchesBusiness = !businessFilter || c.businessId === businessFilter;
+      const matchesBusiness = !businessFilter || c?.businessId === businessFilter;
 
       let matchesStatus = true;
       if (statusFilter === 'dues') {
-        matchesStatus = item.outstandingBalance > 0;
+        matchesStatus = (item.outstandingBalance || 0) > 0;
       } else if (statusFilter === 'settled') {
-        matchesStatus = item.outstandingBalance === 0 && item.advanceCredit === 0;
+        matchesStatus = (item.outstandingBalance || 0) === 0 && (item.advanceCredit || 0) === 0;
       } else if (statusFilter === 'advance') {
-        matchesStatus = item.advanceCredit > 0;
+        matchesStatus = (item.advanceCredit || 0) > 0;
       }
 
       return matchesSearch && matchesBusiness && matchesStatus;
@@ -115,41 +114,41 @@ export default function ClientLedgerPage() {
 
   // Aggregate stats across filtered clients
   const totalClientsCount = filteredClients.length;
-  const totalAllInvoiced = filteredClients.reduce((sum, item) => sum + item.totalInvoiced, 0);
-  const totalAllPaid = filteredClients.reduce((sum, item) => sum + item.totalPaid, 0);
-  const totalAllOutstanding = filteredClients.reduce((sum, item) => sum + item.outstandingBalance, 0);
-  const totalAllAdvance = filteredClients.reduce((sum, item) => sum + item.advanceCredit, 0);
+  const totalAllInvoiced = filteredClients.reduce((sum, item) => sum + (item.totalInvoiced || 0), 0);
+  const totalAllPaid = filteredClients.reduce((sum, item) => sum + (item.totalPaid || 0), 0);
+  const totalAllOutstanding = filteredClients.reduce((sum, item) => sum + (item.outstandingBalance || 0), 0);
+  const totalAllAdvance = filteredClients.reduce((sum, item) => sum + (item.advanceCredit || 0), 0);
 
   const activeCurrency = businessFilter
     ? getCurrency(businessFilter)
-    : state.settings?.currency || 'PKR';
+    : state?.settings?.currency || 'PKR';
 
   // Selected customer data for detail view
   const selectedCustomer = useMemo(() => {
     if (!selectedCustomerId) return null;
-    return state.customers.find((c) => String(c.id) === String(selectedCustomerId)) || null;
-  }, [selectedCustomerId, state.customers]);
+    return customersList.find((c) => String(c?.id) === String(selectedCustomerId)) || null;
+  }, [selectedCustomerId, customersList]);
 
   const selectedBusiness = useMemo(() => {
     if (!selectedCustomer) return null;
-    return getBusiness(selectedCustomer.businessId);
+    return getBusiness(selectedCustomer?.businessId);
   }, [selectedCustomer, getBusiness]);
 
   const currentLedger = useMemo(() => {
     if (!selectedCustomer) return null;
-    return calculateClientLedger(selectedCustomer, selectedBusiness, state.invoices, {
+    return calculateClientLedger(selectedCustomer, selectedBusiness, invoicesList, {
       fromDate,
       toDate,
       transactionType,
       searchQuery: ledgerSearchQuery
     });
-  }, [selectedCustomer, selectedBusiness, state.invoices, fromDate, toDate, transactionType, ledgerSearchQuery]);
+  }, [selectedCustomer, selectedBusiness, invoicesList, fromDate, toDate, transactionType, ledgerSearchQuery]);
 
   // Export handlers
   const handlePrint = () => {
-    if (!selectedCustomer || !selectedBusiness) return;
+    if (!selectedCustomer) return;
     showToast('⚡ Preparing printable statement...');
-    const html = generateLedgerStatementHtml(selectedCustomer, selectedBusiness, state.invoices, {
+    const html = generateLedgerStatementHtml(selectedCustomer, selectedBusiness, invoicesList, {
       fromDate,
       toDate,
       transactionType
@@ -161,17 +160,17 @@ export default function ClientLedgerPage() {
     if (!targetCustomer) return;
     try {
       showToast('⚡ Generating Statement PDF...');
-      const biz = targetBusiness || getBusiness(targetCustomer.businessId);
-      const html = generateLedgerStatementHtml(targetCustomer, biz, state.invoices, {
+      const biz = targetBusiness || getBusiness(targetCustomer?.businessId);
+      const html = generateLedgerStatementHtml(targetCustomer, biz, invoicesList, {
         fromDate,
         toDate,
         transactionType
       });
-      const cleanName = (targetCustomer.name || 'Client').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const cleanName = (targetCustomer?.name || 'Client').replace(/[^a-zA-Z0-9_-]/g, '_');
       const fileName = `Statement_${cleanName}_${today()}.pdf`;
 
       await downloadAsPdf(html, fileName);
-      showToast(`✅ Statement PDF downloaded for ${targetCustomer.name}!`);
+      showToast(`✅ Statement PDF downloaded for ${targetCustomer?.name}!`);
     } catch (err) {
       alert('PDF generation error: ' + err.message);
     }
@@ -180,13 +179,13 @@ export default function ClientLedgerPage() {
   const handleExportExcel = (targetCustomer = selectedCustomer, targetBusiness = selectedBusiness) => {
     if (!targetCustomer) return;
     try {
-      const biz = targetBusiness || getBusiness(targetCustomer.businessId);
-      exportLedgerToExcel(targetCustomer, biz, state.invoices, {
+      const biz = targetBusiness || getBusiness(targetCustomer?.businessId);
+      exportLedgerToExcel(targetCustomer, biz, invoicesList, {
         fromDate,
         toDate,
         transactionType
       });
-      showToast(`✅ Excel Statement exported for ${targetCustomer.name}!`);
+      showToast(`✅ Excel Statement exported for ${targetCustomer?.name}!`);
     } catch (err) {
       alert('Excel export error: ' + err.message);
     }
@@ -194,44 +193,34 @@ export default function ClientLedgerPage() {
 
   const handleSendWhatsAppStatement = async (targetCustomer = selectedCustomer, targetBusiness = selectedBusiness) => {
     if (!targetCustomer) return;
-    const phone = targetCustomer.whatsapp || targetCustomer.phone;
+    const phone = targetCustomer?.whatsapp || targetCustomer?.phone;
     if (!phone) {
       alert('Customer has no WhatsApp/phone number saved.');
       return;
     }
 
     try {
-      showToast('⚡ Sending statement to WhatsApp...');
-      const biz = targetBusiness || getBusiness(targetCustomer.businessId);
-      const html = generateLedgerStatementHtml(targetCustomer, biz, state.invoices, {
-        fromDate,
-        toDate,
-        transactionType
-      });
-      const cleanName = (targetCustomer.name || 'Client').replace(/[^a-zA-Z0-9_-]/g, '_');
-      const fileName = `Statement_${cleanName}_${today()}.pdf`;
-      const orgBrand = state.settings?.proposalData?.companyName || state.settings?.companyName || 'iSysware';
-      const ledger = calculateClientLedger(targetCustomer, biz, state.invoices);
+      showToast('⚡ Opening WhatsApp with Statement...');
+      const biz = targetBusiness || getBusiness(targetCustomer?.businessId);
+      const orgBrand = state?.settings?.proposalData?.companyName || state?.settings?.companyName || 'iSysware';
+      const ledger = calculateClientLedger(targetCustomer, biz, invoicesList);
 
       const statusNote =
         ledger.outstandingBalance > 0
           ? `⚠️ Net Outstanding: ${formatMoney(ledger.outstandingBalance, biz?.id)}`
           : ledger.advanceCredit > 0
           ? `💎 Advance Credit: ${formatMoney(ledger.advanceCredit, biz?.id)}`
-          : '✅ Account Up to Date';
+          : '✅ Account Up to Date (Settled)';
 
-      const caption = `📊 *Account Statement: ${targetCustomer.name}*\n🏢 ${orgBrand}\n📌 ${statusNote}\n💰 Total Invoiced: ${formatMoney(ledger.totalInvoiced, biz?.id)}\n💵 Total Paid: ${formatMoney(ledger.totalPaid, biz?.id)}\n📅 Date: ${today()}`;
+      const textMessage = `📊 *Account Statement: ${targetCustomer?.name}*\n🏢 ${orgBrand}\n📌 ${statusNote}\n💰 Total Invoiced: ${formatMoney(ledger.totalInvoiced, biz?.id)}\n💵 Total Paid: ${formatMoney(ledger.totalPaid, biz?.id)}\n📅 Date: ${today()}`;
 
-      await downloadAndSendWhatsApp({
-        htmlContent: html,
-        fileName,
-        phone,
-        caption,
-        onWhatsAppSuccess: () => showToast(`✅ Statement PDF sent to ${targetCustomer.name} via WhatsApp!`)
-      });
-      showToast(`✅ Statement PDF saved and sent!`);
+      const cleanPhone = String(phone).replace(/\D/g, '');
+      const formattedPhone = cleanPhone.startsWith('0') ? '92' + cleanPhone.slice(1) : cleanPhone;
+      const waUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(textMessage)}`;
+      window.open(waUrl, '_blank');
+      showToast(`✅ WhatsApp message prepared!`);
     } catch (err) {
-      alert('WhatsApp send error: ' + err.message);
+      alert('WhatsApp error: ' + err.message);
     }
   };
 
@@ -300,9 +289,9 @@ export default function ClientLedgerPage() {
                     onChange={(e) => setBusinessFilter(e.target.value)}
                   >
                     <option value="">All Businesses</option>
-                    {state.businesses.map((b) => (
-                      <option key={b.id} value={b.id}>
-                        {b.name}
+                    {businessesList.map((b) => (
+                      <option key={b?.id} value={b?.id}>
+                        {b?.name}
                       </option>
                     ))}
                   </select>
@@ -362,15 +351,15 @@ export default function ClientLedgerPage() {
             <table>
               <thead>
                 <tr>
-                  <th style="width: 260px;">Client Name & Contact</th>
+                  <th style={{ width: '260px' }}>Client Name & Contact</th>
                   <th>Business</th>
-                  <th style="text-align: right;">Total Invoiced</th>
-                  <th style="text-align: right;">Total Paid</th>
-                  <th style="text-align: right;">Outstanding Dues</th>
-                  <th style="text-align: right;">Advance / Credit</th>
-                  <th style="text-align: center;">Invoices</th>
-                  <th style="text-align: center; min-width: 110px;">Status</th>
-                  <th style="text-align: center; min-width: 170px;">Ledger Actions</th>
+                  <th style={{ textAlign: 'right' }}>Total Invoiced</th>
+                  <th style={{ textAlign: 'right' }}>Total Paid</th>
+                  <th style={{ textAlign: 'right' }}>Outstanding Dues</th>
+                  <th style={{ textAlign: 'right' }}>Advance / Credit</th>
+                  <th style={{ textAlign: 'center' }}>Invoices</th>
+                  <th style={{ textAlign: 'center', minWidth: '110px' }}>Status</th>
+                  <th style={{ textAlign: 'center', minWidth: '170px' }}>Ledger Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -378,19 +367,18 @@ export default function ClientLedgerPage() {
                   filteredClients.map((item) => {
                     const c = item.customer;
                     const b = item.business;
-                    const hasDues = item.outstandingBalance > 0;
-                    const hasAdvance = item.advanceCredit > 0;
-                    const isDropdownOpen = activeDropdown === c.id;
+                    const hasDues = (item.outstandingBalance || 0) > 0;
+                    const hasAdvance = (item.advanceCredit || 0) > 0;
 
                     return (
                       <tr
-                        key={c.id}
+                        key={c?.id}
                         style={{
                           cursor: 'pointer',
                           background: hasDues ? '#fff9f9' : '#ffffff',
                           transition: 'background 0.15s ease'
                         }}
-                        onClick={() => setSelectedCustomerId(c.id)}
+                        onClick={() => setSelectedCustomerId(c?.id)}
                         className="ledger-row-hover"
                       >
                         <td>
@@ -409,15 +397,15 @@ export default function ClientLedgerPage() {
                                 flexShrink: 0
                               }}
                             >
-                              {c.name ? c.name.charAt(0).toUpperCase() : 'C'}
+                              {c?.name ? c.name.charAt(0).toUpperCase() : 'C'}
                             </div>
                             <div>
                               <div style={{ fontWeight: 750, color: '#0f172a', fontSize: '13px' }}>
-                                {c.name}
+                                {c?.name}
                               </div>
                               <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', gap: '8px', marginTop: '1px' }}>
-                                {c.phone && <span>📞 {c.phone}</span>}
-                                {c.whatsapp && c.whatsapp !== c.phone && <span>💬 {c.whatsapp}</span>}
+                                {c?.phone && <span>📞 {c.phone}</span>}
+                                {c?.whatsapp && c.whatsapp !== c.phone && <span>💬 {c.whatsapp}</span>}
                               </div>
                             </div>
                           </div>
@@ -430,11 +418,11 @@ export default function ClientLedgerPage() {
                         </td>
 
                         <td style={{ textAlign: 'right', fontWeight: 650, color: '#1e293b' }}>
-                          {formatMoney(item.totalInvoiced, c.businessId)}
+                          {formatMoney(item.totalInvoiced, c?.businessId)}
                         </td>
 
                         <td style={{ textAlign: 'right', fontWeight: 650, color: '#16a34a' }}>
-                          {formatMoney(item.totalPaid, c.businessId)}
+                          {formatMoney(item.totalPaid, c?.businessId)}
                         </td>
 
                         <td
@@ -444,7 +432,7 @@ export default function ClientLedgerPage() {
                             color: hasDues ? '#dc2626' : '#64748b'
                           }}
                         >
-                          {formatMoney(item.outstandingBalance, c.businessId)}
+                          {formatMoney(item.outstandingBalance, c?.businessId)}
                         </td>
 
                         <td
@@ -454,7 +442,7 @@ export default function ClientLedgerPage() {
                             color: hasAdvance ? '#7e22ce' : '#94a3b8'
                           }}
                         >
-                          {hasAdvance ? formatMoney(item.advanceCredit, c.businessId) : '-'}
+                          {hasAdvance ? formatMoney(item.advanceCredit, c?.businessId) : '-'}
                         </td>
 
                         <td style={{ textAlign: 'center', fontWeight: 650 }}>
@@ -467,7 +455,7 @@ export default function ClientLedgerPage() {
                               color: '#334155'
                             }}
                           >
-                            {item.invoicesCount}
+                            {item.invoicesCount || 0}
                           </span>
                         </td>
 
@@ -539,7 +527,7 @@ export default function ClientLedgerPage() {
                                 alignItems: 'center',
                                 gap: '5px'
                               }}
-                              onClick={() => setSelectedCustomerId(c.id)}
+                              onClick={() => setSelectedCustomerId(c?.id)}
                             >
                               <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
@@ -660,9 +648,9 @@ export default function ClientLedgerPage() {
                 value={selectedCustomerId}
                 onChange={(e) => setSelectedCustomerId(e.target.value)}
               >
-                {state.customers.map((cust) => (
-                  <option key={cust.id} value={cust.id}>
-                    {cust.name} ({getBusinessName(cust.businessId)})
+                {customersList.map((cust) => (
+                  <option key={cust?.id} value={cust?.id}>
+                    {cust?.name} ({getBusinessName(cust?.businessId)})
                   </option>
                 ))}
               </select>
@@ -678,7 +666,9 @@ export default function ClientLedgerPage() {
                 padding: '12px 18px',
                 display: 'flex',
                 justifyContent: 'space-between',
-                alignItems: 'center'
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '10px'
               }}
             >
               <div style={{ display: 'flex', alignItems: 'center', gap: '14px' }}>
@@ -695,17 +685,17 @@ export default function ClientLedgerPage() {
                     fontSize: '18px'
                   }}
                 >
-                  {selectedCustomer.name?.charAt(0).toUpperCase() || 'C'}
+                  {selectedCustomer?.name?.charAt(0).toUpperCase() || 'C'}
                 </div>
                 <div>
                   <h2 style={{ margin: 0, fontSize: '18px', color: '#fff', fontWeight: 800 }}>
-                    {selectedCustomer.name}
+                    {selectedCustomer?.name}
                   </h2>
-                  <div style={{ fontSize: '11.5px', color: '#bfdbfe', marginTop: '2px', display: 'flex', gap: '12px' }}>
+                  <div style={{ fontSize: '11.5px', color: '#bfdbfe', marginTop: '2px', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
                     <span>🏢 {selectedBusiness?.name || 'Business'}</span>
-                    {selectedCustomer.phone && <span>📞 {selectedCustomer.phone}</span>}
-                    {selectedCustomer.whatsapp && <span>💬 {selectedCustomer.whatsapp}</span>}
-                    {selectedCustomer.address && <span>📍 {selectedCustomer.address}</span>}
+                    {selectedCustomer?.phone && <span>📞 {selectedCustomer.phone}</span>}
+                    {selectedCustomer?.whatsapp && <span>💬 {selectedCustomer.whatsapp}</span>}
+                    {selectedCustomer?.address && <span>📍 {selectedCustomer.address}</span>}
                   </div>
                 </div>
               </div>
@@ -869,7 +859,7 @@ export default function ClientLedgerPage() {
             <div className="stat" style={{ borderLeft: '4px solid #1d4ed8' }}>
               <div className="label">Total Invoiced</div>
               <div className="value" style={{ color: '#1d4ed8' }}>
-                {formatMoney(currentLedger.totalInvoiced, selectedCustomer.businessId)}
+                {formatMoney(currentLedger.totalInvoiced, selectedCustomer?.businessId)}
               </div>
               <div className="hint">All Billed Invoices</div>
             </div>
@@ -877,7 +867,7 @@ export default function ClientLedgerPage() {
             <div className="stat" style={{ borderLeft: '4px solid #16a34a' }}>
               <div className="label">Total Paid / Received</div>
               <div className="value" style={{ color: '#16a34a' }}>
-                {formatMoney(currentLedger.totalPaid, selectedCustomer.businessId)}
+                {formatMoney(currentLedger.totalPaid, selectedCustomer?.businessId)}
               </div>
               <div className="hint">All Payments Received</div>
             </div>
@@ -895,7 +885,7 @@ export default function ClientLedgerPage() {
                   color: currentLedger.outstandingBalance > 0 ? '#dc2626' : '#16a34a'
                 }}
               >
-                {formatMoney(currentLedger.outstandingBalance, selectedCustomer.businessId)}
+                {formatMoney(currentLedger.outstandingBalance, selectedCustomer?.businessId)}
               </div>
               <div className="hint">
                 {currentLedger.outstandingBalance > 0 ? 'Remaining Amount Due' : 'Account Settled'}
@@ -905,7 +895,7 @@ export default function ClientLedgerPage() {
             <div className="stat" style={{ borderLeft: '4px solid #7e22ce' }}>
               <div className="label">Advance / Credit</div>
               <div className="value" style={{ color: '#7e22ce' }}>
-                {formatMoney(currentLedger.advanceCredit, selectedCustomer.businessId)}
+                {formatMoney(currentLedger.advanceCredit, selectedCustomer?.businessId)}
               </div>
               <div className="hint">Excess / Prepaid Balance</div>
             </div>
@@ -913,9 +903,9 @@ export default function ClientLedgerPage() {
             <div className="stat" style={{ borderLeft: '4px solid #0b4b8f' }}>
               <div className="label">Invoices / Records</div>
               <div className="value" style={{ color: '#0b4b8f' }}>
-                {currentLedger.invoicesCount} Invoices
+                {currentLedger.invoicesCount || 0} Invoices
               </div>
-              <div className="hint">{currentLedger.totalTransactionsCount} Total Transactions</div>
+              <div className="hint">{currentLedger.totalTransactionsCount || 0} Total Transactions</div>
             </div>
           </div>
 
@@ -924,15 +914,15 @@ export default function ClientLedgerPage() {
             <table>
               <thead>
                 <tr>
-                  <th style="width: 110px;">Date</th>
-                  <th style="width: 150px;">Voucher / Ref #</th>
-                  <th style="width: 150px;">Transaction Type</th>
+                  <th style={{ width: '110px' }}>Date</th>
+                  <th style={{ width: '150px' }}>Voucher / Ref #</th>
+                  <th style={{ width: '150px' }}>Transaction Type</th>
                   <th>Description / Particulars</th>
-                  <th style="text-align: right; width: 130px;">Debit (+)</th>
-                  <th style="text-align: right; width: 130px;">Credit (-)</th>
-                  <th style="text-align: right; width: 150px;">Running Balance</th>
-                  <th style="text-align: center; width: 90px;">Status</th>
-                  <th style="text-align: center; width: 80px;">Action</th>
+                  <th style={{ textAlign: 'right', width: '130px' }}>Debit (+)</th>
+                  <th style={{ textAlign: 'right', width: '130px' }}>Credit (-)</th>
+                  <th style={{ textAlign: 'right', width: '150px' }}>Running Balance</th>
+                  <th style={{ textAlign: 'center', width: '90px' }}>Status</th>
+                  <th style={{ textAlign: 'center', width: '80px' }}>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -949,12 +939,12 @@ export default function ClientLedgerPage() {
                     <td>Balance brought forward prior to {fromDate}</td>
                     <td style={{ textAlign: 'right' }}>
                       {currentLedger.openingBalance > 0
-                        ? formatMoney(currentLedger.openingBalance, selectedCustomer.businessId)
+                        ? formatMoney(currentLedger.openingBalance, selectedCustomer?.businessId)
                         : '-'}
                     </td>
                     <td style={{ textAlign: 'right' }}>
                       {currentLedger.openingBalance < 0
-                        ? formatMoney(Math.abs(currentLedger.openingBalance), selectedCustomer.businessId)
+                        ? formatMoney(Math.abs(currentLedger.openingBalance), selectedCustomer?.businessId)
                         : '-'}
                     </td>
                     <td
@@ -964,14 +954,14 @@ export default function ClientLedgerPage() {
                         color: currentLedger.openingBalance > 0 ? '#b91c1c' : '#16a34a'
                       }}
                     >
-                      {formatMoney(currentLedger.openingBalance, selectedCustomer.businessId)}
+                      {formatMoney(currentLedger.openingBalance, selectedCustomer?.businessId)}
                     </td>
                     <td style={{ textAlign: 'center' }}>-</td>
                     <td style={{ textAlign: 'center' }}>-</td>
                   </tr>
                 )}
 
-                {currentLedger.ledgerRows.length > 0 ? (
+                {currentLedger.ledgerRows && currentLedger.ledgerRows.length > 0 ? (
                   currentLedger.ledgerRows.map((r) => {
                     const isPay = r.type === 'payment';
                     const isPos = r.runningBalance > 0;
@@ -1028,7 +1018,7 @@ export default function ClientLedgerPage() {
                             color: r.debit > 0 ? '#1e293b' : '#94a3b8'
                           }}
                         >
-                          {r.debit > 0 ? formatMoney(r.debit, selectedCustomer.businessId) : '-'}
+                          {r.debit > 0 ? formatMoney(r.debit, selectedCustomer?.businessId) : '-'}
                         </td>
 
                         <td
@@ -1038,7 +1028,7 @@ export default function ClientLedgerPage() {
                             color: r.credit > 0 ? '#16a34a' : '#94a3b8'
                           }}
                         >
-                          {r.credit > 0 ? formatMoney(r.credit, selectedCustomer.businessId) : '-'}
+                          {r.credit > 0 ? formatMoney(r.credit, selectedCustomer?.businessId) : '-'}
                         </td>
 
                         <td
@@ -1049,7 +1039,7 @@ export default function ClientLedgerPage() {
                             color: isPos ? '#dc2626' : isNeg ? '#7e22ce' : '#16a34a'
                           }}
                         >
-                          {formatMoney(r.runningBalance, selectedCustomer.businessId)}
+                          {formatMoney(r.runningBalance, selectedCustomer?.businessId)}
                         </td>
 
                         <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
@@ -1086,10 +1076,10 @@ export default function ClientLedgerPage() {
                     Period Totals & Net Balance:
                   </td>
                   <td style={{ textAlign: 'right', color: '#1d4ed8', fontSize: '13px' }}>
-                    {formatMoney(currentLedger.totalInvoiced, selectedCustomer.businessId)}
+                    {formatMoney(currentLedger.totalInvoiced, selectedCustomer?.businessId)}
                   </td>
                   <td style={{ textAlign: 'right', color: '#16a34a', fontSize: '13px' }}>
-                    {formatMoney(currentLedger.totalPaid, selectedCustomer.businessId)}
+                    {formatMoney(currentLedger.totalPaid, selectedCustomer?.businessId)}
                   </td>
                   <td
                     style={{
@@ -1098,7 +1088,7 @@ export default function ClientLedgerPage() {
                       color: currentLedger.closingBalance > 0 ? '#dc2626' : '#16a34a'
                     }}
                   >
-                    {formatMoney(currentLedger.closingBalance, selectedCustomer.businessId)}
+                    {formatMoney(currentLedger.closingBalance, selectedCustomer?.businessId)}
                   </td>
                   <td colSpan="2"></td>
                 </tr>
