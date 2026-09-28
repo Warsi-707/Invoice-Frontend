@@ -1,21 +1,12 @@
 import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import StatusBadge from '../components/common/StatusBadge';
-import { money, today } from '../utils/formatters';
-import {
-  calculateClientLedger,
-  generateLedgerStatementHtml,
-  exportLedgerToExcel,
-  printLedgerStatement
-} from '../utils/ledgerExport';
-import { downloadAsPdf } from '../utils/whatsappPdf';
+import { calculateClientLedger } from '../utils/ledgerExport';
 
 export default function ClientLedgerPage() {
   const {
     state,
-    showToast,
     getBusiness,
-    getBusinessName,
     formatMoney
   } = useApp();
 
@@ -99,79 +90,6 @@ export default function ClientLedgerPage() {
     });
   }, [selectedCustomer, selectedBusiness, invoicesList, fromDate, toDate, ledgerSearchQuery]);
 
-  // Export handlers
-  const handlePrint = () => {
-    if (!selectedCustomer) return;
-    showToast('Preparing statement for print...');
-    const html = generateLedgerStatementHtml(selectedCustomer, selectedBusiness, invoicesList, {
-      fromDate,
-      toDate
-    });
-    printLedgerStatement(html);
-  };
-
-  const handleDownloadPdf = async () => {
-    if (!selectedCustomer) return;
-    try {
-      showToast('Generating PDF statement...');
-      const html = generateLedgerStatementHtml(selectedCustomer, selectedBusiness, invoicesList, {
-        fromDate,
-        toDate
-      });
-      const cleanName = (selectedCustomer?.name || 'Client').replace(/[^a-zA-Z0-9_-]/g, '_');
-      const fileName = `Statement_${cleanName}_${today()}.pdf`;
-
-      await downloadAsPdf(html, fileName);
-      showToast(`Statement PDF downloaded for ${selectedCustomer?.name}`);
-    } catch (err) {
-      alert('PDF generation error: ' + err.message);
-    }
-  };
-
-  const handleExportExcel = () => {
-    if (!selectedCustomer) return;
-    try {
-      exportLedgerToExcel(selectedCustomer, selectedBusiness, invoicesList, {
-        fromDate,
-        toDate
-      });
-      showToast(`Excel statement exported for ${selectedCustomer?.name}`);
-    } catch (err) {
-      alert('Excel export error: ' + err.message);
-    }
-  };
-
-  const handleSendWhatsAppStatement = async () => {
-    if (!selectedCustomer) return;
-    const phone = selectedCustomer?.whatsapp || selectedCustomer?.phone;
-    if (!phone) {
-      alert('Customer has no WhatsApp/phone number saved.');
-      return;
-    }
-
-    try {
-      const orgBrand = state?.settings?.proposalData?.companyName || state?.settings?.companyName || 'iSysware';
-      const ledger = calculateClientLedger(selectedCustomer, selectedBusiness, invoicesList);
-
-      const statusNote =
-        ledger.outstandingBalance > 0
-          ? `Outstanding Balance: ${formatMoney(ledger.outstandingBalance, selectedBusiness?.id)}`
-          : ledger.advanceCredit > 0
-          ? `Advance Credit: ${formatMoney(ledger.advanceCredit, selectedBusiness?.id)}`
-          : 'Account Up to Date (Settled)';
-
-      const textMessage = `*Account Statement: ${selectedCustomer?.name}*\n${orgBrand}\nStatus: ${statusNote}\nTotal Invoiced: ${formatMoney(ledger.totalInvoiced, selectedBusiness?.id)}\nTotal Paid: ${formatMoney(ledger.totalPaid, selectedBusiness?.id)}\nStatement Date: ${today()}`;
-
-      const cleanPhone = String(phone).replace(/\D/g, '');
-      const formattedPhone = cleanPhone.startsWith('0') ? '92' + cleanPhone.slice(1) : cleanPhone;
-      const waUrl = `https://wa.me/${formattedPhone}?text=${encodeURIComponent(textMessage)}`;
-      window.open(waUrl, '_blank');
-      showToast(`WhatsApp message opened`);
-    } catch (err) {
-      alert('WhatsApp error: ' + err.message);
-    }
-  };
-
   return (
     <section id="client-ledger" className="page active">
       {/* -------------------------------------------------------------
@@ -181,7 +99,7 @@ export default function ClientLedgerPage() {
         <div className="panel">
           <div className="panel-head">
             <span>Client Ledger</span>
-            <span>Select a member to view their account ledger</span>
+            <span>Select a member to view their ledger</span>
           </div>
 
           <div className="panel-body">
@@ -231,7 +149,7 @@ export default function ClientLedgerPage() {
                     <th>Member Name</th>
                     <th>Phone / WhatsApp</th>
                     <th>Business</th>
-                    <th style={{ width: '130px', textAlign: 'center' }}>Ledger</th>
+                    <th style={{ width: '130px', textAlign: 'center' }}>Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -264,12 +182,8 @@ export default function ClientLedgerPage() {
                           <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
-                              className="btn sm"
-                              style={{
-                                padding: '4px 12px',
-                                fontSize: '11.5px',
-                                fontWeight: 600
-                              }}
+                              className="btn sm primary"
+                              style={{ padding: '4px 12px', fontSize: '11.5px', fontWeight: 600 }}
                               onClick={() => setSelectedCustomerId(c?.id)}
                             >
                               Open Ledger →
@@ -293,11 +207,11 @@ export default function ClientLedgerPage() {
       )}
 
       {/* -------------------------------------------------------------
-          VIEW 2: MEMBER COMPLETE LEDGER (DASHBOARD-MATCHED STYLING)
+          VIEW 2: SIMPLE CLEAN CLIENT LEDGER DATA VIEW
          ------------------------------------------------------------- */}
       {selectedCustomerId && selectedCustomer && currentLedger && (
         <>
-          {/* Top Panel: Header, Member Info & Export Actions */}
+          {/* Top Panel: Header & Member Info */}
           <div className="panel" style={{ marginBottom: '14px' }}>
             <div className="panel-head">
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -322,70 +236,6 @@ export default function ClientLedgerPage() {
                 <span style={{ fontSize: '11.5px', opacity: 0.85, fontWeight: 500 }}>
                   ({selectedBusiness?.name || 'Business'} {selectedCustomer?.phone ? `• ${selectedCustomer.phone}` : ''})
                 </span>
-              </div>
-
-              {/* Action Buttons */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-                <button
-                  type="button"
-                  className="btn sm light"
-                  style={{
-                    background: '#ffffff',
-                    color: '#0b4b8f',
-                    borderColor: '#ffffff',
-                    padding: '4px 10px',
-                    fontSize: '11.5px',
-                    fontWeight: 650
-                  }}
-                  onClick={handlePrint}
-                >
-                  Print
-                </button>
-                <button
-                  type="button"
-                  className="btn sm light"
-                  style={{
-                    background: '#ffffff',
-                    color: '#0b4b8f',
-                    borderColor: '#ffffff',
-                    padding: '4px 10px',
-                    fontSize: '11.5px',
-                    fontWeight: 650
-                  }}
-                  onClick={handleDownloadPdf}
-                >
-                  PDF Statement
-                </button>
-                <button
-                  type="button"
-                  className="btn sm light"
-                  style={{
-                    background: '#ffffff',
-                    color: '#0b4b8f',
-                    borderColor: '#ffffff',
-                    padding: '4px 10px',
-                    fontSize: '11.5px',
-                    fontWeight: 650
-                  }}
-                  onClick={handleExportExcel}
-                >
-                  Excel / CSV
-                </button>
-                <button
-                  type="button"
-                  className="btn sm"
-                  style={{
-                    background: '#18a05e',
-                    color: '#ffffff',
-                    borderColor: '#18a05e',
-                    padding: '4px 10px',
-                    fontSize: '11.5px',
-                    fontWeight: 650
-                  }}
-                  onClick={handleSendWhatsAppStatement}
-                >
-                  WhatsApp
-                </button>
               </div>
             </div>
 
@@ -446,7 +296,7 @@ export default function ClientLedgerPage() {
             </div>
           </div>
 
-          {/* Exact Dashboard-Matched Clean KPI Cards */}
+          {/* Simple Clean KPI Cards */}
           <div className="cards" style={{ marginBottom: '14px' }}>
             <div className="stat">
               <div className="label">Total Invoiced</div>
@@ -489,7 +339,7 @@ export default function ClientLedgerPage() {
             </div>
           </div>
 
-          {/* Clean Dashboard/Reports-Matched Transactions Table */}
+          {/* Simple Clean Transactions Table */}
           <div className="table-wrap">
             <table>
               <thead>
