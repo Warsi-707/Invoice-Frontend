@@ -403,7 +403,7 @@ export default function ClientLedgerPage() {
                           {r.credit > 0 ? formatMoney(r.credit, selectedCustomer?.businessId) : '-'}
                         </td>
                         <td style={{ textAlign: 'right' }}>
-                          {formatMoney(r.runningBalance, selectedCustomer?.businessId)}
+                          {formatMoney(r.balance !== undefined ? r.balance : (r.debit - r.credit), selectedCustomer?.businessId)}
                         </td>
                         <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
                           <StatusBadge status={r.status} />

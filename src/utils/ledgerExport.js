@@ -123,12 +123,14 @@ export function calculateClientLedger(customer = {}, business = {}, invoices = [
     );
   }
 
-  // Calculate running balance
+  // Calculate running balance and individual invoice balance
   let currentBalance = openingBalance;
   const ledgerRows = filtered.map((t) => {
-    currentBalance = currentBalance + t.debit - t.credit;
+    const itemBalance = t.debit - t.credit;
+    currentBalance = currentBalance + itemBalance;
     return {
       ...t,
+      balance: itemBalance,
       runningBalance: currentBalance
     };
   });
