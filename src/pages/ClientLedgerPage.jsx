@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { useApp } from '../context/AppContext';
 import StatusBadge from '../components/common/StatusBadge';
 import { calculateClientLedger } from '../utils/ledgerExport';
+import { MONTHS, YEARS } from '../utils/formatters';
 
 export default function ClientLedgerPage() {
   const {
@@ -17,38 +18,11 @@ export default function ClientLedgerPage() {
   const [searchTerm, setSearchTerm] = useState('');
 
   // Ledger Detail Filters
+  const [selectedMonth, setSelectedMonth] = useState('all');
+  const [selectedYear, setSelectedYear] = useState('all');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
-  const [datePreset, setDatePreset] = useState('all');
   const [ledgerSearchQuery, setLedgerSearchQuery] = useState('');
-
-  // Handle date preset change
-  const handleDatePresetChange = (preset) => {
-    setDatePreset(preset);
-    const now = new Date();
-    const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth();
-
-    if (preset === 'all') {
-      setFromDate('');
-      setToDate('');
-    } else if (preset === 'this-month') {
-      const start = new Date(currentYear, currentMonth, 1).toISOString().slice(0, 10);
-      const end = new Date(currentYear, currentMonth + 1, 0).toISOString().slice(0, 10);
-      setFromDate(start);
-      setToDate(end);
-    } else if (preset === 'last-month') {
-      const start = new Date(currentYear, currentMonth - 1, 1).toISOString().slice(0, 10);
-      const end = new Date(currentYear, currentMonth, 0).toISOString().slice(0, 10);
-      setFromDate(start);
-      setToDate(end);
-    } else if (preset === 'this-year') {
-      const start = new Date(currentYear, 0, 1).toISOString().slice(0, 10);
-      const end = new Date(currentYear, 11, 31).toISOString().slice(0, 10);
-      setFromDate(start);
-      setToDate(end);
-    }
-  };
 
   const customersList = Array.isArray(state?.customers) ? state.customers : [];
   const invoicesList = Array.isArray(state?.invoices) ? state.invoices : [];
@@ -83,12 +57,14 @@ export default function ClientLedgerPage() {
   const currentLedger = useMemo(() => {
     if (!selectedCustomer) return null;
     return calculateClientLedger(selectedCustomer, selectedBusiness, invoicesList, {
+      selectedMonth,
+      selectedYear,
       fromDate,
       toDate,
       transactionType: 'all',
       searchQuery: ledgerSearchQuery
     });
-  }, [selectedCustomer, selectedBusiness, invoicesList, fromDate, toDate, ledgerSearchQuery]);
+  }, [selectedCustomer, selectedBusiness, invoicesList, selectedMonth, selectedYear, fromDate, toDate, ledgerSearchQuery]);
 
   return (
     <section id="client-ledger" className="page active">
@@ -241,18 +217,36 @@ export default function ClientLedgerPage() {
 
             {/* Filter Toolbar */}
             <div className="panel-body">
-              <div className="toolbar" style={{ marginBottom: 0 }}>
+              <div className="toolbar" style={{ marginBottom: 0, flexWrap: 'wrap', gap: '10px' }}>
                 <div style={{ width: '160px' }}>
-                  <label>Period Preset</label>
+                  <label>Select Month</label>
                   <select
                     className="select"
-                    value={datePreset}
-                    onChange={(e) => handleDatePresetChange(e.target.value)}
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
                   >
-                    <option value="all">All Time</option>
-                    <option value="this-month">This Month</option>
-                    <option value="last-month">Last Month</option>
-                    <option value="this-year">This Year</option>
+                    <option value="all">All 12 Months</option>
+                    {MONTHS.map((m) => (
+                      <option key={m} value={m}>
+                        {m}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div style={{ width: '120px' }}>
+                  <label>Select Year</label>
+                  <select
+                    className="select"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                  >
+                    <option value="all">All Years</option>
+                    {YEARS.map((y) => (
+                      <option key={y} value={y}>
+                        {y}
+                      </option>
+                    ))}
                   </select>
                 </div>
 
@@ -262,10 +256,7 @@ export default function ClientLedgerPage() {
                     type="date"
                     className="input"
                     value={fromDate}
-                    onChange={(e) => {
-                      setFromDate(e.target.value);
-                      setDatePreset('custom');
-                    }}
+                    onChange={(e) => setFromDate(e.target.value)}
                   />
                 </div>
 
@@ -275,10 +266,7 @@ export default function ClientLedgerPage() {
                     type="date"
                     className="input"
                     value={toDate}
-                    onChange={(e) => {
-                      setToDate(e.target.value);
-                      setDatePreset('custom');
-                    }}
+                    onChange={(e) => setToDate(e.target.value)}
                   />
                 </div>
 
@@ -292,6 +280,25 @@ export default function ClientLedgerPage() {
                     onChange={(e) => setLedgerSearchQuery(e.target.value)}
                   />
                 </div>
+
+                {(selectedMonth !== 'all' || selectedYear !== 'all' || fromDate || toDate || ledgerSearchQuery) && (
+                  <div style={{ display: 'flex', alignItems: 'flex-end' }}>
+                    <button
+                      type="button"
+                      className="btn sm light"
+                      style={{ padding: '6px 12px', fontSize: '11.5px', marginBottom: '2px' }}
+                      onClick={() => {
+                        setSelectedMonth('all');
+                        setSelectedYear('all');
+                        setFromDate('');
+                        setToDate('');
+                        setLedgerSearchQuery('');
+                      }}
+                    >
+                      ✕ Reset Filter
+                    </button>
+                  </div>
+                )}
               </div>
             </div>
           </div>

@@ -5,7 +5,14 @@ import { downloadAsPdf, sendPdfToWhatsApp, downloadAndSendWhatsApp } from './wha
  * Build and calculate complete chronological ledger transactions and financial metrics for a customer.
  */
 export function calculateClientLedger(customer = {}, business = {}, invoices = [], options = {}) {
-  const { fromDate = '', toDate = '', transactionType = 'all', searchQuery = '' } = options;
+  const {
+    fromDate = '',
+    toDate = '',
+    selectedMonth = 'all',
+    selectedYear = 'all',
+    transactionType = 'all',
+    searchQuery = ''
+  } = options;
   const cur = business?.currency || 'PKR';
 
   // Filter invoices for this customer
@@ -65,7 +72,7 @@ export function calculateClientLedger(customer = {}, business = {}, invoices = [
       typeLabel: 'Monthly Invoice',
       ref: inv.invoiceNo || 'INV',
       description: invItemsSummary || `Monthly Billing (${inv.month} ${inv.year})`,
-      monthYear: inv.month && inv.year ? `${inv.month} ${inv.year}` : '-',
+      monthYear: inv.month && inv.year ? `${inv.month} ${inv.year}` : (inv.month || '-'),
       debit: invDebit,
       credit: invPaid,
       status: inv.status || (invPaid >= invDebit ? 'Paid' : invPaid > 0 ? 'Partial' : 'Unpaid'),
@@ -97,8 +104,22 @@ export function calculateClientLedger(customer = {}, business = {}, invoices = [
     openingBalance = preRangeDebits - preRangeCredits;
   }
 
-  // Filter transactions by date range
+  // Filter transactions by month, year, and date range
   let filtered = allTransactions.filter((t) => {
+    // Filter by specific Month
+    if (selectedMonth && selectedMonth !== 'all') {
+      const invMonth = t.rawInvoice?.month || '';
+      const matchesMonth = invMonth === selectedMonth || t.monthYear.toLowerCase().includes(selectedMonth.toLowerCase());
+      if (!matchesMonth) return false;
+    }
+
+    // Filter by specific Year
+    if (selectedYear && selectedYear !== 'all') {
+      const invYear = String(t.rawInvoice?.year || (t.date ? new Date(t.date).getFullYear() : ''));
+      const matchesYear = invYear === String(selectedYear) || t.monthYear.includes(String(selectedYear));
+      if (!matchesYear) return false;
+    }
+
     const matchesFrom = !fromDate || t.date >= fromDate;
     const matchesTo = !toDate || t.date <= toDate;
     return matchesFrom && matchesTo;
