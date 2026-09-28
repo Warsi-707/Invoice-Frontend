@@ -6,6 +6,7 @@ const PAGE_TITLES = {
   businesses: 'Business / Client',
   generator: 'Invoice Generator',
   collections: 'Invoice Collection',
+  ledger: 'Client Ledger',
   reversals: 'Reversals',
   reports: 'Reports',
   settings: 'Settings'

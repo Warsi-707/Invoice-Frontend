@@ -6,6 +6,7 @@ import DashboardPage from './pages/DashboardPage';
 import BusinessCustomerPage from './pages/BusinessCustomerPage';
 import InvoiceGeneratorPage from './pages/InvoiceGeneratorPage';
 import InvoiceCollectionPage from './pages/InvoiceCollectionPage';
+import ClientLedgerPage from './pages/ClientLedgerPage';
 import ReversalsPage from './pages/ReversalsPage';
 import ReportsPage from './pages/ReportsPage';
 import SettingsPage from './pages/SettingsPage';
@@ -45,6 +46,8 @@ export default function App() {
         return <InvoiceGeneratorPage />;
       case 'collections':
         return <InvoiceCollectionPage />;
+      case 'ledger':
+        return <ClientLedgerPage />;
       case 'reversals':
         return <ReversalsPage />;
       case 'reports':
