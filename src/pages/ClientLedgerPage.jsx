@@ -17,17 +17,14 @@ export default function ClientLedgerPage() {
     showToast,
     getBusiness,
     getBusinessName,
-    formatMoney,
-    getCurrency
+    formatMoney
   } = useApp();
 
-  // Selected customer for single ledger view (null = all clients directory)
+  // Selected customer for single ledger view (null = simple members list)
   const [selectedCustomerId, setSelectedCustomerId] = useState(null);
 
-  // Directory Filters
+  // Search in member list
   const [searchTerm, setSearchTerm] = useState('');
-  const [businessFilter, setBusinessFilter] = useState('');
-  const [statusFilter, setStatusFilter] = useState(''); // '', 'dues', 'settled', 'advance'
 
   // Ledger Detail Filters
   const [fromDate, setFromDate] = useState('');
@@ -41,7 +38,7 @@ export default function ClientLedgerPage() {
     setDatePreset(preset);
     const now = new Date();
     const currentYear = now.getFullYear();
-    const currentMonth = now.getMonth(); // 0-indexed
+    const currentMonth = now.getMonth();
 
     if (preset === 'all') {
       setFromDate('');
@@ -65,63 +62,23 @@ export default function ClientLedgerPage() {
   };
 
   const customersList = Array.isArray(state?.customers) ? state.customers : [];
-  const businessesList = Array.isArray(state?.businesses) ? state.businesses : [];
   const invoicesList = Array.isArray(state?.invoices) ? state.invoices : [];
 
-  // Compile all client financial profiles
-  const clientsSummaryList = useMemo(() => {
-    return customersList.map((c) => {
-      const b = getBusiness(c?.businessId);
-      const ledger = calculateClientLedger(c, b, invoicesList);
-      return {
-        customer: c,
-        business: b,
-        ...ledger
-      };
-    });
-  }, [customersList, invoicesList, getBusiness]);
-
-  // Filtered clients directory
-  const filteredClients = useMemo(() => {
+  // Filtered members list
+  const filteredMembers = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-
-    return clientsSummaryList.filter((item) => {
-      const c = item.customer;
-      const b = item.business;
-
-      const matchesSearch =
-        !q ||
+    return customersList.filter((c) => {
+      if (!q) return true;
+      const b = getBusiness(c?.businessId);
+      return (
         (c?.name && c.name.toLowerCase().includes(q)) ||
         (c?.phone && c.phone.toLowerCase().includes(q)) ||
         (c?.whatsapp && c.whatsapp.toLowerCase().includes(q)) ||
         (b?.name && b.name.toLowerCase().includes(q)) ||
-        (c?.address && c.address.toLowerCase().includes(q));
-
-      const matchesBusiness = !businessFilter || c?.businessId === businessFilter;
-
-      let matchesStatus = true;
-      if (statusFilter === 'dues') {
-        matchesStatus = (item.outstandingBalance || 0) > 0;
-      } else if (statusFilter === 'settled') {
-        matchesStatus = (item.outstandingBalance || 0) === 0 && (item.advanceCredit || 0) === 0;
-      } else if (statusFilter === 'advance') {
-        matchesStatus = (item.advanceCredit || 0) > 0;
-      }
-
-      return matchesSearch && matchesBusiness && matchesStatus;
+        (c?.address && c.address.toLowerCase().includes(q))
+      );
     });
-  }, [clientsSummaryList, searchTerm, businessFilter, statusFilter]);
-
-  // Aggregate stats across filtered clients
-  const totalClientsCount = filteredClients.length;
-  const totalAllInvoiced = filteredClients.reduce((sum, item) => sum + (item.totalInvoiced || 0), 0);
-  const totalAllPaid = filteredClients.reduce((sum, item) => sum + (item.totalPaid || 0), 0);
-  const totalAllOutstanding = filteredClients.reduce((sum, item) => sum + (item.outstandingBalance || 0), 0);
-  const totalAllAdvance = filteredClients.reduce((sum, item) => sum + (item.advanceCredit || 0), 0);
-
-  const activeCurrency = businessFilter
-    ? getCurrency(businessFilter)
-    : state?.settings?.currency || 'PKR';
+  }, [customersList, searchTerm, getBusiness]);
 
   // Selected customer data for detail view
   const selectedCustomer = useMemo(() => {
@@ -156,44 +113,42 @@ export default function ClientLedgerPage() {
     printLedgerStatement(html);
   };
 
-  const handleDownloadPdf = async (targetCustomer = selectedCustomer, targetBusiness = selectedBusiness) => {
-    if (!targetCustomer) return;
+  const handleDownloadPdf = async () => {
+    if (!selectedCustomer) return;
     try {
       showToast('⚡ Generating Statement PDF...');
-      const biz = targetBusiness || getBusiness(targetCustomer?.businessId);
-      const html = generateLedgerStatementHtml(targetCustomer, biz, invoicesList, {
+      const html = generateLedgerStatementHtml(selectedCustomer, selectedBusiness, invoicesList, {
         fromDate,
         toDate,
         transactionType
       });
-      const cleanName = (targetCustomer?.name || 'Client').replace(/[^a-zA-Z0-9_-]/g, '_');
+      const cleanName = (selectedCustomer?.name || 'Client').replace(/[^a-zA-Z0-9_-]/g, '_');
       const fileName = `Statement_${cleanName}_${today()}.pdf`;
 
       await downloadAsPdf(html, fileName);
-      showToast(`✅ Statement PDF downloaded for ${targetCustomer?.name}!`);
+      showToast(`✅ Statement PDF downloaded for ${selectedCustomer?.name}!`);
     } catch (err) {
       alert('PDF generation error: ' + err.message);
     }
   };
 
-  const handleExportExcel = (targetCustomer = selectedCustomer, targetBusiness = selectedBusiness) => {
-    if (!targetCustomer) return;
+  const handleExportExcel = () => {
+    if (!selectedCustomer) return;
     try {
-      const biz = targetBusiness || getBusiness(targetCustomer?.businessId);
-      exportLedgerToExcel(targetCustomer, biz, invoicesList, {
+      exportLedgerToExcel(selectedCustomer, selectedBusiness, invoicesList, {
         fromDate,
         toDate,
         transactionType
       });
-      showToast(`✅ Excel Statement exported for ${targetCustomer?.name}!`);
+      showToast(`✅ Excel Statement exported for ${selectedCustomer?.name}!`);
     } catch (err) {
       alert('Excel export error: ' + err.message);
     }
   };
 
-  const handleSendWhatsAppStatement = async (targetCustomer = selectedCustomer, targetBusiness = selectedBusiness) => {
-    if (!targetCustomer) return;
-    const phone = targetCustomer?.whatsapp || targetCustomer?.phone;
+  const handleSendWhatsAppStatement = async () => {
+    if (!selectedCustomer) return;
+    const phone = selectedCustomer?.whatsapp || selectedCustomer?.phone;
     if (!phone) {
       alert('Customer has no WhatsApp/phone number saved.');
       return;
@@ -201,18 +156,17 @@ export default function ClientLedgerPage() {
 
     try {
       showToast('⚡ Opening WhatsApp with Statement...');
-      const biz = targetBusiness || getBusiness(targetCustomer?.businessId);
       const orgBrand = state?.settings?.proposalData?.companyName || state?.settings?.companyName || 'iSysware';
-      const ledger = calculateClientLedger(targetCustomer, biz, invoicesList);
+      const ledger = calculateClientLedger(selectedCustomer, selectedBusiness, invoicesList);
 
       const statusNote =
         ledger.outstandingBalance > 0
-          ? `⚠️ Net Outstanding: ${formatMoney(ledger.outstandingBalance, biz?.id)}`
+          ? `⚠️ Net Outstanding: ${formatMoney(ledger.outstandingBalance, selectedBusiness?.id)}`
           : ledger.advanceCredit > 0
-          ? `💎 Advance Credit: ${formatMoney(ledger.advanceCredit, biz?.id)}`
+          ? `💎 Advance Credit: ${formatMoney(ledger.advanceCredit, selectedBusiness?.id)}`
           : '✅ Account Up to Date (Settled)';
 
-      const textMessage = `📊 *Account Statement: ${targetCustomer?.name}*\n🏢 ${orgBrand}\n📌 ${statusNote}\n💰 Total Invoiced: ${formatMoney(ledger.totalInvoiced, biz?.id)}\n💵 Total Paid: ${formatMoney(ledger.totalPaid, biz?.id)}\n📅 Date: ${today()}`;
+      const textMessage = `📊 *Account Statement: ${selectedCustomer?.name}*\n🏢 ${orgBrand}\n📌 ${statusNote}\n💰 Total Invoiced: ${formatMoney(ledger.totalInvoiced, selectedBusiness?.id)}\n💵 Total Paid: ${formatMoney(ledger.totalPaid, selectedBusiness?.id)}\n📅 Date: ${today()}`;
 
       const cleanPhone = String(phone).replace(/\D/g, '');
       const formattedPhone = cleanPhone.startsWith('0') ? '92' + cleanPhone.slice(1) : cleanPhone;
@@ -226,293 +180,127 @@ export default function ClientLedgerPage() {
 
   return (
     <section id="client-ledger" className="page active">
-      {/* VIEW 1: ALL CLIENTS DIRECTORY / OVERVIEW */}
+      {/* VIEW 1: SIMPLE CLEAN MEMBERS LIST */}
       {!selectedCustomerId && (
-        <>
-          <div className="panel" style={{ marginBottom: '16px' }}>
-            <div className="panel-head">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
-                  <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
-                  <line x1="8" y1="7" x2="16" y2="7" />
-                  <line x1="8" y1="11" x2="16" y2="11" />
-                </svg>
-                <span>Client Ledger</span>
-              </div>
-              <span style={{ fontSize: '11.5px', opacity: 0.9 }}>
-                Customer Accounts, Financial Dues & Running Statements
-              </span>
+        <div className="panel">
+          <div className="panel-head">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                <line x1="8" y1="7" x2="16" y2="7" />
+                <line x1="8" y1="11" x2="16" y2="11" />
+              </svg>
+              <span>Client Ledger</span>
             </div>
-            <div className="panel-body">
-              {/* Filter Toolbar */}
-              <div className="toolbar" style={{ marginBottom: 0 }}>
-                <div className="grow">
-                  <label>Search Client / Phone / Business</label>
-                  <div style={{ position: 'relative' }}>
-                    <input
-                      id="ledgerSearch"
-                      className="input"
-                      placeholder="Search client by name, phone, whatsapp, business..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      autoComplete="off"
-                    />
-                    {searchTerm && (
-                      <button
-                        type="button"
-                        onClick={() => setSearchTerm('')}
-                        style={{
-                          position: 'absolute',
-                          right: '8px',
-                          top: '50%',
-                          transform: 'translateY(-50%)',
-                          background: 'transparent',
-                          border: 'none',
-                          color: '#94a3b8',
-                          cursor: 'pointer',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                </div>
-
-                <div className="sm">
-                  <label>Business</label>
-                  <select
-                    id="ledgerBizFilter"
-                    className="select"
-                    value={businessFilter}
-                    onChange={(e) => setBusinessFilter(e.target.value)}
-                  >
-                    <option value="">All Businesses</option>
-                    {businessesList.map((b) => (
-                      <option key={b?.id} value={b?.id}>
-                        {b?.name}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-
-                <div className="sm">
-                  <label>Account Status</label>
-                  <select
-                    id="ledgerStatusFilter"
-                    className="select"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
-                    <option value="">All Accounts</option>
-                    <option value="dues">⚠️ Outstanding Dues Only</option>
-                    <option value="settled">✅ Fully Settled (0 Dues)</option>
-                    <option value="advance">💎 In Advance / Credit</option>
-                  </select>
-                </div>
-              </div>
-            </div>
+            <span style={{ fontSize: '11.5px', opacity: 0.9 }}>
+              Select a member to open their complete financial ledger
+            </span>
           </div>
 
-          {/* KPI Summary Cards */}
-          <div className="cards" style={{ marginBottom: '18px', gridTemplateColumns: 'repeat(5, 1fr)' }}>
-            <div className="stat">
-              <div className="label">Total Clients</div>
-              <div className="value" style={{ color: '#0b4b8f' }}>{totalClientsCount}</div>
-              <div className="hint">Registered profiles</div>
-            </div>
-            <div className="stat">
-              <div className="label">Total Invoiced</div>
-              <div className="value" style={{ color: '#1d4ed8' }}>{money(totalAllInvoiced, activeCurrency)}</div>
-              <div className="hint">Total billed fees</div>
-            </div>
-            <div className="stat">
-              <div className="label">Total Paid</div>
-              <div className="value" style={{ color: '#16a34a' }}>{money(totalAllPaid, activeCurrency)}</div>
-              <div className="hint">Payments collected</div>
-            </div>
-            <div className="stat">
-              <div className="label">Outstanding Dues</div>
-              <div className="value" style={{ color: totalAllOutstanding > 0 ? '#e5483f' : '#16a34a' }}>
-                {money(totalAllOutstanding, activeCurrency)}
+          <div className="panel-body">
+            {/* Simple Search Input */}
+            <div className="toolbar" style={{ marginBottom: '14px' }}>
+              <div className="grow">
+                <label>Search Member / Client Name</label>
+                <div style={{ position: 'relative' }}>
+                  <input
+                    id="ledgerSearch"
+                    className="input"
+                    placeholder="Type member name, phone or business to search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    autoComplete="off"
+                    style={{ fontSize: '13px', padding: '8px 12px' }}
+                  />
+                  {searchTerm && (
+                    <button
+                      type="button"
+                      onClick={() => setSearchTerm('')}
+                      style={{
+                        position: 'absolute',
+                        right: '10px',
+                        top: '50%',
+                        transform: 'translateY(-50%)',
+                        background: 'transparent',
+                        border: 'none',
+                        color: '#94a3b8',
+                        cursor: 'pointer',
+                        fontWeight: 'bold',
+                        fontSize: '13px'
+                      }}
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
               </div>
-              <div className="hint">Unpaid customer balance</div>
             </div>
-            <div className="stat">
-              <div className="label">Advance / Credit</div>
-              <div className="value" style={{ color: '#7e22ce' }}>{money(totalAllAdvance, activeCurrency)}</div>
-              <div className="hint">Prepaid / Credit balance</div>
-            </div>
-          </div>
 
-          {/* Clients Ledger Directory Table */}
-          <div className="table-wrap" style={{ borderRadius: '8px', overflow: 'visible' }}>
-            <table>
-              <thead>
-                <tr>
-                  <th style={{ width: '260px' }}>Client Name & Contact</th>
-                  <th>Business</th>
-                  <th style={{ textAlign: 'right' }}>Total Invoiced</th>
-                  <th style={{ textAlign: 'right' }}>Total Paid</th>
-                  <th style={{ textAlign: 'right' }}>Outstanding Dues</th>
-                  <th style={{ textAlign: 'right' }}>Advance / Credit</th>
-                  <th style={{ textAlign: 'center' }}>Invoices</th>
-                  <th style={{ textAlign: 'center', minWidth: '110px' }}>Status</th>
-                  <th style={{ textAlign: 'center', minWidth: '170px' }}>Ledger Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredClients.length > 0 ? (
-                  filteredClients.map((item) => {
-                    const c = item.customer;
-                    const b = item.business;
-                    const hasDues = (item.outstandingBalance || 0) > 0;
-                    const hasAdvance = (item.advanceCredit || 0) > 0;
+            {/* Simple Clean Members Table */}
+            <div className="table-wrap" style={{ borderRadius: '8px', overflow: 'hidden' }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th style={{ width: '60px', textAlign: 'center' }}>#</th>
+                    <th>Member / Client Name</th>
+                    <th>Phone / WhatsApp</th>
+                    <th>Business</th>
+                    <th style={{ width: '160px', textAlign: 'center' }}>Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {filteredMembers.length > 0 ? (
+                    filteredMembers.map((c, idx) => {
+                      const b = getBusiness(c?.businessId);
 
-                    return (
-                      <tr
-                        key={c?.id}
-                        style={{
-                          cursor: 'pointer',
-                          background: hasDues ? '#fff9f9' : '#ffffff',
-                          transition: 'background 0.15s ease'
-                        }}
-                        onClick={() => setSelectedCustomerId(c?.id)}
-                        className="ledger-row-hover"
-                      >
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                            <div
-                              style={{
-                                width: '32px',
-                                height: '32px',
-                                borderRadius: '7px',
-                                background: hasDues ? 'rgba(239, 68, 68, 0.12)' : 'rgba(11, 75, 143, 0.1)',
-                                color: hasDues ? '#dc2626' : '#0b4b8f',
-                                display: 'grid',
-                                placeItems: 'center',
-                                fontWeight: 800,
-                                fontSize: '12px',
-                                flexShrink: 0
-                              }}
-                            >
-                              {c?.name ? c.name.charAt(0).toUpperCase() : 'C'}
-                            </div>
-                            <div>
-                              <div style={{ fontWeight: 750, color: '#0f172a', fontSize: '13px' }}>
+                      return (
+                        <tr
+                          key={c?.id}
+                          style={{
+                            cursor: 'pointer',
+                            transition: 'background 0.15s ease'
+                          }}
+                          onClick={() => setSelectedCustomerId(c?.id)}
+                          className="ledger-row-hover"
+                        >
+                          <td style={{ textAlign: 'center', color: '#64748b', fontWeight: 600 }}>
+                            {idx + 1}
+                          </td>
+
+                          <td>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                              <div
+                                style={{
+                                  width: '32px',
+                                  height: '32px',
+                                  borderRadius: '6px',
+                                  background: 'rgba(11, 75, 143, 0.1)',
+                                  color: '#0b4b8f',
+                                  display: 'grid',
+                                  placeItems: 'center',
+                                  fontWeight: 800,
+                                  fontSize: '13px',
+                                  flexShrink: 0
+                                }}
+                              >
+                                {c?.name ? c.name.charAt(0).toUpperCase() : 'M'}
+                              </div>
+                              <span style={{ fontWeight: 750, color: '#0f172a', fontSize: '13.5px' }}>
                                 {c?.name}
-                              </div>
-                              <div style={{ fontSize: '11px', color: '#64748b', display: 'flex', gap: '8px', marginTop: '1px' }}>
-                                {c?.phone && <span>📞 {c.phone}</span>}
-                                {c?.whatsapp && c.whatsapp !== c.phone && <span>💬 {c.whatsapp}</span>}
-                              </div>
+                              </span>
                             </div>
-                          </div>
-                        </td>
+                          </td>
 
-                        <td>
-                          <span style={{ fontWeight: 600, color: '#334155' }}>
+                          <td style={{ color: '#334155', fontWeight: 550 }}>
+                            {c?.phone || c?.whatsapp || '-'}
+                          </td>
+
+                          <td style={{ color: '#64748b' }}>
                             {b?.name || '-'}
-                          </span>
-                        </td>
+                          </td>
 
-                        <td style={{ textAlign: 'right', fontWeight: 650, color: '#1e293b' }}>
-                          {formatMoney(item.totalInvoiced, c?.businessId)}
-                        </td>
-
-                        <td style={{ textAlign: 'right', fontWeight: 650, color: '#16a34a' }}>
-                          {formatMoney(item.totalPaid, c?.businessId)}
-                        </td>
-
-                        <td
-                          style={{
-                            textAlign: 'right',
-                            fontWeight: 800,
-                            color: hasDues ? '#dc2626' : '#64748b'
-                          }}
-                        >
-                          {formatMoney(item.outstandingBalance, c?.businessId)}
-                        </td>
-
-                        <td
-                          style={{
-                            textAlign: 'right',
-                            fontWeight: 700,
-                            color: hasAdvance ? '#7e22ce' : '#94a3b8'
-                          }}
-                        >
-                          {hasAdvance ? formatMoney(item.advanceCredit, c?.businessId) : '-'}
-                        </td>
-
-                        <td style={{ textAlign: 'center', fontWeight: 650 }}>
-                          <span
-                            style={{
-                              background: '#f1f5f9',
-                              padding: '2px 8px',
-                              borderRadius: '12px',
-                              fontSize: '11.5px',
-                              color: '#334155'
-                            }}
-                          >
-                            {item.invoicesCount || 0}
-                          </span>
-                        </td>
-
-                        <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }}>
-                          {hasDues ? (
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                background: '#fee2e2',
-                                color: '#991b1b',
-                                padding: '3px 8px',
-                                borderRadius: '5px',
-                                fontSize: '11px',
-                                fontWeight: 700
-                              }}
-                            >
-                              <span>⚠️</span> Dues Pending
-                            </span>
-                          ) : hasAdvance ? (
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                background: '#f3e8ff',
-                                color: '#6b21a8',
-                                padding: '3px 8px',
-                                borderRadius: '5px',
-                                fontSize: '11px',
-                                fontWeight: 700
-                              }}
-                            >
-                              <span>💎</span> Advance Credit
-                            </span>
-                          ) : (
-                            <span
-                              style={{
-                                display: 'inline-flex',
-                                alignItems: 'center',
-                                gap: '4px',
-                                background: '#dcfce7',
-                                color: '#166534',
-                                padding: '3px 8px',
-                                borderRadius: '5px',
-                                fontSize: '11px',
-                                fontWeight: 700
-                              }}
-                            >
-                              <span>✅</span> Settled
-                            </span>
-                          )}
-                        </td>
-
-                        <td style={{ textAlign: 'center', whiteSpace: 'nowrap' }} onClick={(e) => e.stopPropagation()}>
-                          <div style={{ display: 'inline-flex', alignItems: 'center', gap: '5px' }}>
+                          <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
                               className="btn sm"
@@ -520,7 +308,7 @@ export default function ClientLedgerPage() {
                                 background: '#0b4b8f',
                                 color: '#fff',
                                 borderColor: '#0b4b8f',
-                                padding: '4px 10px',
+                                padding: '5px 12px',
                                 fontSize: '11.5px',
                                 fontWeight: 700,
                                 display: 'inline-flex',
@@ -535,80 +323,28 @@ export default function ClientLedgerPage() {
                               </svg>
                               <span>Open Ledger</span>
                             </button>
-
-                            <button
-                              type="button"
-                              className="btn sm light"
-                              style={{ padding: '4px 8px', fontSize: '11px' }}
-                              title="Download Statement PDF"
-                              onClick={() => handleDownloadPdf(c, b)}
-                            >
-                              <span>📄</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              className="btn sm light"
-                              style={{ padding: '4px 8px', fontSize: '11px' }}
-                              title="Export Excel / CSV"
-                              onClick={() => handleExportExcel(c, b)}
-                            >
-                              <span>📊</span>
-                            </button>
-
-                            <button
-                              type="button"
-                              className="btn sm light"
-                              style={{ padding: '4px 8px', fontSize: '11px', color: '#16a34a' }}
-                              title="Send via WhatsApp"
-                              onClick={() => handleSendWhatsAppStatement(c, b)}
-                            >
-                              <span>💬</span>
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan="9" className="empty">
-                      No clients found matching your search and filter criteria.
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-              {filteredClients.length > 0 && (
-                <tfoot>
-                  <tr style={{ background: '#f8fafc', fontWeight: 800 }}>
-                    <td colSpan="2" style={{ textAlign: 'right' }}>
-                      Grand Total ({filteredClients.length} Clients):
-                    </td>
-                    <td style={{ textAlign: 'right', color: '#1d4ed8' }}>
-                      {money(totalAllInvoiced, activeCurrency)}
-                    </td>
-                    <td style={{ textAlign: 'right', color: '#16a34a' }}>
-                      {money(totalAllPaid, activeCurrency)}
-                    </td>
-                    <td style={{ textAlign: 'right', color: totalAllOutstanding > 0 ? '#dc2626' : '#16a34a' }}>
-                      {money(totalAllOutstanding, activeCurrency)}
-                    </td>
-                    <td style={{ textAlign: 'right', color: '#7e22ce' }}>
-                      {money(totalAllAdvance, activeCurrency)}
-                    </td>
-                    <td colSpan="3"></td>
-                  </tr>
-                </tfoot>
-              )}
-            </table>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="empty">
+                        No members found matching your search.
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </>
+        </div>
       )}
 
-      {/* VIEW 2: SINGLE CLIENT DETAILED LEDGER */}
+      {/* VIEW 2: SINGLE CLIENT COMPLETE DETAILED LEDGER */}
       {selectedCustomerId && selectedCustomer && currentLedger && (
         <>
-          {/* Header Banner & Navigation */}
+          {/* Header Navigation Bar */}
           <div
             style={{
               display: 'flex',
@@ -636,12 +372,12 @@ export default function ClientLedgerPage() {
                 <line x1="19" y1="12" x2="5" y2="12" />
                 <polyline points="12 19 5 12 12 5" />
               </svg>
-              <span>Back to Clients Directory</span>
+              <span>← Back to Members List</span>
             </button>
 
-            {/* Quick Switch Client Dropdown */}
+            {/* Quick Switch Member Dropdown */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <label style={{ margin: 0, fontSize: '11.5px', color: '#64748b' }}>Switch Client:</label>
+              <label style={{ margin: 0, fontSize: '11.5px', color: '#64748b' }}>Switch Member:</label>
               <select
                 className="select"
                 style={{ width: '220px', padding: '5px 10px', fontSize: '12px' }}
@@ -657,7 +393,7 @@ export default function ClientLedgerPage() {
             </div>
           </div>
 
-          {/* Client Profile Header Card */}
+          {/* Member Profile Banner */}
           <div className="panel" style={{ marginBottom: '14px' }}>
             <div
               className="panel-head"
@@ -685,7 +421,7 @@ export default function ClientLedgerPage() {
                     fontSize: '18px'
                   }}
                 >
-                  {selectedCustomer?.name?.charAt(0).toUpperCase() || 'C'}
+                  {selectedCustomer?.name?.charAt(0).toUpperCase() || 'M'}
                 </div>
                 <div>
                   <h2 style={{ margin: 0, fontSize: '18px', color: '#fff', fontWeight: 800 }}>
@@ -736,7 +472,7 @@ export default function ClientLedgerPage() {
                     alignItems: 'center',
                     gap: '5px'
                   }}
-                  onClick={() => handleDownloadPdf()}
+                  onClick={handleDownloadPdf}
                 >
                   <span>📄</span>
                   <span>PDF Statement</span>
@@ -756,7 +492,7 @@ export default function ClientLedgerPage() {
                     alignItems: 'center',
                     gap: '5px'
                   }}
-                  onClick={() => handleExportExcel()}
+                  onClick={handleExportExcel}
                 >
                   <span>📊</span>
                   <span>Excel / CSV</span>
@@ -776,7 +512,7 @@ export default function ClientLedgerPage() {
                     alignItems: 'center',
                     gap: '5px'
                   }}
-                  onClick={() => handleSendWhatsAppStatement()}
+                  onClick={handleSendWhatsAppStatement}
                 >
                   <span>💬</span>
                   <span>WhatsApp</span>
@@ -854,7 +590,7 @@ export default function ClientLedgerPage() {
             </div>
           </div>
 
-          {/* Client Financial Summary Cards */}
+          {/* Member Financial Summary Cards */}
           <div className="cards" style={{ marginBottom: '18px', gridTemplateColumns: 'repeat(5, 1fr)' }}>
             <div className="stat" style={{ borderLeft: '4px solid #1d4ed8' }}>
               <div className="label">Total Invoiced</div>
