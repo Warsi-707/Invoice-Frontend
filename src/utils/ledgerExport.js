@@ -13,15 +13,34 @@ export function calculateClientLedger(customer = {}, business = {}, invoices = [
     (i) => String(i.customerId) === String(customer.id)
   );
 
+  // Sort invoices chronologically by billing year, month, and invoice sequence
+  const getInvoicePeriodOrder = (inv) => {
+    const y = Number(inv.year || (inv.date ? new Date(inv.date).getFullYear() : 2026));
+    const mIdx = MONTHS.indexOf(inv.month);
+    const m = mIdx >= 0 ? mIdx : 0;
+    const seq = parseInt(String(inv.invoiceNo || '').replace(/\D/g, ''), 10) || 0;
+    return y * 1000000 + m * 10000 + seq;
+  };
+
+  const sortedInvoices = [...custInvoices].sort((a, b) => {
+    const periodA = getInvoicePeriodOrder(a);
+    const periodB = getInvoicePeriodOrder(b);
+    if (periodA !== periodB) return periodA - periodB;
+    const timeA = new Date(a.date || a.createdAt || 0).getTime();
+    const timeB = new Date(b.date || b.createdAt || 0).getTime();
+    return timeA - timeB;
+  });
+
   // 1. Build all raw chronological transactions
   const allTransactions = [];
 
-  custInvoices.forEach((inv) => {
+  sortedInvoices.forEach((inv, invIndex) => {
     const invDebit = Number(inv.subtotal || inv.total || 0);
     const invDate = inv.date || (inv.createdAt ? new Date(inv.createdAt).toISOString().slice(0, 10) : today());
     const invItemsSummary = Array.isArray(inv.items) && inv.items.length > 0
       ? inv.items.map((it) => it.name || it.description).filter(Boolean).join(', ')
       : `Monthly Fee - ${inv.month || ''} ${inv.year || ''}`.trim();
+    const periodOrder = getInvoicePeriodOrder(inv);
 
     // Add Invoice Debit Transaction
     allTransactions.push({
@@ -29,6 +48,9 @@ export function calculateClientLedger(customer = {}, business = {}, invoices = [
       rawInvoice: inv,
       date: invDate,
       time: '09:00:00 AM',
+      periodOrder,
+      subOrder: 1,
+      invIndex,
       timestamp: new Date(invDate).getTime() || 0,
       type: 'invoice',
       typeLabel: 'Invoice Generated',
@@ -41,7 +63,7 @@ export function calculateClientLedger(customer = {}, business = {}, invoices = [
       method: '-'
     });
 
-    // Add Payment Credit Transactions
+    // Add Payment Credit Transactions for this invoice
     if (Array.isArray(inv.payments) && inv.payments.length > 0) {
       inv.payments.forEach((p, pIdx) => {
         const pAmt = Number(p.amount || 0);
@@ -57,6 +79,9 @@ export function calculateClientLedger(customer = {}, business = {}, invoices = [
           rawPayment: p,
           date: pDate,
           time: pTime,
+          periodOrder,
+          subOrder: 2 + pIdx,
+          invIndex,
           timestamp: new Date(pDate).getTime() + (pIdx + 1) * 1000 || 0,
           type: 'payment',
           typeLabel: p.kind === 'partial' || p.status === 'Partial' ? 'Partial Payment' : 'Payment Received',
@@ -72,15 +97,15 @@ export function calculateClientLedger(customer = {}, business = {}, invoices = [
     }
   });
 
-  // Sort strictly by Date ASC, then Invoices before Payments if on same day
+  // Sort strictly in natural accounting timeline order: period order -> invoice debit -> invoice payment
   allTransactions.sort((a, b) => {
-    if (a.date !== b.date) {
-      return a.date.localeCompare(b.date);
+    if (a.periodOrder !== b.periodOrder) {
+      return a.periodOrder - b.periodOrder;
     }
-    if (a.type !== b.type) {
-      return a.type === 'invoice' ? -1 : 1;
+    if (a.invIndex !== b.invIndex) {
+      return a.invIndex - b.invIndex;
     }
-    return a.timestamp - b.timestamp;
+    return a.subOrder - b.subOrder;
   });
 
   // Calculate global summary (all-time)
