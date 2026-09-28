@@ -188,15 +188,16 @@ export default function ClientLedgerPage() {
             {/* Search Toolbar */}
             <div className="toolbar" style={{ marginBottom: '14px' }}>
               <div className="grow">
-                <label>Search Member</label>
+                <label style={{ color: '#0f172a', fontWeight: 700 }}>Search Member / Client Name</label>
                 <div style={{ position: 'relative' }}>
                   <input
                     id="ledgerSearch"
                     className="input"
-                    placeholder="Search by member name, phone or business..."
+                    placeholder="Type member name, phone or business to search..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     autoComplete="off"
+                    style={{ fontSize: '13px', padding: '9px 12px', color: '#0f172a', fontWeight: 600 }}
                   />
                   {searchTerm && (
                     <button
@@ -209,9 +210,10 @@ export default function ClientLedgerPage() {
                         transform: 'translateY(-50%)',
                         background: 'transparent',
                         border: 'none',
-                        color: '#94a3b8',
+                        color: '#64748b',
                         cursor: 'pointer',
-                        fontWeight: 'bold'
+                        fontWeight: 'bold',
+                        fontSize: '13px'
                       }}
                     >
                       ✕
@@ -230,7 +232,7 @@ export default function ClientLedgerPage() {
                     <th>Member Name</th>
                     <th>Phone / WhatsApp</th>
                     <th>Business</th>
-                    <th style={{ width: '130px', textAlign: 'center' }}>Ledger</th>
+                    <th style={{ width: '140px', textAlign: 'center' }}>Ledger</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -244,32 +246,37 @@ export default function ClientLedgerPage() {
                           style={{ cursor: 'pointer' }}
                           onClick={() => setSelectedCustomerId(c?.id)}
                         >
-                          <td style={{ textAlign: 'center', color: '#64748b' }}>
+                          <td style={{ textAlign: 'center', color: '#0f172a', fontWeight: 700 }}>
                             {idx + 1}
                           </td>
 
                           <td>
-                            <strong style={{ color: '#172033', fontSize: '13px' }}>
+                            <strong style={{ color: '#0f172a', fontSize: '13.5px', fontWeight: 750 }}>
                               {c?.name}
                             </strong>
                           </td>
 
-                          <td style={{ color: '#475569' }}>
+                          <td style={{ color: '#0f172a', fontWeight: 600 }}>
                             {c?.phone || c?.whatsapp || '-'}
                           </td>
 
-                          <td style={{ color: '#64748b' }}>
+                          <td style={{ color: '#1e293b', fontWeight: 600 }}>
                             {b?.name || '-'}
                           </td>
 
                           <td style={{ textAlign: 'center' }} onClick={(e) => e.stopPropagation()}>
                             <button
                               type="button"
-                              className="btn sm"
+                              className="btn sm primary"
                               style={{
-                                padding: '4px 12px',
-                                fontSize: '11.5px',
-                                fontWeight: 600
+                                background: '#0b4b8f',
+                                color: '#ffffff',
+                                border: 'none',
+                                padding: '5px 14px',
+                                fontSize: '12px',
+                                fontWeight: 700,
+                                borderRadius: '6px',
+                                boxShadow: '0 1px 3px rgba(11, 75, 143, 0.3)'
                               }}
                               onClick={() => setSelectedCustomerId(c?.id)}
                             >
@@ -304,88 +311,94 @@ export default function ClientLedgerPage() {
               <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <button
                   type="button"
-                  className="btn sm light"
+                  className="btn sm"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.2)',
-                    color: '#ffffff',
-                    border: '1px solid rgba(255, 255, 255, 0.35)',
-                    padding: '3px 10px',
-                    fontSize: '11.5px',
-                    fontWeight: 700
+                    background: '#ffffff',
+                    color: '#0b4b8f',
+                    border: '1px solid #ffffff',
+                    padding: '4px 12px',
+                    fontSize: '12px',
+                    fontWeight: 750,
+                    borderRadius: '6px'
                   }}
                   onClick={() => setSelectedCustomerId(null)}
                 >
                   ← Back to List
                 </button>
-                <span style={{ fontSize: '14px', fontWeight: 750 }}>
+                <span style={{ fontSize: '15px', fontWeight: 800, color: '#ffffff' }}>
                   {selectedCustomer?.name}
                 </span>
-                <span style={{ fontSize: '12px', opacity: 0.85, fontWeight: 500 }}>
+                <span style={{ fontSize: '12.5px', color: '#dbeafe', fontWeight: 600 }}>
                   ({selectedBusiness?.name || 'Business'} {selectedCustomer?.phone ? `• ${selectedCustomer.phone}` : ''})
                 </span>
               </div>
 
               {/* Action Buttons */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button
                   type="button"
-                  className="btn sm light"
+                  className="btn sm"
                   style={{
                     background: '#ffffff',
                     color: '#0b4b8f',
-                    borderColor: '#ffffff',
-                    padding: '4px 10px',
-                    fontSize: '11.5px',
-                    fontWeight: 650
+                    border: 'none',
+                    padding: '5px 12px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    borderRadius: '6px'
                   }}
                   onClick={handlePrint}
                 >
-                  Print
-                </button>
-                <button
-                  type="button"
-                  className="btn sm light"
-                  style={{
-                    background: '#ffffff',
-                    color: '#0b4b8f',
-                    borderColor: '#ffffff',
-                    padding: '4px 10px',
-                    fontSize: '11.5px',
-                    fontWeight: 650
-                  }}
-                  onClick={handleDownloadPdf}
-                >
-                  PDF Statement
-                </button>
-                <button
-                  type="button"
-                  className="btn sm light"
-                  style={{
-                    background: '#ffffff',
-                    color: '#0b4b8f',
-                    borderColor: '#ffffff',
-                    padding: '4px 10px',
-                    fontSize: '11.5px',
-                    fontWeight: 650
-                  }}
-                  onClick={handleExportExcel}
-                >
-                  Excel / CSV
+                  🖨️ Print
                 </button>
                 <button
                   type="button"
                   className="btn sm"
                   style={{
-                    background: '#18a05e',
+                    background: '#ffffff',
+                    color: '#0b4b8f',
+                    border: 'none',
+                    padding: '5px 12px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    borderRadius: '6px'
+                  }}
+                  onClick={handleDownloadPdf}
+                >
+                  📄 PDF Statement
+                </button>
+                <button
+                  type="button"
+                  className="btn sm"
+                  style={{
+                    background: '#ffffff',
+                    color: '#0b4b8f',
+                    border: 'none',
+                    padding: '5px 12px',
+                    fontSize: '12px',
+                    fontWeight: 700,
+                    borderRadius: '6px'
+                  }}
+                  onClick={handleExportExcel}
+                >
+                  📊 Excel / CSV
+                </button>
+                <button
+                  type="button"
+                  className="btn sm"
+                  style={{
+                    background: '#10b981',
                     color: '#ffffff',
-                    borderColor: '#18a05e',
-                    padding: '4px 10px',
-                    fontSize: '11.5px',
-                    fontWeight: 650
+                    border: 'none',
+                    padding: '5px 12px',
+                    fontSize: '12px',
+                    fontWeight: 750,
+                    borderRadius: '6px',
+                    boxShadow: '0 1px 3px rgba(16, 185, 129, 0.4)'
                   }}
                   onClick={handleSendWhatsAppStatement}
                 >
-                  WhatsApp
+                  💬 WhatsApp
                 </button>
               </div>
             </div>
@@ -394,11 +407,12 @@ export default function ClientLedgerPage() {
             <div className="panel-body">
               <div className="toolbar" style={{ marginBottom: 0 }}>
                 <div style={{ width: '160px' }}>
-                  <label>Period Preset</label>
+                  <label style={{ color: '#0f172a', fontWeight: 700 }}>Period Preset</label>
                   <select
                     className="select"
                     value={datePreset}
                     onChange={(e) => handleDatePresetChange(e.target.value)}
+                    style={{ color: '#0f172a', fontWeight: 600 }}
                   >
                     <option value="all">All Time</option>
                     <option value="this-month">This Month</option>
@@ -408,7 +422,7 @@ export default function ClientLedgerPage() {
                 </div>
 
                 <div className="sm">
-                  <label>From Date</label>
+                  <label style={{ color: '#0f172a', fontWeight: 700 }}>From Date</label>
                   <input
                     type="date"
                     className="input"
@@ -417,11 +431,12 @@ export default function ClientLedgerPage() {
                       setFromDate(e.target.value);
                       setDatePreset('custom');
                     }}
+                    style={{ color: '#0f172a', fontWeight: 600 }}
                   />
                 </div>
 
                 <div className="sm">
-                  <label>To Date</label>
+                  <label style={{ color: '#0f172a', fontWeight: 700 }}>To Date</label>
                   <input
                     type="date"
                     className="input"
@@ -430,17 +445,19 @@ export default function ClientLedgerPage() {
                       setToDate(e.target.value);
                       setDatePreset('custom');
                     }}
+                    style={{ color: '#0f172a', fontWeight: 600 }}
                   />
                 </div>
 
                 <div className="grow">
-                  <label>Search in Ledger</label>
+                  <label style={{ color: '#0f172a', fontWeight: 700 }}>Search in Ledger</label>
                   <input
                     type="text"
                     className="input"
                     placeholder="Search voucher, description or item..."
                     value={ledgerSearchQuery}
                     onChange={(e) => setLedgerSearchQuery(e.target.value)}
+                    style={{ color: '#0f172a', fontWeight: 600 }}
                   />
                 </div>
               </div>
@@ -450,50 +467,51 @@ export default function ClientLedgerPage() {
           {/* Standard Cohesive KPI Summary Cards */}
           <div className="cards" style={{ marginBottom: '14px' }}>
             <div className="stat">
-              <div className="label">Total Invoiced</div>
-              <div className="value" style={{ color: '#0b4b8f' }}>
+              <div className="label" style={{ color: '#475569', fontWeight: 750 }}>Total Invoiced</div>
+              <div className="value" style={{ color: '#0b4b8f', fontWeight: 800 }}>
                 {formatMoney(currentLedger.totalInvoiced, selectedCustomer?.businessId)}
               </div>
-              <div className="hint">Billed charges</div>
+              <div className="hint" style={{ color: '#64748b' }}>Billed charges</div>
             </div>
 
             <div className="stat">
-              <div className="label">Total Paid</div>
-              <div className="value" style={{ color: '#18a05e' }}>
+              <div className="label" style={{ color: '#475569', fontWeight: 750 }}>Total Paid</div>
+              <div className="value" style={{ color: '#16a34a', fontWeight: 800 }}>
                 {formatMoney(currentLedger.totalPaid, selectedCustomer?.businessId)}
               </div>
-              <div className="hint">Payments received</div>
+              <div className="hint" style={{ color: '#64748b' }}>Payments received</div>
             </div>
 
             <div className="stat">
-              <div className="label">Outstanding Balance</div>
+              <div className="label" style={{ color: '#475569', fontWeight: 750 }}>Outstanding Balance</div>
               <div
                 className="value"
                 style={{
-                  color: currentLedger.outstandingBalance > 0 ? '#e5483f' : '#18a05e'
+                  color: currentLedger.outstandingBalance > 0 ? '#dc2626' : '#16a34a',
+                  fontWeight: 850
                 }}
               >
                 {formatMoney(currentLedger.outstandingBalance, selectedCustomer?.businessId)}
               </div>
-              <div className="hint">
+              <div className="hint" style={{ color: '#64748b' }}>
                 {currentLedger.outstandingBalance > 0 ? 'Remaining dues' : 'Settled'}
               </div>
             </div>
 
             <div className="stat">
-              <div className="label">Advance / Credit</div>
-              <div className="value" style={{ color: '#7e22ce' }}>
+              <div className="label" style={{ color: '#475569', fontWeight: 750 }}>Advance / Credit</div>
+              <div className="value" style={{ color: '#7e22ce', fontWeight: 800 }}>
                 {formatMoney(currentLedger.advanceCredit, selectedCustomer?.businessId)}
               </div>
-              <div className="hint">Prepaid balance</div>
+              <div className="hint" style={{ color: '#64748b' }}>Prepaid balance</div>
             </div>
 
             <div className="stat">
-              <div className="label">Invoices</div>
-              <div className="value">
+              <div className="label" style={{ color: '#475569', fontWeight: 750 }}>Invoices</div>
+              <div className="value" style={{ color: '#0f172a', fontWeight: 800 }}>
                 {currentLedger.invoicesCount || 0}
               </div>
-              <div className="hint">{currentLedger.totalTransactionsCount || 0} transactions</div>
+              <div className="hint" style={{ color: '#64748b' }}>{currentLedger.totalTransactionsCount || 0} transactions</div>
             </div>
           </div>
 
@@ -504,7 +522,7 @@ export default function ClientLedgerPage() {
                 <tr>
                   <th style={{ width: '100px' }}>Date</th>
                   <th style={{ width: '130px' }}>Invoice / Ref #</th>
-                  <th style={{ width: '130px' }}>Type</th>
+                  <th style={{ width: '140px' }}>Type</th>
                   <th>Description / Particulars</th>
                   <th style={{ textAlign: 'right', width: '120px' }}>Debit (+)</th>
                   <th style={{ textAlign: 'right', width: '120px' }}>Credit (-)</th>
@@ -515,7 +533,7 @@ export default function ClientLedgerPage() {
               <tbody>
                 {/* Opening Balance Row if fromDate is filtered */}
                 {fromDate && (
-                  <tr style={{ background: '#fefce8', fontWeight: 650, color: '#854d0e' }}>
+                  <tr style={{ background: '#fefce8', fontWeight: 700, color: '#854d0e' }}>
                     <td>{fromDate}</td>
                     <td><strong>B/F</strong></td>
                     <td>Opening Balance</td>
@@ -533,8 +551,8 @@ export default function ClientLedgerPage() {
                     <td
                       style={{
                         textAlign: 'right',
-                        fontWeight: 750,
-                        color: currentLedger.openingBalance > 0 ? '#e5483f' : '#18a05e'
+                        fontWeight: 850,
+                        color: currentLedger.openingBalance > 0 ? '#dc2626' : '#16a34a'
                       }}
                     >
                       {formatMoney(currentLedger.openingBalance, selectedCustomer?.businessId)}
@@ -551,24 +569,24 @@ export default function ClientLedgerPage() {
 
                     return (
                       <tr key={r.id}>
-                        <td style={{ color: '#475569', whiteSpace: 'nowrap' }}>
+                        <td style={{ color: '#0f172a', fontWeight: 650, whiteSpace: 'nowrap' }}>
                           {r.date}
                         </td>
 
                         <td>
-                          <strong>{r.ref}</strong>
+                          <strong style={{ color: '#0b4b8f', fontWeight: 800 }}>{r.ref}</strong>
                         </td>
 
                         <td>
-                          <span style={{ color: isPay ? '#18a05e' : '#0b4b8f', fontWeight: 600 }}>
+                          <strong style={{ color: isPay ? '#16a34a' : '#0b4b8f' }}>
                             {r.typeLabel}
-                          </span>
+                          </strong>
                         </td>
 
                         <td>
-                          <div style={{ color: '#1e293b' }}>{r.description}</div>
+                          <div style={{ color: '#0f172a', fontWeight: 650 }}>{r.description}</div>
                           {r.monthYear !== '-' && (
-                            <div style={{ fontSize: '11px', color: '#94a3b8' }}>
+                            <div style={{ fontSize: '11px', color: '#475569', fontWeight: 600 }}>
                               {r.monthYear} {r.method !== '-' ? `• ${r.method}` : ''}
                             </div>
                           )}
@@ -577,8 +595,8 @@ export default function ClientLedgerPage() {
                         <td
                           style={{
                             textAlign: 'right',
-                            fontWeight: r.debit > 0 ? 650 : 'normal',
-                            color: r.debit > 0 ? '#1e293b' : '#94a3b8'
+                            fontWeight: 750,
+                            color: r.debit > 0 ? '#0f172a' : '#64748b'
                           }}
                         >
                           {r.debit > 0 ? formatMoney(r.debit, selectedCustomer?.businessId) : '-'}
@@ -587,8 +605,8 @@ export default function ClientLedgerPage() {
                         <td
                           style={{
                             textAlign: 'right',
-                            fontWeight: r.credit > 0 ? 700 : 'normal',
-                            color: r.credit > 0 ? '#18a05e' : '#94a3b8'
+                            fontWeight: 800,
+                            color: r.credit > 0 ? '#16a34a' : '#64748b'
                           }}
                         >
                           {r.credit > 0 ? formatMoney(r.credit, selectedCustomer?.businessId) : '-'}
@@ -597,9 +615,9 @@ export default function ClientLedgerPage() {
                         <td
                           style={{
                             textAlign: 'right',
-                            fontWeight: 750,
+                            fontWeight: 850,
                             fontSize: '13px',
-                            color: isPos ? '#e5483f' : isNeg ? '#7e22ce' : '#18a05e'
+                            color: isPos ? '#dc2626' : isNeg ? '#7e22ce' : '#16a34a'
                           }}
                         >
                           {formatMoney(r.runningBalance, selectedCustomer?.businessId)}
@@ -620,20 +638,20 @@ export default function ClientLedgerPage() {
                 )}
               </tbody>
               <tfoot>
-                <tr style={{ background: '#f8fafc', fontWeight: 750 }}>
-                  <td colSpan="4" style={{ textAlign: 'right' }}>
+                <tr style={{ background: '#f8fafc', fontWeight: 800 }}>
+                  <td colSpan="4" style={{ textAlign: 'right', color: '#0f172a' }}>
                     Period Totals & Net Balance:
                   </td>
                   <td style={{ textAlign: 'right', color: '#0b4b8f' }}>
                     {formatMoney(currentLedger.totalInvoiced, selectedCustomer?.businessId)}
                   </td>
-                  <td style={{ textAlign: 'right', color: '#18a05e' }}>
+                  <td style={{ textAlign: 'right', color: '#16a34a' }}>
                     {formatMoney(currentLedger.totalPaid, selectedCustomer?.businessId)}
                   </td>
                   <td
                     style={{
                       textAlign: 'right',
-                      color: currentLedger.closingBalance > 0 ? '#e5483f' : '#18a05e'
+                      color: currentLedger.closingBalance > 0 ? '#dc2626' : '#16a34a'
                     }}
                   >
                     {formatMoney(currentLedger.closingBalance, selectedCustomer?.businessId)}
