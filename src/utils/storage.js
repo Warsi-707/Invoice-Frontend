@@ -9,7 +9,12 @@ export const DEFAULT_STATE = {
     admin: 'Admin',
     currency: 'PKR',
     dueDays: 0,
-    footerNote: 'Thank you for your business.'
+    footerNote: 'Thank you for your business.',
+    proposalData: {},
+    whatsappSettings: {
+      initialDelay: 2,
+      messageDelay: 3
+    }
   },
   businesses: [],
   customers: [],
@@ -36,7 +41,8 @@ export function loadStoredState() {
         currency: parsed.settings?.currency || 'PKR',
         dueDays: parsed.settings?.dueDays ?? 0,
         footerNote: parsed.settings?.footerNote ?? 'Thank you for your business.',
-        proposalData: parsed.settings?.proposalData || {}
+        proposalData: parsed.settings?.proposalData || {},
+        whatsappSettings: parsed.settings?.whatsappSettings || { initialDelay: 2, messageDelay: 3 }
       },
       businesses: Array.isArray(parsed.businesses) ? parsed.businesses : [],
       customers: Array.isArray(parsed.customers) ? parsed.customers : [],

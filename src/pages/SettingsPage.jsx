@@ -189,7 +189,8 @@ export default function SettingsPage() {
       currency,
       dueDays: Math.max(0, Number(dueDays || 0)),
       footerNote: footerNote.trim(),
-      proposalData: proposalDataPayload
+      proposalData: proposalDataPayload,
+      whatsappSettings: state.settings?.whatsappSettings || { initialDelay: 2, messageDelay: 3 }
     });
 
     showToast('✅ Settings saved successfully.');

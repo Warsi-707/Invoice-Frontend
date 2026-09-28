@@ -1,8 +1,19 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { whatsappApi } from '../../services/api';
 import { cleanPhoneInput } from '../../utils/formatters';
+import { useApp } from '../../context/AppContext';
+
+function formatSeconds(sec) {
+  const total = Math.max(0, Math.round(sec));
+  if (total < 60) return `${total} sec`;
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return s > 0 ? `${m} min ${s} sec` : `${m} min`;
+}
 
 export default function WhatsAppScannerCard({ isStandalone = false, compact = false }) {
+  const { state, updateSettings, showToast, setCurrentPage } = useApp();
+
   const [status, setStatus] = useState('SCAN_QR'); // 'DISCONNECTED' | 'CONNECTING' | 'SCAN_QR' | 'CONNECTED'
   const [qrCode, setQrCode] = useState(null);
   const [user, setUser] = useState(null);
@@ -15,6 +26,52 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
   const [pairingCode, setPairingCode] = useState('');
   const [pairingLoading, setPairingLoading] = useState(false);
   const pollTimerRef = useRef(null);
+
+  // Timing & Speed settings state
+  const savedWaSettings = state.settings?.whatsappSettings || {};
+  const [initialDelay, setInitialDelay] = useState(savedWaSettings.initialDelay ?? 2);
+  const [messageDelay, setMessageDelay] = useState(savedWaSettings.messageDelay ?? 3);
+  const [timerSaved, setTimerSaved] = useState(false);
+
+  useEffect(() => {
+    if (state.settings?.whatsappSettings) {
+      if (state.settings.whatsappSettings.initialDelay !== undefined) {
+        setInitialDelay(state.settings.whatsappSettings.initialDelay);
+      }
+      if (state.settings.whatsappSettings.messageDelay !== undefined) {
+        setMessageDelay(state.settings.whatsappSettings.messageDelay);
+      }
+    }
+  }, [state.settings?.whatsappSettings]);
+
+  const handleSaveTimers = async (e) => {
+    e?.preventDefault();
+    const cleanInitial = Math.max(0, Number(initialDelay) || 0);
+    const cleanInterval = Math.max(1, Number(messageDelay) || 1);
+
+    await updateSettings({
+      ...state.settings,
+      whatsappSettings: {
+        initialDelay: cleanInitial,
+        messageDelay: cleanInterval
+      }
+    });
+
+    setTimerSaved(true);
+    showToast(`✅ WhatsApp timing saved: First message ${cleanInitial}s, Interval ${cleanInterval}s`);
+    setTimeout(() => setTimerSaved(false), 3000);
+  };
+
+  const handleApplyPreset = (initSec, intervalSec) => {
+    setInitialDelay(initSec);
+    setMessageDelay(intervalSec);
+  };
+
+  // Calculation for 100 recipients simulator
+  const sampleCount = 100;
+  const numInitial = Math.max(0, Number(initialDelay) || 0);
+  const numInterval = Math.max(1, Number(messageDelay) || 1);
+  const totalSimulatedSec = sampleCount > 0 ? numInitial + (sampleCount - 1) * numInterval : 0;
 
   const handleRequestPairingCode = async (e) => {
     if (e) e.preventDefault();
@@ -131,8 +188,8 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
             </svg>
           </div>
           <div>
-            <h3>WhatsApp Automatic Delivery</h3>
-            <p className="wa-subtitle">Bilkut Free — apna WhatsApp connect karo, challans auto jayenge</p>
+            <h3>WhatsApp Automatic Delivery & Timers</h3>
+            <p className="wa-subtitle">Bilkut Free — apna WhatsApp connect karo, bills & bulk messages auto jayenge</p>
           </div>
         </div>
 
@@ -159,7 +216,7 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
               </svg>
             </div>
             <h4>WhatsApp is Connected!</h4>
-            <p>Phone: <strong>{user?.phone || 'Linked'}</strong></p>
+            <p>Linked Phone: <strong>{user?.phone || 'Linked'}</strong></p>
             <p className="wa-connected-sub">Invoices generate hote hi direct customer ke WhatsApp par chali jayengi.</p>
 
             <form onSubmit={handleSendTestMessage} className="wa-test-form">
@@ -177,7 +234,7 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
                 {loading ? '...' : 'Send Test'}
               </button>
             </form>
-            {testMsgSent && <div className="wa-success-alert">✅ Test message sent!</div>}
+            {testMsgSent && <div className="wa-success-alert">✅ Test message sent successfully!</div>}
           </div>
         ) : (
           <div className="wa-qr-container">
@@ -277,6 +334,184 @@ export default function WhatsAppScannerCard({ isStandalone = false, compact = fa
         )}
 
         {errorMsg && <div className="wa-error-alert">{errorMsg}</div>}
+
+        {/* =========================================================================
+            WHATSAPP TIMER & INTERVAL RATE-LIMIT SETTINGS (100 Contacts Simulator)
+           ========================================================================= */}
+        <div className="wa-timer-config-card" style={{
+          marginTop: '18px',
+          background: '#f8fafc',
+          border: '1px solid #e2e8f0',
+          borderRadius: '10px',
+          padding: '16px'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px', flexWrap: 'wrap', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <div style={{ width: '28px', height: '28px', borderRadius: '6px', background: '#dbeafe', color: '#1d4ed8', display: 'grid', placeItems: 'center', fontWeight: '700', fontSize: '14px' }}>
+                ⏱️
+              </div>
+              <div>
+                <h4 style={{ margin: 0, fontSize: '13.5px', color: '#0f172a', fontWeight: '700' }}>
+                  WhatsApp Timing &amp; Speed Controls
+                </h4>
+                <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#64748b' }}>
+                  Select 1st message start timer &amp; interval between bulk contacts
+                </p>
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', gap: '6px' }}>
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '6px', background: '#fff' }}
+                onClick={() => handleApplyPreset(1, 2)}
+                title="Fast delivery speed"
+              >
+                ⚡ Fast (1s/2s)
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '6px', background: '#fff', borderColor: '#86efac', color: '#15803d' }}
+                onClick={() => handleApplyPreset(2, 3)}
+                title="Recommended anti-ban timing"
+              >
+                🛡️ Safe (2s/3s)
+              </button>
+              <button
+                type="button"
+                className="btn btn-outline"
+                style={{ fontSize: '11px', padding: '4px 8px', borderRadius: '6px', background: '#fff' }}
+                onClick={() => handleApplyPreset(3, 5)}
+                title="Extra safe for large lists"
+              >
+                🔒 Strict (3s/5s)
+              </button>
+            </div>
+          </div>
+
+          <form onSubmit={handleSaveTimers}>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))',
+              gap: '12px',
+              marginBottom: '14px'
+            }}>
+              {/* First Message Timer */}
+              <div style={{ background: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                  🚀 First Message Start Delay (Seconds)
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="number"
+                    min="0"
+                    max="60"
+                    step="1"
+                    className="input"
+                    style={{ width: '90px', fontWeight: '700', fontSize: '14px' }}
+                    value={initialDelay}
+                    onChange={(e) => setInitialDelay(Math.max(0, parseInt(e.target.value, 10) || 0))}
+                  />
+                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>sec</span>
+                </div>
+                <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '4px', lineHeight: '1.3' }}>
+                  Pehla message <strong>{numInitial} sec</strong> baad dispatch hoga.
+                </div>
+              </div>
+
+              {/* Per-Message Interval */}
+              <div style={{ background: '#fff', padding: '12px', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                <label style={{ display: 'block', fontSize: '11.5px', fontWeight: '700', color: '#334155', marginBottom: '4px' }}>
+                  ⏳ Delay Between Messages (Per Message)
+                </label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <input
+                    type="number"
+                    min="1"
+                    max="60"
+                    step="1"
+                    className="input"
+                    style={{ width: '90px', fontWeight: '700', fontSize: '14px' }}
+                    value={messageDelay}
+                    onChange={(e) => setMessageDelay(Math.max(1, parseInt(e.target.value, 10) || 1))}
+                  />
+                  <span style={{ fontSize: '12px', color: '#64748b', fontWeight: '600' }}>sec / msg</span>
+                </div>
+                <div style={{ fontSize: '10.5px', color: '#64748b', marginTop: '4px', lineHeight: '1.3' }}>
+                  Har contact ke beech <strong>{numInterval} sec</strong> ka waqfa (delay) rahega.
+                </div>
+              </div>
+            </div>
+
+            {/* Live 100 Contacts Simulator Breakdown */}
+            <div style={{
+              background: '#f0fdf4',
+              border: '1px solid #bbf7d0',
+              borderRadius: '8px',
+              padding: '12px 14px',
+              marginBottom: '14px'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+                <div>
+                  <span style={{ fontSize: '11px', fontWeight: '700', color: '#166534', textTransform: 'uppercase', letterSpacing: '0.4px' }}>
+                    📊 100 Contacts Delivery Estimation:
+                  </span>
+                  <div style={{ fontSize: '14px', fontWeight: '800', color: '#15803d', marginTop: '2px' }}>
+                    100 Messages Total Time: ~{formatSeconds(totalSimulatedSec)}
+                  </div>
+                  <div style={{ fontSize: '11px', color: '#166534', marginTop: '2px' }}>
+                    Breakdown: 1st msg in <strong>{numInitial}s</strong> + remaining 99 msgs × <strong>{numInterval}s</strong> = <strong>{totalSimulatedSec} seconds</strong>.
+                  </div>
+                </div>
+
+                <div style={{
+                  background: numInterval >= 3 ? '#dcfce7' : '#fef9c3',
+                  border: `1px solid ${numInterval >= 3 ? '#86efac' : '#fde047'}`,
+                  color: numInterval >= 3 ? '#166534' : '#854d0e',
+                  padding: '4px 10px',
+                  borderRadius: '20px',
+                  fontSize: '11px',
+                  fontWeight: '700',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '4px'
+                }}>
+                  {numInterval >= 3 ? '🟢 Anti-Ban Safe' : '⚠️ Fast Speed'}
+                </div>
+              </div>
+            </div>
+
+            {/* Save Timers Action Bar */}
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ fontSize: '12.5px', padding: '7px 16px', background: '#0b4b8f', borderColor: '#0b4b8f' }}
+              >
+                💾 Save Timing Settings
+              </button>
+
+              {timerSaved && (
+                <span style={{ fontSize: '11.5px', color: '#15803d', fontWeight: '700' }}>
+                  ✅ Timing configuration saved!
+                </span>
+              )}
+
+              {!isStandalone && (
+                <button
+                  type="button"
+                  className="btn btn-outline"
+                  style={{ fontSize: '12px', padding: '6px 14px', borderColor: '#10b981', color: '#047857' }}
+                  onClick={() => setCurrentPage('whatsapp')}
+                >
+                  📢 Open Bulk WhatsApp Broadcast ↗
+                </button>
+              )}
+            </div>
+          </form>
+        </div>
       </div>
 
       {/* Action Buttons Row */}

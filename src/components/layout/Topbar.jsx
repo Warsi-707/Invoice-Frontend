@@ -8,6 +8,7 @@ const PAGE_TITLES = {
   collections: 'Invoice Collection',
   reversals: 'Reversals',
   reports: 'Reports',
+  whatsapp: 'WhatsApp Broadcast & Delivery',
   settings: 'Settings'
 };
 
