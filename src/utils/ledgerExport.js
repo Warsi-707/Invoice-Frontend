@@ -31,91 +31,52 @@ export function calculateClientLedger(customer = {}, business = {}, invoices = [
     return timeA - timeB;
   });
 
-  // 1. Build all raw chronological transactions
+  // 1. Build all raw chronological transactions per invoice
   const allTransactions = [];
 
   sortedInvoices.forEach((inv, invIndex) => {
     const invDebit = Number(inv.subtotal || inv.total || 0);
+    const invPaid = Number(
+      inv.paid !== undefined
+        ? inv.paid
+        : Array.isArray(inv.payments)
+        ? inv.payments.reduce((sum, p) => sum + Number(p.amount || 0), 0)
+        : 0
+    );
     const invDate = inv.date || (inv.createdAt ? new Date(inv.createdAt).toISOString().slice(0, 10) : today());
     const invItemsSummary = Array.isArray(inv.items) && inv.items.length > 0
       ? inv.items.map((it) => it.name || it.description).filter(Boolean).join(', ')
       : `Monthly Fee - ${inv.month || ''} ${inv.year || ''}`.trim();
     const periodOrder = getInvoicePeriodOrder(inv);
 
-    // Add Invoice Debit Transaction
+    const paymentMethods = Array.isArray(inv.payments) && inv.payments.length > 0
+      ? inv.payments.map((p) => p.method || 'Cash').filter(Boolean).join(', ')
+      : (invPaid > 0 ? 'Cash' : '-');
+
     allTransactions.push({
       id: `txn-inv-${inv.id}`,
       rawInvoice: inv,
       date: invDate,
       time: '09:00:00 AM',
       periodOrder,
-      subOrder: 1,
       invIndex,
       timestamp: new Date(invDate).getTime() || 0,
       type: 'invoice',
-      typeLabel: 'Invoice Generated',
+      typeLabel: 'Monthly Invoice',
       ref: inv.invoiceNo || 'INV',
       description: invItemsSummary || `Monthly Billing (${inv.month} ${inv.year})`,
       monthYear: inv.month && inv.year ? `${inv.month} ${inv.year}` : '-',
       debit: invDebit,
-      credit: 0,
-      status: inv.status || 'Unpaid',
-      method: '-'
+      credit: invPaid,
+      status: inv.status || (invPaid >= invDebit ? 'Paid' : invPaid > 0 ? 'Partial' : 'Unpaid'),
+      method: paymentMethods,
+      payments: inv.payments || []
     });
-
-    // Add Payment Credit Transactions for this invoice
-    if (Array.isArray(inv.payments) && inv.payments.length > 0) {
-      inv.payments.forEach((p, pIdx) => {
-        const pAmt = Number(p.amount || 0);
-        const pDate = p.date || invDate;
-        const pMethod = p.method || 'Cash';
-        const pTime = p.time || '12:00:00 PM';
-        const pTitle = p.title || `Payment for ${inv.invoiceNo} (${inv.month || ''} ${inv.year || ''})`;
-        const receivedBy = p.receivedBy ? ` • Rec by: ${p.receivedBy}` : '';
-
-        allTransactions.push({
-          id: `txn-pay-${p.id || `${inv.id}-${pIdx}`}`,
-          rawInvoice: inv,
-          rawPayment: p,
-          date: pDate,
-          time: pTime,
-          periodOrder,
-          subOrder: 2 + pIdx,
-          invIndex,
-          timestamp: new Date(pDate).getTime() + (pIdx + 1) * 1000 || 0,
-          type: 'payment',
-          typeLabel: p.kind === 'partial' || p.status === 'Partial' ? 'Partial Payment' : 'Payment Received',
-          ref: `REC-${inv.invoiceNo}`,
-          description: `${pTitle}${receivedBy}`,
-          monthYear: inv.month && inv.year ? `${inv.month} ${inv.year}` : '-',
-          debit: 0,
-          credit: pAmt,
-          status: 'Paid',
-          method: pMethod
-        });
-      });
-    }
-  });
-
-  // Sort strictly in natural accounting timeline order: period order -> invoice debit -> invoice payment
-  allTransactions.sort((a, b) => {
-    if (a.periodOrder !== b.periodOrder) {
-      return a.periodOrder - b.periodOrder;
-    }
-    if (a.invIndex !== b.invIndex) {
-      return a.invIndex - b.invIndex;
-    }
-    return a.subOrder - b.subOrder;
   });
 
   // Calculate global summary (all-time)
-  const globalTotalInvoiced = allTransactions
-    .filter((t) => t.type === 'invoice')
-    .reduce((sum, t) => sum + t.debit, 0);
-
-  const globalTotalPaid = allTransactions
-    .filter((t) => t.type === 'payment')
-    .reduce((sum, t) => sum + t.credit, 0);
+  const globalTotalInvoiced = allTransactions.reduce((sum, t) => sum + t.debit, 0);
+  const globalTotalPaid = allTransactions.reduce((sum, t) => sum + t.credit, 0);
 
   const globalNetBalance = globalTotalInvoiced - globalTotalPaid;
   const globalOutstanding = Math.max(0, globalNetBalance);
